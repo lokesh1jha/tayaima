@@ -7,7 +7,7 @@ import { compare } from "bcryptjs";
 
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" },
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
   },
@@ -28,18 +28,35 @@ export const authConfig = {
         if (!user?.passwordHash) return null;
         const valid = await compare(credentials.password, user.passwordHash);
         if (!valid) return null;
-        return { id: user.id, email: user.email, name: user.name, image: user.image ?? undefined };
+        // Include role so JWT callback can set token.role
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image ?? undefined,
+          role: user.role,
+        } as any;
       },
     }),
   ],
   callbacks: {
-    session: async ({ session, user }) => {
-      if (user && session.user) {
-        session.user.id = user.id;
+    async jwt({ token, user }) {
+      if (user) {
+        // First time JWT callback is run, user object is available
+        token.role = (user as any).role ?? "USER";
+        token.id = (user as any).id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = (token.sub as string) || ((token as any).id as string);
+        (session.user as any).role = (token as any).role ?? "USER";
       }
       return session;
     },
   },
 } satisfies NextAuthConfig;
 
+export const authOptions = authConfig;
 export default authConfig;
