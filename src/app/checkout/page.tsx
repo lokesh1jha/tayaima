@@ -185,7 +185,7 @@ export default function CheckoutPage() {
         }
         
         clearCart();
-        router.push(ROUTES.ORDER_DETAIL(order.id));
+        router.push(ROUTES.ORDER_DETAIL(order.id) as any);
       } else {
         const error = await response.text();
         alert(`Order failed: ${error}`);

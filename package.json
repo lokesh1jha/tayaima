@@ -16,8 +16,8 @@
     "docker:db:logs": "docker-compose logs -f postgres",
     "docker:pgadmin": "docker-compose up -d pgadmin",
     "docker:full": "docker-compose up -d",
-    "docker:build": "docker build -t kirana-store .",
-    "docker:run": "docker run -p 3000:3000 kirana-store",
+    "docker:build": "docker build -t tayaima .",
+    "docker:run": "docker run -p 3000:3000 tayaima",
     "db:backfill:categories": "tsx prisma/scripts/backfill-categories.ts",
     "db:seed:categories": "tsx prisma/scripts/seed-categories-assign.ts"
   },

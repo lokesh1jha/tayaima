@@ -1,6 +1,6 @@
-# Docker Setup for Kirana Store
+# Docker Setup for TaYaima
 
-This guide will help you set up the Kirana Store e-commerce application using Docker for the database and optionally the entire application.
+This guide will help you set up the TaYaima e-commerce application using Docker for the database and optionally the entire application.
 
 ## 🐳 Quick Start with Docker
 
@@ -24,7 +24,7 @@ npm run docker:db:down
 npm run docker:full
 
 # Access pgAdmin at http://localhost:5050
-# Email: admin@kiranastore.com
+# Email: admin@tayaima.com
 # Password: admin123
 ```
 
@@ -83,7 +83,7 @@ npm run docker:run
 
 When you run `npm run docker:full`, you can access pgAdmin at:
 - **URL**: http://localhost:5050
-- **Email**: admin@kiranastore.com
+- **Email**: admin@tayaima.com
 - **Password**: admin123
 
 ### Connect to Database in pgAdmin
@@ -91,7 +91,7 @@ When you run `npm run docker:full`, you can access pgAdmin at:
 1. Open pgAdmin
 2. Right-click "Servers" → "Create" → "Server"
 3. **General Tab**:
-   - Name: `Kirana Store DB`
+   - Name: `TaYaima DB`
 4. **Connection Tab**:
    - Host: `postgres` (or `localhost` if connecting from outside Docker)
    - Port: `5432` (internal Docker port)
@@ -248,4 +248,4 @@ services:
 
 ## 🎉 You're Ready!
 
-Your Kirana Store is now running with Docker! The database is containerized and ready for development.
+Your TaYaima store is now running with Docker! The database is containerized and ready for development.

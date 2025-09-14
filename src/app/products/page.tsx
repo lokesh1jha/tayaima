@@ -126,7 +126,7 @@ export default function ProductsPage() {
   return (
     <div className="container py-8">
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-0">
-        {/* Left: Category Sidebar */}
+        {/* Left: Category Sidebar - Desktop */}
         <div className="hidden md:block">
           <Sidebar animate={false} open={true}>
             <SidebarBody className="h-full !px-0 !py-0">
@@ -152,6 +152,27 @@ export default function ProductsPage() {
         <div className="md:pl-0">
           <div className="mb-6">
             <h1 className="text-3xl font-bold mb-4">Our Products</h1>
+            
+            {/* Mobile Category Selector */}
+            <div className="md:hidden mb-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Categories</h3>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {categories.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedCategory(c.id)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition ${
+                      selectedCategory === c.id 
+                        ? "bg-blue-600 text-white shadow-md" 
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="max-w-md">
               <Input
                 type="text"
@@ -172,7 +193,7 @@ export default function ProductsPage() {
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
               {filteredProducts.map((product) => (
                 <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <Link href={`/products/${product.slug}`}>
@@ -190,18 +211,18 @@ export default function ProductsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h3>
+                    <div className="p-2 sm:p-3 md:p-4">
+                      <h3 className="font-semibold text-xs sm:text-sm md:text-lg mb-1 sm:mb-2 line-clamp-2">{product.name}</h3>
                       {product.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 line-clamp-2 hidden sm:block">
                           {product.description}
                         </p>
                       )}
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xl font-bold text-green-600">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
+                        <span className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
                           {formatPrice(Math.min(...product.variants.map(v => v.price)))}
                         </span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-xs sm:text-sm text-gray-500">
                           {getTotalStock(product.variants)} in stock
                         </span>
                       </div>

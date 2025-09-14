@@ -1,4 +1,4 @@
-# Kirana Store - E-commerce Setup Guide
+# TaYaima - E-commerce Setup Guide
 
 ## 🚀 Quick Start
 
@@ -108,7 +108,7 @@ npm run dev
 ## 🔑 Default Admin Account
 
 After seeding the database, you can login with:
-- **Email:** admin@kiranastore.com
+- **Email:** admin@tayaima.com
 - **Password:** admin123
 
 ## 📱 Features Implemented

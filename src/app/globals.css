@@ -11,7 +11,7 @@
   }
 }
 
-/* Kirana Store Theme - CSS Variables */
+/* TaYaima Theme - CSS Variables */
 :root {
   /* Brand Colors */
   --color-primary: #2E7D32;   /* Fresh Green */
@@ -68,7 +68,7 @@ body {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
-/* Kirana Store Component Styles */
+/* TaYaima Component Styles */
 @layer components {
   /* Primary Button - Fresh Green */
   .btn-primary {

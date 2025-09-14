@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 async function main() {
   // Create admin user
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@kiranastore.com' },
+    where: { email: 'admin@tayaima.com' },
     update: {},
     create: {
-      email: 'admin@kiranastore.com',
+      email: 'admin@tayaima.com',
       name: 'Admin User',
       passwordHash: await hash('admin123', 12),
       role: 'ADMIN',
@@ -295,7 +295,7 @@ async function main() {
   }
 
   console.log('Seeding completed successfully!');
-  console.log(`Admin user created: admin@kiranastore.com / admin123`);
+  console.log(`Admin user created: admin@tayaima.com / admin123`);
   console.log(`Created ${categories.length} categories`);
   console.log(`Created ${products.length} products`);
 }

@@ -43,8 +43,8 @@ export default function ProductCard({ product }: { product: Product }) {
     <Link href={`/products/${product.slug}`}
       // onClick={handleClick}
     >
-      <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
-        <div className="aspect-square relative mb-4">
+      <Card className="p-2 sm:p-3 md:p-4 hover:shadow-lg transition-shadow cursor-pointer">
+        <div className="aspect-square relative mb-2 sm:mb-3 md:mb-4">
           <Image
             src={product.images[0] || '/placeholder-product.jpg'}
             alt={product.name}
@@ -52,12 +52,12 @@ export default function ProductCard({ product }: { product: Product }) {
             className="object-cover rounded-lg"
           />
         </div>
-        <h3 className="font-semibold text-lg line-clamp-2">{product.name}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+        <h3 className="font-semibold text-xs sm:text-sm md:text-lg line-clamp-2">{product.name}</h3>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2 hidden sm:block">
           {product.description}
         </p>
-        <div className="mt-3 flex items-center justify-between">
-          <div className="text-lg font-bold">
+        <div className="mt-2 sm:mt-3 flex items-center justify-between">
+          <div className="text-sm sm:text-base md:text-lg font-bold">
             {minPrice === maxPrice 
               ? formatPrice(minPrice)
               : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`

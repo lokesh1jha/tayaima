@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createProductSchema } from "@/lib/validations";
+import { z } from "zod";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions) as any;
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const parsed = createProductSchema.extend({ categoryId: (z) => z?.string?.() ?? undefined } as any);
+    const parsed = createProductSchema.extend({ categoryId: z.string().optional() });
     const data = (parsed as any).parse(body);
 
     const product = await prisma.product.create({

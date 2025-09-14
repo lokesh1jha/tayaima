@@ -36,27 +36,24 @@ export default function Navbar() {
   const isAdmin = (session?.user as any)?.role === "ADMIN";
 
   return (
-    <header className="border-b backdrop-blur sticky top-0 z-40" style={{ 
-      borderColor: 'var(--color-border)', 
-      backgroundColor: 'rgba(250, 250, 250, 0.9)',
-      backdropFilter: 'blur(8px)'
-    }}>
+    <header className="border-b backdrop-blur sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
       <div className="container flex h-16 items-center justify-between">
-        <Link href={ROUTES.HOME} className="font-bold text-xl flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
+        <Link href={ROUTES.HOME} className="font-bold text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
           <span className="text-2xl">🏪</span>
-          Kirana Store
+          TaYaima
         </Link>
         <nav className="flex items-center gap-4">
-          <Link href={ROUTES.PRODUCTS} className="text-sm font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-text-secondary)' }}>
+          {/* Desktop Navigation - Products and Cart */}
+          <Link href={ROUTES.PRODUCTS} className="hidden md:block text-sm font-medium transition-colors hover:opacity-80 text-gray-700 dark:text-gray-300">
             Products
           </Link>
 
-          {/* Cart button is available for everyone, opens right drawer */}
-          <button onClick={openCart} className="relative text-sm font-medium transition-colors hover:opacity-80 flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+          {/* Desktop Cart button */}
+          <button onClick={openCart} className="hidden md:flex relative text-sm font-medium transition-colors hover:opacity-80 items-center gap-1 text-gray-700 dark:text-gray-300">
             <span>🛒</span>
             Cart
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold" style={{ backgroundColor: 'var(--color-accent)' }}>
+              <span className="absolute -top-2 -right-2 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold bg-red-500">
                 {cartCount}
               </span>
             )}
@@ -79,6 +76,27 @@ export default function Navbar() {
                 
                 {showProfileDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    {/* Mobile Navigation Links */}
+                    <div className="md:hidden">
+                      <Link
+                        href={ROUTES.PRODUCTS}
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        🛍️ Products
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          openCart();
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        🛒 Cart {cartCount > 0 && `(${cartCount})`}
+                      </button>
+                      <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    </div>
+                    
                     {!isAdmin && (
                       <>
                         <Link
@@ -121,7 +139,54 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            <Button onClick={() => signIn()} variant="secondary">Login</Button>
+            <>
+              {/* Mobile Menu for Non-authenticated Users */}
+              <div className="md:hidden relative" ref={dropdownRef}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                    ☰
+                  </div>
+                </Button>
+                
+                {showProfileDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <Link
+                      href={ROUTES.PRODUCTS}
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setShowProfileDropdown(false)}
+                    >
+                      🛍️ Products
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        openCart();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      🛒 Cart {cartCount > 0 && `(${cartCount})`}
+                    </button>
+                    <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    <button
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        signIn();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Login
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Desktop Login Button */}
+              <Button onClick={() => signIn()} variant="secondary" className="hidden md:block">Login</Button>
+            </>
           )}
 
           {mounted && (

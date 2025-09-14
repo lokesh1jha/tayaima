@@ -22,6 +22,7 @@ interface Product {
   images: string[];
   variants: ProductVariant[];
   createdAt: string;
+  categoryId?: string | null;
 }
 
 interface Category { id: string; name: string; slug: string }

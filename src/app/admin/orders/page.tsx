@@ -246,7 +246,7 @@ export default function AdminOrdersPage() {
             </table>
             <div class="total">Total: ₹${(order.totalAmount / 100).toFixed(2)}</div>
             <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #ccc; font-style: italic; color: #666;">
-              Thanks for ordering from Kirana Store
+              Thanks for ordering from TaYaima
             </div>
           </div>
         `).join('')}

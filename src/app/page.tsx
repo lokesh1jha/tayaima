@@ -19,27 +19,27 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="container py-20 text-center">
-        <div className="flex justify-center mb-6">
-          <span className="text-8xl">🏪</span>
+      <section className="container py-12 sm:py-16 md:py-20 text-center">
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <span className="text-6xl sm:text-7xl md:text-8xl">🏪</span>
         </div>
-        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight" style={{ color: 'var(--color-primary)' }}>
-          Welcome to Kirana Store
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight" style={{ color: 'var(--color-primary)' }}>
+          Welcome to TaYaima
         </h1>
-        <p className="mt-6 text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="mt-4 sm:mt-6 text-base sm:text-lg max-w-2xl mx-auto px-4" style={{ color: 'var(--color-text-secondary)' }}>
           Your neighborhood's trusted grocery store. Fresh vegetables, daily essentials, and quality products delivered to your doorstep with care.
         </p>
-        <div className="mt-8 flex items-center justify-center gap-4">
-          <Link href="/products"><Button variant="primary">🛒 Shop Now</Button></Link>
-          {!session && <Link href="/signup"><Button variant="secondary">✨ Create Account</Button></Link>}
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
+          <Link href="/products"><Button variant="primary" className="w-full sm:w-auto">🛒 Shop Now</Button></Link>
+          {!session && <Link href="/signup"><Button variant="secondary" className="w-full sm:w-auto">✨ Create Account</Button></Link>}
         </div>
       </section>
 
       {/* Featured Products */}
-      <section className="container py-16">
-        <h2 className="text-3xl font-bold text-center">Featured Products</h2>
-        <p className="text-center text-gray-600 dark:text-gray-300 mt-2">Fresh products delivered to your doorstep</p>
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="container py-12 sm:py-16">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center px-4">Featured Products</h2>
+        <p className="text-center text-gray-600 dark:text-gray-300 mt-2 px-4">Fresh products delivered to your doorstep</p>
+        <div className="mt-10 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
