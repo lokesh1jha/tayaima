@@ -7,9 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/*
-  Auth and Users
-*/
+// Auth and Users
 enum Role {
   USER
   ADMIN
@@ -27,6 +25,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   orders        Order[]
+  carts         Cart[]
+  addresses     Address[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -68,9 +68,7 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-/*
-  E-commerce domain
-*/
+// E-commerce domain
 
 enum Unit {
   PIECE
@@ -79,6 +77,18 @@ enum Unit {
   LITER
   ML
   OTHER
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name])
 }
 
 model Product {
@@ -92,6 +102,12 @@ model Product {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   meta        Json?
+
+  // Category relation (optional for backward compatibility)
+  category     Category? @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+
+  @@index([categoryId])
 }
 
 model ProductVariant {
@@ -106,6 +122,9 @@ model ProductVariant {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   metadata    Json?
+
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
 
   @@index([productId])
 }
@@ -135,8 +154,7 @@ model CartItem {
 }
 
 enum OrderStatus {
-  PENDING
-  CONFIRMED
+  PLACED
   SHIPPED
   DELIVERED
   CANCELLED
@@ -152,7 +170,7 @@ model Order {
   city         String?
   pincode      String?
   totalAmount  Int          // paise
-  status       OrderStatus  @default(PENDING)
+  status       OrderStatus  @default(PLACED)
   paymentMode  String       // e.g. 'COD', 'PHONEPE'
   paymentMeta  Json?
   items        OrderItem[]
@@ -169,4 +187,22 @@ model OrderItem {
   quantity   Int
   unitPrice  Int
   total      Int
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  name       String?
+  phone      String?
+  line1      String
+  line2      String?
+  city       String
+  state      String?
+  pincode    String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
 }

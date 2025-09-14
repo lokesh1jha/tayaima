@@ -2,14 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
 :root {
-  --bg: #ffffff;
-  --fg: #0b0f19;
+  --background: #ffffff;
+  --foreground: #0b0f19;
+  --border: #e5e7eb;
 }
 
 .dark {
-  --bg: #0b0f19;
-  --fg: #ffffff;
+  --background: #0b0f19;
+  --foreground: #ffffff;
+  --border: #27272a;
 }
 
 html, body {
@@ -17,8 +28,8 @@ html, body {
 }
 
 body {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--background);
+  color: var(--foreground);
 }
 
 .container {

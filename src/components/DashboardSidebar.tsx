@@ -5,8 +5,9 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const links = [
-  { href: "/dashboard", label: "Overview" },
-  { href: "/dashboard/billing", label: "Billing" },
+  { href: "/dashboard/profile", label: "Profile" },
+  { href: "/dashboard/orders", label: "My Orders" },
+  { href: "/dashboard/address", label: "Address" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 
@@ -18,7 +19,7 @@ export default function DashboardSidebar() {
         {links.map((l) => (
           <Link
             key={l.href}
-            href={l.href}
+            href={l.href as any}
             className={clsx(
               "rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800",
               pathname === l.href && "bg-gray-100 dark:bg-gray-800 font-medium"

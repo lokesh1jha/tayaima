@@ -2,12 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import type { NextAuthConfig } from "next-auth";
 import { compare } from "bcryptjs";
 
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt" as const },
   pages: {
     signIn: "/login",
   },
@@ -40,7 +39,7 @@ export const authConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         // First time JWT callback is run, user object is available
         token.role = (user as any).role ?? "USER";
@@ -48,7 +47,7 @@ export const authConfig = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user) {
         session.user.id = (token.sub as string) || ((token as any).id as string);
         (session.user as any).role = (token as any).role ?? "USER";
@@ -56,7 +55,7 @@ export const authConfig = {
       return session;
     },
   },
-} satisfies NextAuthConfig;
+};
 
 export const authOptions = authConfig;
 export default authConfig;

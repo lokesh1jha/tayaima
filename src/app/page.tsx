@@ -1,33 +1,62 @@
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import ProductCard from "@/components/ProductCard";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await getServerSession(authOptions);
+  
+  // Fetch featured products
+  const featuredProducts = await prisma.product.findMany({
+    take: 8,
+    include: { variants: true },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <>
       {/* Hero */}
       <section className="container py-20 text-center">
         <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
-          Build your SaaS faster with MySaaS
+          Welcome to Kirana Store
         </h1>
         <p className="mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Next.js 14 App Router, TypeScript, Tailwind, NextAuth, and Prisma. Everything you need to start shipping.
+          Your one-stop shop for all your daily needs. Fresh groceries, household items, and more delivered to your doorstep.
         </p>
         <div className="mt-8 flex items-center justify-center gap-4">
-          <Link href="/signup"><Button>Get started</Button></Link>
-          <Link href="/dashboard"><Button variant="secondary">Live demo</Button></Link>
+          <Link href="/products"><Button>Shop Now</Button></Link>
+          {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="container py-16">
+        <h2 className="text-3xl font-bold text-center">Featured Products</h2>
+        <p className="text-center text-gray-600 dark:text-gray-300 mt-2">Fresh products delivered to your doorstep</p>
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+        <div className="text-center mt-8">
+          <Link href="/products">
+            <Button>View All Products</Button>
+          </Link>
         </div>
       </section>
 
       {/* Features */}
       <section className="container grid sm:grid-cols-2 lg:grid-cols-3 gap-6 py-12">
         {[
-          { title: "Authentication", desc: "Email/password and Google login via NextAuth." },
-          { title: "Database", desc: "Prisma ORM with PostgreSQL and ready-to-use User model." },
-          { title: "UI Kit", desc: "Reusable Button, Input and Card components with dark mode." },
-          { title: "API routes", desc: "Boilerplate endpoints to extend for your app logic." },
-          { title: "Best practices", desc: "SEO metadata, environment setup, and sensible defaults." },
-          { title: "Dashboard", desc: "Protected pages and widgets to kickstart your product." },
+          { title: "Fresh Products", desc: "High-quality groceries and household items sourced fresh daily." },
+          { title: "Fast Delivery", desc: "Quick and reliable delivery to your doorstep within hours." },
+          { title: "Easy Ordering", desc: "Simple and intuitive shopping experience with secure checkout." },
+          { title: "Multiple Payment", desc: "Pay with COD, PhonePe, or other convenient payment methods." },
+          { title: "Order Tracking", desc: "Track your orders in real-time from placement to delivery." },
+          { title: "Customer Support", desc: "24/7 customer support to help with any questions or issues." },
         ].map((f) => (
           <Card key={f.title} className="p-6">
             <h3 className="font-semibold text-lg">{f.title}</h3>
@@ -36,25 +65,25 @@ export default function HomePage() {
         ))}
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="container py-16">
-        <h2 className="text-3xl font-bold text-center">Simple pricing</h2>
-        <p className="text-center text-gray-600 dark:text-gray-300 mt-2">Start for free, upgrade when you grow.</p>
+      {/* Categories */}
+      <section id="categories" className="container py-16">
+        <h2 className="text-3xl font-bold text-center">Shop by Category</h2>
+        <p className="text-center text-gray-600 dark:text-gray-300 mt-2">Find everything you need in one place.</p>
         <div className="mt-10 grid md:grid-cols-3 gap-6">
           {[
-            { name: "Hobby", price: "$0", features: ["1 project", "Community support", "Basic analytics"], cta: "Start free" },
-            { name: "Pro", price: "$19", features: ["Unlimited projects", "Priority support", "Advanced analytics"], cta: "Upgrade" },
-            { name: "Team", price: "$49", features: ["Seat-based pricing", "SSO (soon)", "Role-based access"], cta: "Contact sales" },
+            { name: "Groceries", price: "Fresh & Organic", features: ["Vegetables", "Fruits", "Dairy Products", "Grains & Pulses"], cta: "Shop Groceries" },
+            { name: "Household", price: "Daily Essentials", features: ["Cleaning Supplies", "Personal Care", "Kitchen Items", "Home Decor"], cta: "Shop Household" },
+            { name: "Snacks", price: "Quick Bites", features: ["Biscuits & Cookies", "Chips & Nuts", "Beverages", "Ready to Eat"], cta: "Shop Snacks" },
           ].map((tier) => (
             <Card key={tier.name} className="p-6">
               <div className="flex items-baseline justify-between">
                 <h3 className="text-xl font-semibold">{tier.name}</h3>
-                <span className="text-2xl font-bold">{tier.price}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">{tier.price}</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm">
                 {tier.features.map((ft) => (
                   <li key={ft} className="flex items-center gap-2">
-                    <span className="text-brand-600">✓</span> {ft}
+                    <span className="text-green-600">✓</span> {ft}
                   </li>
                 ))}
               </ul>
@@ -67,12 +96,13 @@ export default function HomePage() {
       {/* CTA */}
       <section className="container py-20 text-center">
         <Card className="p-10">
-          <h3 className="text-2xl font-semibold">Ready to launch your SaaS?</h3>
+          <h3 className="text-2xl font-semibold">Ready to start shopping?</h3>
           <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Create an account and start building. Add payments and subscriptions next.
+            Browse our wide selection of products and get everything you need delivered to your doorstep.
           </p>
-          <div className="mt-6">
-            <Link href="/signup"><Button>Create account</Button></Link>
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <Link href="/products"><Button>Start Shopping</Button></Link>
+            <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>
           </div>
         </Card>
       </section>
