@@ -17,11 +17,32 @@ export async function PATCH(
     const { id: orderId } = await params;
     const body = await req.json();
     const validatedData = validateRequestBody(updateOrderStatusSchema, body);
-    const { status } = validatedData;
+    const { status, cancellationReason } = validatedData;
+
+    // If cancelling, restore stock
+    if (status === "CANCELLED") {
+      const existingOrder = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { items: true },
+      });
+
+      if (existingOrder && existingOrder.status !== "CANCELLED") {
+        // Restore stock for cancelled items
+        for (const item of existingOrder.items) {
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: { stock: { increment: item.quantity } },
+          });
+        }
+      }
+    }
 
     const order = await prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data: { 
+        status,
+        cancellationReason: status === "CANCELLED" ? cancellationReason : null,
+      },
       include: {
         items: {
           include: {

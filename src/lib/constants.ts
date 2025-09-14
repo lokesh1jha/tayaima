@@ -73,3 +73,23 @@ export const NAV_ITEMS = {
     { key: 'settings', label: 'Settings' },
   ],
 } as const;
+
+// Helper functions
+export const UTILS = {
+  // Navigate to a profile tab and update the URL hash
+  navigateToProfileTab: (tab: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.hash = `#${tab}`;
+    }
+  },
+  
+  // Get current profile tab from URL hash
+  getCurrentProfileTab: () => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '');
+      const validTabs = ['orders', 'address', 'personal', 'settings'];
+      return validTabs.includes(hash) ? hash : 'orders';
+    }
+    return 'orders';
+  },
+} as const;

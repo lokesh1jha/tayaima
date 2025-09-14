@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const session = await getServerSession(authOptions) as any;
-  if (!session || !session.user || session.user.role !== "ADMIN") {
-    return new NextResponse("Unauthorized", { status: 403 });
+  if (!session?.user?.role || session.user.role !== "ADMIN") {
+    return new NextResponse("Unauthorized", { status: 401 });
   }
 
   try {
@@ -21,13 +21,20 @@ export async function GET() {
             },
           },
         },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({ orders });
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching admin orders:", error);
     return new NextResponse("Internal server error", { status: 500 });
   }
 }

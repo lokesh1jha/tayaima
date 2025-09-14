@@ -15,6 +15,9 @@ export async function PATCH(
   const { id: orderId } = await params;
 
   try {
+    const body = await req.json();
+    const { reason } = body || {};
+
     // Find the order and verify ownership
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -36,7 +39,10 @@ export async function PATCH(
     // Update order status to CANCELLED
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
-      data: { status: "CANCELLED" },
+      data: { 
+        status: "CANCELLED",
+        cancellationReason: reason || "Cancelled by customer",
+      },
       include: {
         items: {
           include: {

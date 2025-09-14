@@ -161,21 +161,22 @@ enum OrderStatus {
 }
 
 model Order {
-  id           String       @id @default(cuid())
-  userId       String?
-  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  customerName String
-  phone        String
-  address      String
-  city         String?
-  pincode      String?
-  totalAmount  Int          // paise
-  status       OrderStatus  @default(PLACED)
-  paymentMode  String       // e.g. 'COD', 'PHONEPE'
-  paymentMeta  Json?
-  items        OrderItem[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                 String       @id @default(cuid())
+  userId             String?
+  user               User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName       String
+  phone              String
+  address            String
+  city               String?
+  pincode            String?
+  totalAmount        Int          // paise
+  status             OrderStatus  @default(PLACED)
+  paymentMode        String       // e.g. 'COD', 'PHONEPE'
+  paymentMeta        Json?
+  cancellationReason String?      // Optional reason for cancellation
+  items              OrderItem[]
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 }
 
 model OrderItem {

@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import dynamic from "next/dynamic";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
+import { toast } from "sonner";
 
 const AdminProductImagesField = dynamic(() => import("@/components/admin/AdminProductImagesField"), { ssr: false });
 
@@ -39,6 +40,12 @@ export default function AdminProductsPage() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [categorySearch, setCategorySearch] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const productsPerPage = 12;
 
   useEffect(() => {
     fetchProducts();
@@ -46,12 +53,32 @@ export default function AdminProductsPage() {
   }, []);
 
   useEffect(() => {
-    const filtered = products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-  }, [searchTerm, products]);
+    let filtered = products;
+    
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(product => product.categoryId === selectedCategory);
+    }
+    
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Calculate pagination
+    const totalFiltered = filtered.length;
+    setTotalProducts(totalFiltered);
+    setTotalPages(Math.ceil(totalFiltered / productsPerPage));
+    
+    // Apply pagination
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const paginatedProducts = filtered.slice(startIndex, startIndex + productsPerPage);
+    
+    setFilteredProducts(paginatedProducts);
+  }, [searchTerm, products, selectedCategory, currentPage, productsPerPage]);
 
   const fetchProducts = async () => {
     try {
@@ -98,8 +125,8 @@ export default function AdminProductsPage() {
     return variants.reduce((sum, v) => sum + v.stock, 0);
   };
 
-  const deleteProduct = async (productId: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const deleteProduct = async (productId: string, productName: string) => {
+    if (!confirm(`Are you sure you want to delete "${productName}"?`)) return;
     
     try {
       const response = await fetch(`/api/admin/products/${productId}`, {
@@ -108,13 +135,14 @@ export default function AdminProductsPage() {
       
       if (response.ok) {
         setProducts(products.filter(p => p.id !== productId));
-        alert("Product deleted successfully");
+        toast.success(`Product "${productName}" deleted successfully`);
       } else {
-        alert("Failed to delete product");
+        const error = await response.text();
+        toast.error(`Failed to delete product: ${error}`);
       }
     } catch (error) {
       console.error("Error deleting product:", error);
-      alert("Error deleting product");
+      toast.error("Error deleting product");
     }
   };
 
@@ -138,14 +166,78 @@ export default function AdminProductsPage() {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="max-w-md">
-        <Input
-          type="text"
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      {/* Filters */}
+      <div className="flex gap-4 items-end">
+        {/* Category Filter */}
+        <div className="flex-1 max-w-xs">
+          <label className="block text-sm font-medium mb-1">Filter by Category</label>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={categorySearch}
+              onChange={(e) => setCategorySearch(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700"
+            />
+            {categorySearch && (
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                <div
+                  className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => {
+                    setSelectedCategory("");
+                    setCategorySearch("");
+                  }}
+                >
+                  All Categories
+                </div>
+                {categories
+                  .filter(cat => cat.name.toLowerCase().includes(categorySearch.toLowerCase()))
+                  .map(category => (
+                    <div
+                      key={category.id}
+                      className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => {
+                        setSelectedCategory(category.id);
+                        setCategorySearch(category.name);
+                        setCurrentPage(1); // Reset to first page when filtering
+                      }}
+                    >
+                      {category.name}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+          {selectedCategory && (
+            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Filtered by: {categories.find(c => c.id === selectedCategory)?.name}
+              <button
+                onClick={() => {
+                  setSelectedCategory("");
+                  setCategorySearch("");
+                  setCurrentPage(1);
+                }}
+                className="ml-2 text-red-600 hover:text-red-700"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Search */}
+        <div className="flex-1 max-w-md">
+          <label className="block text-sm font-medium mb-1">Search Products</label>
+          <Input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset to first page when searching
+            }}
+          />
+        </div>
       </div>
 
       {/* Products Grid */}
@@ -213,7 +305,7 @@ export default function AdminProductsPage() {
                   </Link>
                   <Button
                     variant="ghost"
-                    onClick={() => deleteProduct(product.id)}
+                    onClick={() => deleteProduct(product.id, product.name)}
                     className="text-red-600 hover:text-red-700"
                   >
                     Delete
@@ -222,6 +314,50 @@ export default function AdminProductsPage() {
               </div>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <Button
+            variant="ghost"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-2"
+          >
+            ←
+          </Button>
+          
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+              <Button
+                key={pageNum}
+                variant={currentPage === pageNum ? "secondary" : "ghost"}
+                onClick={() => setCurrentPage(pageNum)}
+                className="px-3 py-2 min-w-[40px]"
+              >
+                {pageNum}
+              </Button>
+            ))}
+          </div>
+          
+          <Button
+            variant="ghost"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2"
+          >
+            →
+          </Button>
+        </div>
+      )}
+
+      {/* Products Summary */}
+      {totalProducts > 0 && (
+        <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
+          Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} products
+          {selectedCategory && ` in ${categories.find(c => c.id === selectedCategory)?.name}`}
         </div>
       )}
 

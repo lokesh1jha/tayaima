@@ -51,7 +51,8 @@ export const removeFromCartSchema = z.object({
 
 // Order status validation
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"]),
+  status: z.enum(["PLACED", "SHIPPED", "DELIVERED", "CANCELLED"]),
+  cancellationReason: z.string().optional().nullable(),
 });
 
 // User validation schemas

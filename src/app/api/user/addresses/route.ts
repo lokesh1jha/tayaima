@@ -39,15 +39,23 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as any;
   if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
-  const body = await req.json();
-  const { id } = body || {};
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  // Ensure ownership
-  const addr = await prisma.address.findUnique({ where: { id } });
-  if (!addr || addr.userId !== session.user.id) return new NextResponse("Not found", { status: 404 });
-  await prisma.address.delete({ where: { id } });
-  return NextResponse.json({ ok: true });
+  
+  try {
+    const body = await req.json();
+    const { id } = body || {};
+    if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+    
+    // Ensure ownership
+    const addr = await prisma.address.findUnique({ where: { id } });
+    if (!addr || addr.userId !== session.user.id) return new NextResponse("Not found", { status: 404 });
+    
+    await prisma.address.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting address:", error);
+    return new NextResponse("Internal server error", { status: 500 });
+  }
 }
 

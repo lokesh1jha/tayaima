@@ -5,7 +5,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { LoadingSection } from "@/components/ui/LoadingSpinner";
 import { toast } from "sonner";
-import { ROUTES, NAV_ITEMS } from "@/lib/constants";
+import { ROUTES, NAV_ITEMS, UTILS } from "@/lib/constants";
 
 type Props = {
   user: { id?: string; name?: string | null; email?: string | null };
@@ -14,17 +14,7 @@ type Props = {
 const tabs = NAV_ITEMS.PROFILE;
 
 export default function ProfileTabs({ user }: Props) {
-  const initialTab = useMemo(() => {
-    if (typeof window !== "undefined") {
-      const hash = window.location.hash.replace('#', '');
-      // Check if the hash matches any valid tab
-      const validTabs = ['orders', 'address', 'personal', 'settings'];
-      if (validTabs.includes(hash)) {
-        return hash;
-      }
-    }
-    return "orders";
-  }, []);
+  const initialTab = useMemo(() => UTILS.getCurrentProfileTab(), []);
   const [active, setActive] = useState<string>(initialTab);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loadingAddr, setLoadingAddr] = useState(false);
@@ -39,11 +29,8 @@ export default function ProfileTabs({ user }: Props) {
   // Listen for hash changes
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
-      const validTabs = ['orders', 'address', 'personal', 'settings'];
-      if (validTabs.includes(hash)) {
-        setActive(hash);
-      }
+      const currentTab = UTILS.getCurrentProfileTab();
+      setActive(currentTab);
     };
 
     // Listen for hash changes
@@ -136,6 +123,29 @@ export default function ProfileTabs({ user }: Props) {
     }
   };
 
+  const deleteAddress = async (id: string, addressName: string) => {
+    if (!confirm(`Are you sure you want to delete the address "${addressName}"?`)) return;
+    
+    try {
+      const res = await fetch(ROUTES.API.USER_ADDRESSES, { 
+        method: "DELETE", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ id }) 
+      });
+      
+      if (res.ok) {
+        toast.success("Address deleted successfully");
+        await loadAddresses();
+      } else {
+        const error = await res.text();
+        toast.error(`Failed to delete address: ${error}`);
+      }
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      toast.error("Failed to delete address");
+    }
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -156,10 +166,15 @@ export default function ProfileTabs({ user }: Props) {
   };
 
   const cancelOrder = async (orderId: string) => {
+    const reason = prompt("Enter cancellation reason (optional):");
     if (!confirm("Are you sure you want to cancel this order?")) return;
     
     try {
-      const res = await fetch(ROUTES.API.ORDER_CANCEL(orderId), { method: "PATCH" });
+      const res = await fetch(ROUTES.API.ORDER_CANCEL(orderId), { 
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: reason || undefined }),
+      });
       if (res.ok) {
         toast.success("Order cancelled successfully");
         await loadOrders(); // Refresh orders
@@ -178,7 +193,7 @@ export default function ProfileTabs({ user }: Props) {
         {tabs.map((t) => (
           <button
             key={t.key}
-            onClick={() => { setActive(t.key); if (typeof window !== "undefined") window.location.hash = `#${t.key}`; }}
+            onClick={() => { setActive(t.key); UTILS.navigateToProfileTab(t.key); }}
             className={`px-3 py-2 text-sm rounded-md border transition ${
               active === t.key
                 ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700"
@@ -318,8 +333,15 @@ export default function ProfileTabs({ user }: Props) {
                         <div>{a.line1}{a.line2 ? `, ${a.line2}` : ""}</div>
                         <div>{a.city}{a.state ? `, ${a.state}` : ""} {a.pincode || ""}</div>
                       </div>
-                      <div>
+                      <div className="flex gap-2">
                         <Button variant="secondary" onClick={() => setEditAddressId(a.id)}>Edit</Button>
+                        <Button 
+                          variant="ghost" 
+                          onClick={() => deleteAddress(a.id, a.line1)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          Delete
+                        </Button>
                       </div>
                     </div>
 
