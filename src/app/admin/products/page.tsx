@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Card from "@/components/ui/Card";
@@ -9,17 +9,10 @@ import Input from "@/components/ui/Input";
 import dynamic from "next/dynamic";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
 import { toast } from "sonner";
+import ProductVariantManager, { ProductVariant } from "@/components/admin/ProductVariantManager";
+import MetadataManager from "@/components/admin/MetadataManager";
 
 const AdminProductImagesField = dynamic(() => import("@/components/admin/AdminProductImagesField"), { ssr: false });
-
-interface ProductVariant {
-  id: string;
-  unit: string;
-  amount: number;
-  price: number;
-  stock: number;
-  sku?: string;
-}
 
 interface Product {
   id: string;
@@ -42,14 +35,32 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [categorySearch, setCategorySearch] = useState<string>("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const productsPerPage = 12;
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
+  const [metadata, setMetadata] = useState<Record<string, any>>({});
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -169,23 +180,29 @@ export default function AdminProductsPage() {
       {/* Filters */}
       <div className="flex gap-4 items-end">
         {/* Category Filter */}
-        <div className="flex-1 max-w-xs">
+        <div className="flex-1 max-w-xs" ref={categoryDropdownRef}>
           <label className="block text-sm font-medium mb-1">Filter by Category</label>
           <div className="relative">
             <input
               type="text"
               placeholder="Search categories..."
               value={categorySearch}
-              onChange={(e) => setCategorySearch(e.target.value)}
+              onChange={(e) => {
+                setCategorySearch(e.target.value);
+                setShowCategoryDropdown(true);
+              }}
+              onFocus={() => setShowCategoryDropdown(true)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700"
             />
-            {categorySearch && (
+            {showCategoryDropdown && (
               <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 <div
                   className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                   onClick={() => {
                     setSelectedCategory("");
                     setCategorySearch("");
+                    setShowCategoryDropdown(false);
+                    setCurrentPage(1);
                   }}
                 >
                   All Categories
@@ -199,6 +216,7 @@ export default function AdminProductsPage() {
                       onClick={() => {
                         setSelectedCategory(category.id);
                         setCategorySearch(category.name);
+                        setShowCategoryDropdown(false);
                         setCurrentPage(1); // Reset to first page when filtering
                       }}
                     >
@@ -384,26 +402,56 @@ export default function AdminProductsPage() {
                 const slug = (form.elements.namedItem("slug") as HTMLInputElement).value;
                 const description = (form.elements.namedItem("description") as HTMLTextAreaElement).value;
                 const imagesJson = (form.elements.namedItem("imagesJson") as HTMLInputElement)?.value || "[]";
+                const variantsJson = (form.elements.namedItem("variantsJson") as HTMLInputElement)?.value || "[]";
+                const metaJson = (form.elements.namedItem("metaJson") as HTMLInputElement)?.value || "{}";
                 const categoryId = (form.elements.namedItem("categoryId") as HTMLSelectElement).value || undefined;
-                const images = JSON.parse(imagesJson || "[]");
+                
+                try {
+                  const images = JSON.parse(imagesJson || "[]");
+                  const variants = JSON.parse(variantsJson || "[]");
+                  const meta = JSON.parse(metaJson || "{}");
 
-                const res = await fetch("/api/admin/products", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    name,
-                    slug,
-                    description,
-                    images,
-                    variants: [{ unit: "PIECE", amount: 1, price: 10000, stock: 0 }],
-                    categoryId,
-                  }),
-                });
-                if (res.ok) {
-                  setShowAddForm(false);
-                  fetchProducts();
-                } else {
-                  alert("Failed to add product");
+                  // Validation
+                  if (!name.trim()) {
+                    toast.error("Product name is required");
+                    return;
+                  }
+                  if (!slug.trim()) {
+                    toast.error("Product slug is required");
+                    return;
+                  }
+                  if (variants.length === 0) {
+                    toast.error("At least one variant is required");
+                    return;
+                  }
+
+                  const res = await fetch("/api/admin/products", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      name: name.trim(),
+                      slug: slug.trim(),
+                      description: description.trim() || null,
+                      images,
+                      variants,
+                      meta: Object.keys(meta).length > 0 ? meta : null,
+                      categoryId: categoryId || null,
+                    }),
+                  });
+                  
+                  if (res.ok) {
+                    setShowAddForm(false);
+                    setVariants([]);
+                    setMetadata({});
+                    fetchProducts();
+                    toast.success("Product added successfully!");
+                  } else {
+                    const error = await res.json();
+                    toast.error(error.error || "Failed to add product");
+                  }
+                } catch (error) {
+                  console.error("Error adding product:", error);
+                  toast.error("Failed to add product. Please check your input.");
                 }
               }}>
                 <div>
@@ -460,6 +508,22 @@ export default function AdminProductsPage() {
                 <div>
                   <label className="block text-sm font-medium mb-1">Images</label>
                   <AdminProductImagesField />
+                </div>
+
+                {/* Product Variants */}
+                <div>
+                  <ProductVariantManager 
+                    name="variantsJson"
+                    onChange={setVariants}
+                  />
+                </div>
+
+                {/* Product Metadata */}
+                <div>
+                  <MetadataManager 
+                    name="metaJson"
+                    onChange={setMetadata}
+                  />
                 </div>
 
                 <div className="flex gap-4">

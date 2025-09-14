@@ -1,34 +1,305 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
+import { LoadingPage } from "@/components/ui/LoadingSpinner";
 
-export default async function AdminOverviewPage() {
-  const session = await getServerSession(authOptions);
-  // layout.tsx already guards; keeping a soft guard here too
-  if (!session || (session.user as any)?.role !== "ADMIN") return null;
+interface DashboardStats {
+  productsCount: number;
+  ordersCount: number;
+  customersCount: number;
+  adminsCount: number;
+  totalRevenue: number;
+  recentOrders: Array<{
+    id: string;
+    customerName: string;
+    totalAmount: number;
+    status: string;
+    createdAt: string;
+  }>;
+  salesByDay: Array<{
+    date: string;
+    sales: number;
+    orders: number;
+  }>;
+  ordersByStatus: Array<{
+    status: string;
+    count: number;
+  }>;
+  topProducts: Array<{
+    name: string;
+    sales: number;
+    revenue: number;
+  }>;
+}
 
-  const [productsCount, ordersCount, usersCount] = await Promise.all([
-    prisma.product.count(),
-    prisma.order.count(),
-    prisma.user.count(),
-  ]);
+export default function AdminOverviewPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch("/api/admin/dashboard");
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(price / 100);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  if (loading) {
+    return <LoadingPage message="Loading dashboard..." />;
+  }
+
+  if (!stats) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Failed to load dashboard data</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold">Overview</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="text-sm text-gray-600 dark:text-gray-300">Products</div>
-          <div className="text-2xl font-bold">{productsCount}</div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
+          Welcome to your kirana store admin panel
+        </p>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                Total Revenue
+              </p>
+              <p className="text-3xl font-bold text-green-600">
+                {formatPrice(stats.totalRevenue)}
+              </p>
+            </div>
+            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+              <span className="text-2xl">💰</span>
+            </div>
+          </div>
         </Card>
-        <Card className="p-4">
-          <div className="text-sm text-gray-600 dark:text-gray-300">Orders</div>
-          <div className="text-2xl font-bold">{ordersCount}</div>
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                Total Orders
+              </p>
+              <p className="text-3xl font-bold text-blue-600">
+                {stats.ordersCount}
+              </p>
+            </div>
+            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+              <span className="text-2xl">📋</span>
+            </div>
+          </div>
         </Card>
-        <Card className="p-4">
-          <div className="text-sm text-gray-600 dark:text-gray-300">Customers</div>
-          <div className="text-2xl font-bold">{usersCount}</div>
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                Customers
+              </p>
+              <p className="text-3xl font-bold text-purple-600">
+                {stats.customersCount}
+              </p>
+            </div>
+            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
+              <span className="text-2xl">👥</span>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                Products
+              </p>
+              <p className="text-3xl font-bold text-orange-600">
+                {stats.productsCount}
+              </p>
+            </div>
+            <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+              <span className="text-2xl">📦</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Admin Section */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Admin Users</h2>
+          <div className="p-2 bg-red-100 dark:bg-red-900 rounded-full">
+            <span className="text-lg">👨‍💼</span>
+          </div>
+        </div>
+        <div className="text-3xl font-bold text-red-600">
+          {stats.adminsCount}
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+          Total admin users in the system
+        </p>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sales Chart */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Sales Trend (Last 7 Days)</h2>
+          <div className="space-y-3">
+            {stats.salesByDay.map((day, index) => {
+              const maxSales = Math.max(...stats.salesByDay.map(d => d.sales));
+              const percentage = maxSales > 0 ? (day.sales / maxSales) * 100 : 0;
+              
+              return (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <span className="text-sm font-medium w-12">
+                      {formatDate(day.date)}
+                    </span>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right ml-3">
+                    <div className="text-sm font-semibold">
+                      {formatPrice(day.sales)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {day.orders} orders
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Orders by Status */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Orders by Status</h2>
+          <div className="space-y-3">
+            {stats.ordersByStatus.map((status, index) => {
+              const total = stats.ordersByStatus.reduce((sum, s) => sum + s.count, 0);
+              const percentage = total > 0 ? (status.count / total) * 100 : 0;
+              
+              const statusColors: Record<string, string> = {
+                PLACED: "bg-yellow-500",
+                SHIPPED: "bg-blue-500",
+                DELIVERED: "bg-green-500",
+                CANCELLED: "bg-red-500",
+              };
+
+              return (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`w-3 h-3 rounded-full ${statusColors[status.status] || 'bg-gray-500'}`} />
+                    <span className="text-sm font-medium capitalize">
+                      {status.status.toLowerCase()}
+                    </span>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 ml-3">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${statusColors[status.status] || 'bg-gray-500'}`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold ml-3">
+                    {status.count}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
+          <div className="space-y-3">
+            {stats.recentOrders.slice(0, 5).map((order) => (
+              <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div>
+                  <div className="font-medium">{order.customerName}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    {new Date(order.createdAt).toLocaleDateString("en-IN")}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold">{formatPrice(order.totalAmount)}</div>
+                  <div className={`text-xs px-2 py-1 rounded-full ${
+                    order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
+                    order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-800' :
+                    order.status === 'PLACED' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {order.status}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Top Products */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Top Selling Products</h2>
+          <div className="space-y-3">
+            {stats.topProducts.slice(0, 5).map((product, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-sm font-bold">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <div className="font-medium">{product.name}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {product.sales} units sold
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold">{formatPrice(product.revenue)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
     </div>

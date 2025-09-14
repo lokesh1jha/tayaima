@@ -41,14 +41,25 @@ interface Order {
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<string | null>(null);
   const [statusUpdateLoading, setStatusUpdateLoading] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  // Filter orders by status
+  useEffect(() => {
+    if (statusFilter === "ALL") {
+      setFilteredOrders(orders);
+    } else {
+      setFilteredOrders(orders.filter(order => order.status === statusFilter));
+    }
+  }, [orders, statusFilter]);
 
   const fetchOrders = async () => {
     try {
@@ -120,10 +131,10 @@ export default function AdminOrdersPage() {
   };
 
   const selectAllOrders = () => {
-    if (selectedOrders.size === orders.length) {
+    if (selectedOrders.size === filteredOrders.length) {
       setSelectedOrders(new Set());
     } else {
-      setSelectedOrders(new Set(orders.map(o => o.id)));
+      setSelectedOrders(new Set(filteredOrders.map(o => o.id)));
     }
   };
 
@@ -277,12 +288,12 @@ export default function AdminOrdersPage() {
               onClick={() => bulkUpdateStatus("SHIPPED")} 
               variant="warning"
               disabled={!Array.from(selectedOrders).some(id => {
-                const order = orders.find(o => o.id === id);
+                const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED";
               })}
             >
               Mark Shipped ({Array.from(selectedOrders).filter(id => {
-                const order = orders.find(o => o.id === id);
+                const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED";
               }).length})
             </Button>
@@ -290,12 +301,12 @@ export default function AdminOrdersPage() {
               onClick={() => bulkUpdateStatus("DELIVERED")} 
               variant="success"
               disabled={!Array.from(selectedOrders).some(id => {
-                const order = orders.find(o => o.id === id);
+                const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "SHIPPED";
               })}
             >
               Mark Delivered ({Array.from(selectedOrders).filter(id => {
-                const order = orders.find(o => o.id === id);
+                const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "SHIPPED";
               }).length})
             </Button>
@@ -303,12 +314,12 @@ export default function AdminOrdersPage() {
               onClick={() => bulkUpdateStatus("CANCELLED")} 
               variant="error"
               disabled={!Array.from(selectedOrders).some(id => {
-                const order = orders.find(o => o.id === id);
+                const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED" || order?.status === "SHIPPED";
               })}
             >
               Cancel Orders ({Array.from(selectedOrders).filter(id => {
-                const order = orders.find(o => o.id === id);
+                const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED" || order?.status === "SHIPPED";
               }).length})
             </Button>
@@ -319,7 +330,32 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
-      {orders.length === 0 ? (
+      {/* Status Filter */}
+      <div className="flex gap-4 items-center">
+        <label className="text-sm font-medium">Filter by Status:</label>
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setSelectedOrders(new Set()); // Clear selections when filtering
+          }}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700"
+        >
+          <option value="ALL">All Orders ({orders.length})</option>
+          <option value="PLACED">Placed ({orders.filter(o => o.status === "PLACED").length})</option>
+          <option value="SHIPPED">Shipped ({orders.filter(o => o.status === "SHIPPED").length})</option>
+          <option value="DELIVERED">Delivered ({orders.filter(o => o.status === "DELIVERED").length})</option>
+          <option value="CANCELLED">Cancelled ({orders.filter(o => o.status === "CANCELLED").length})</option>
+        </select>
+        
+        {statusFilter !== "ALL" && (
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Showing {filteredOrders.length} {statusFilter.toLowerCase()} orders
+          </span>
+        )}
+      </div>
+
+      {filteredOrders.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-gray-600 dark:text-gray-300">No orders found.</p>
         </Card>
@@ -328,17 +364,17 @@ export default function AdminOrdersPage() {
           <div className="mb-4 flex items-center gap-2">
             <input
               type="checkbox"
-              checked={selectedOrders.size === orders.length && orders.length > 0}
+              checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
               onChange={selectAllOrders}
               className="rounded"
             />
             <label className="text-sm font-medium">
-              Select All ({orders.length} orders)
+              Select All ({filteredOrders.length} orders)
             </label>
           </div>
 
           <div className="space-y-4">
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
