@@ -36,19 +36,27 @@ export default function Navbar() {
   const isAdmin = (session?.user as any)?.role === "ADMIN";
 
   return (
-    <header className="border-b border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/70 backdrop-blur sticky top-0 z-40">
-      <div className="container flex h-14 items-center justify-between">
-        <Link href={ROUTES.HOME} className="font-semibold">
+    <header className="border-b backdrop-blur sticky top-0 z-40" style={{ 
+      borderColor: 'var(--color-border)', 
+      backgroundColor: 'rgba(250, 250, 250, 0.9)',
+      backdropFilter: 'blur(8px)'
+    }}>
+      <div className="container flex h-16 items-center justify-between">
+        <Link href={ROUTES.HOME} className="font-bold text-xl flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
+          <span className="text-2xl">🏪</span>
           Kirana Store
         </Link>
         <nav className="flex items-center gap-4">
-          <Link href={ROUTES.PRODUCTS} className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Products</Link>
+          <Link href={ROUTES.PRODUCTS} className="text-sm font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-text-secondary)' }}>
+            Products
+          </Link>
 
           {/* Cart button is available for everyone, opens right drawer */}
-          <button onClick={openCart} className="relative text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+          <button onClick={openCart} className="relative text-sm font-medium transition-colors hover:opacity-80 flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+            <span>🛒</span>
             Cart
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-3 bg-red-600 text-white text-[10px] rounded-full px-1.5 py-0.5">
+              <span className="absolute -top-2 -right-2 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold" style={{ backgroundColor: 'var(--color-accent)' }}>
                 {cartCount}
               </span>
             )}

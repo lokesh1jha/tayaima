@@ -11,16 +11,47 @@
   }
 }
 
+/* Kirana Store Theme - CSS Variables */
 :root {
-  --background: #ffffff;
-  --foreground: #0b0f19;
-  --border: #e5e7eb;
+  /* Brand Colors */
+  --color-primary: #2E7D32;   /* Fresh Green */
+  --color-secondary: #FFB300; /* Warm Yellow */
+  --color-accent: #F4511E;    /* Spicy Orange */
+
+  /* Backgrounds & Surfaces */
+  --color-background: #FAFAFA; /* Light background */
+  --color-surface: #FFFFFF;    /* Card/containers */
+  --color-border: #E0E0E0;
+
+  /* Text Colors */
+  --color-text-primary: #212121; /* Dark text */
+  --color-text-secondary: #4A4A4A;
+  --color-text-muted: #757575;
+
+  /* State Colors */
+  --color-success: #4CAF50;
+  --color-warning: #FF9800;
+  --color-error: #D32F2F;
+
+  /* Legacy variables for compatibility */
+  --background: var(--color-background);
+  --foreground: var(--color-text-primary);
+  --border: var(--color-border);
 }
 
 .dark {
-  --background: #0b0f19;
-  --foreground: #ffffff;
-  --border: #27272a;
+  /* Dark mode adaptations */
+  --color-background: #121212;
+  --color-surface: #1E1E1E;
+  --color-border: #333333;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #E0E0E0;
+  --color-text-muted: #BDBDBD;
+
+  /* Legacy variables for compatibility */
+  --background: var(--color-background);
+  --foreground: var(--color-text-primary);
+  --border: var(--color-border);
 }
 
 html, body {
@@ -30,8 +61,162 @@ html, body {
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Kirana Store Component Styles */
+@layer components {
+  /* Primary Button - Fresh Green */
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+    background-color: var(--color-primary);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #256528; /* darker shade */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+  }
+
+  /* Secondary Button - Warm Yellow */
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+    background-color: var(--color-secondary);
+    color: var(--color-text-primary);
+  }
+  
+  .btn-secondary:hover {
+    background-color: #E6A000; /* darker shade */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 179, 0, 0.3);
+  }
+
+  /* Accent Button - Spicy Orange */
+  .btn-accent {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+    background-color: var(--color-accent);
+    color: white;
+  }
+  
+  .btn-accent:hover {
+    background-color: #D84315; /* darker shade */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(244, 81, 30, 0.3);
+  }
+
+  /* Success Button */
+  .btn-success {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+    background-color: var(--color-success);
+    color: white;
+  }
+  
+  .btn-success:hover {
+    background-color: #388E3C;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  }
+
+  /* Warning Button */
+  .btn-warning {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+    background-color: var(--color-warning);
+    color: white;
+  }
+  
+  .btn-warning:hover {
+    background-color: #F57C00;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+  }
+
+  /* Error/Danger Button */
+  .btn-error {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
+    background-color: var(--color-error);
+    color: white;
+  }
+  
+  .btn-error:hover {
+    background-color: #C62828;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+  }
+
+  /* Card Styles */
+  .kirana-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .kirana-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Input Styles */
+  .kirana-input {
+    @apply w-full px-3 py-2 rounded-lg border transition-all duration-200;
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+  }
+  
+  .kirana-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  }
+
+  /* Badge Styles */
+  .badge-primary {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+    background-color: rgba(46, 125, 50, 0.1);
+    color: var(--color-primary);
+  }
+  
+  .badge-secondary {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+    background-color: rgba(255, 179, 0, 0.1);
+    color: #E6A000;
+  }
+  
+  .badge-accent {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+    background-color: rgba(244, 81, 30, 0.1);
+    color: var(--color-accent);
+  }
+
+  /* Status Badges */
+  .status-placed {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #1976D2;
+  }
+  
+  .status-shipped {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+    background-color: rgba(255, 179, 0, 0.1);
+    color: var(--color-secondary);
+  }
+  
+  .status-delivered {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--color-success);
+  }
+  
+  .status-cancelled {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+    background-color: rgba(211, 47, 47, 0.1);
+    color: var(--color-error);
+  }
 }

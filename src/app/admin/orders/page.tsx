@@ -254,11 +254,11 @@ export default function AdminOrdersPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PLACED": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "SHIPPED": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "DELIVERED": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "CANCELLED": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+      case "PLACED": return "status-placed";
+      case "SHIPPED": return "status-shipped";
+      case "DELIVERED": return "status-delivered";
+      case "CANCELLED": return "status-cancelled";
+      default: return "badge-primary";
     }
   };
 
@@ -275,7 +275,7 @@ export default function AdminOrdersPage() {
           <div className="flex gap-2">
             <Button 
               onClick={() => bulkUpdateStatus("SHIPPED")} 
-              variant="secondary"
+              variant="warning"
               disabled={!Array.from(selectedOrders).some(id => {
                 const order = orders.find(o => o.id === id);
                 return order?.status === "PLACED";
@@ -288,7 +288,7 @@ export default function AdminOrdersPage() {
             </Button>
             <Button 
               onClick={() => bulkUpdateStatus("DELIVERED")} 
-              variant="secondary"
+              variant="success"
               disabled={!Array.from(selectedOrders).some(id => {
                 const order = orders.find(o => o.id === id);
                 return order?.status === "SHIPPED";
@@ -301,8 +301,7 @@ export default function AdminOrdersPage() {
             </Button>
             <Button 
               onClick={() => bulkUpdateStatus("CANCELLED")} 
-              variant="ghost" 
-              className="text-red-600"
+              variant="error"
               disabled={!Array.from(selectedOrders).some(id => {
                 const order = orders.find(o => o.id === id);
                 return order?.status === "PLACED" || order?.status === "SHIPPED";
@@ -313,7 +312,7 @@ export default function AdminOrdersPage() {
                 return order?.status === "PLACED" || order?.status === "SHIPPED";
               }).length})
             </Button>
-            <Button onClick={printOrders} variant="secondary">
+            <Button onClick={printOrders} variant="accent">
               Print Selected ({selectedOrders.size})
             </Button>
           </div>
@@ -352,7 +351,7 @@ export default function AdminOrdersPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <span className="font-semibold">Order #{order.id.slice(-6)}</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                        <span className={getStatusColor(order.status)}>
                           {order.status}
                         </span>
                       </div>
@@ -379,17 +378,16 @@ export default function AdminOrdersPage() {
                     {order.status === "PLACED" && (
                       <>
                         <Button
-                          variant="secondary"
+                          variant="warning"
                           onClick={() => handleStatusChange(order.id, "SHIPPED")}
                           disabled={statusUpdateLoading === order.id}
                         >
                           Ship
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="error"
                           onClick={() => handleStatusChange(order.id, "CANCELLED")}
                           disabled={statusUpdateLoading === order.id}
-                          className="text-red-600 hover:text-red-700"
                         >
                           Cancel
                         </Button>
@@ -399,17 +397,16 @@ export default function AdminOrdersPage() {
                     {order.status === "SHIPPED" && (
                       <>
                         <Button
-                          variant="secondary"
+                          variant="success"
                           onClick={() => handleStatusChange(order.id, "DELIVERED")}
                           disabled={statusUpdateLoading === order.id}
                         >
                           Deliver
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="error"
                           onClick={() => handleStatusChange(order.id, "CANCELLED")}
                           disabled={statusUpdateLoading === order.id}
-                          className="text-red-600 hover:text-red-700"
                         >
                           Cancel
                         </Button>

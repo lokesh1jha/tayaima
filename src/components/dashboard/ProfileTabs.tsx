@@ -227,20 +227,22 @@ export default function ProfileTabs({ user }: Props) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className={`text-xs capitalize px-2 py-1 rounded ${
+                      <div className={`text-xs capitalize ${
                         o.status === "CANCELLED" 
-                          ? "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200"
+                          ? "status-cancelled"
                           : o.status === "DELIVERED"
-                          ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
-                          : "bg-gray-100 dark:bg-gray-800"
+                          ? "status-delivered"
+                          : o.status === "SHIPPED"
+                          ? "status-shipped"
+                          : "status-placed"
                       }`}>
                         {o.status.toLowerCase()}
                       </div>
                       {o.status === "PLACED" && (
                         <Button 
-                          variant="ghost" 
+                          variant="error" 
                           onClick={() => cancelOrder(o.id)}
-                          className="text-red-600 hover:text-red-700 text-xs px-2 py-1"
+                          className="text-xs px-2 py-1"
                         >
                           Cancel
                         </Button>
@@ -336,9 +338,9 @@ export default function ProfileTabs({ user }: Props) {
                       <div className="flex gap-2">
                         <Button variant="secondary" onClick={() => setEditAddressId(a.id)}>Edit</Button>
                         <Button 
-                          variant="ghost" 
+                          variant="error" 
                           onClick={() => deleteAddress(a.id, a.line1)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          className="text-xs px-2 py-1"
                         >
                           Delete
                         </Button>

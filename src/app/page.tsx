@@ -20,15 +20,18 @@ export default async function HomePage() {
     <>
       {/* Hero */}
       <section className="container py-20 text-center">
-        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
+        <div className="flex justify-center mb-6">
+          <span className="text-8xl">🏪</span>
+        </div>
+        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight" style={{ color: 'var(--color-primary)' }}>
           Welcome to Kirana Store
         </h1>
-        <p className="mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Your one-stop shop for all your daily needs. Fresh groceries, household items, and more delivered to your doorstep.
+        <p className="mt-6 text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
+          Your neighborhood's trusted grocery store. Fresh vegetables, daily essentials, and quality products delivered to your doorstep with care.
         </p>
         <div className="mt-8 flex items-center justify-center gap-4">
-          <Link href="/products"><Button>Shop Now</Button></Link>
-          {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
+          <Link href="/products"><Button variant="primary">🛒 Shop Now</Button></Link>
+          {!session && <Link href="/signup"><Button variant="secondary">✨ Create Account</Button></Link>}
         </div>
       </section>
 

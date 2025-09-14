@@ -14,7 +14,7 @@ export default function Input({ className, label, error, ...props }: InputProps)
       {label && <span className="text-sm text-gray-600 dark:text-gray-300">{label}</span>}
       <input
         className={clsx(
-          "h-10 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 text-sm outline-none focus:ring-2 focus:ring-brand-500",
+          "kirana-input h-10",
           className
         )}
         {...props}
