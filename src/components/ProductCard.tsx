@@ -47,9 +47,10 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="aspect-square relative mb-2 sm:mb-3 md:mb-4">
           <Image
             src={product.images[0] || '/placeholder-product.jpg'}
-            alt={product.name}
+            alt={`${product.name} - Fresh ${product.name.toLowerCase()} available for delivery from TaYaima grocery store`}
             fill
             className="object-cover rounded-lg"
+            loading="lazy"
           />
         </div>
         <h3 className="font-semibold text-xs sm:text-sm md:text-lg line-clamp-2">{product.name}</h3>
