@@ -44,21 +44,30 @@ export default function ImageManager({ images, onChange }: Props) {
     // Delete from storage if it's a managed URL (S3 or local)
     if (imageUrl && (imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') || imageUrl.startsWith('/uploads/'))) {
       try {
+        console.log('Attempting to delete image:', imageUrl);
         const response = await fetch('/api/admin/uploads/delete', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: imageUrl }),
         });
         
+        const result = await response.json();
+        
         if (!response.ok) {
-          console.warn('Failed to delete image from S3:', imageUrl);
+          console.error('Failed to delete image from storage:', result.error || 'Unknown error');
+          alert(`Failed to delete image from storage: ${result.error || 'Unknown error'}`);
+          return; // Don't remove from UI if storage deletion failed
+        } else {
+          console.log('Successfully deleted image from storage:', result.message);
         }
       } catch (error) {
-        console.error('Error deleting image from S3:', error);
+        console.error('Error deleting image from storage:', error);
+        alert('Error deleting image from storage. Please try again.');
+        return; // Don't remove from UI if there was an error
       }
     }
     
-    // Remove from local state regardless of S3 deletion success
+    // Remove from local state only after successful storage deletion
     const next = images.filter((_, i) => i !== idx);
     onChange(next);
   };

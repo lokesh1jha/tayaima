@@ -62,10 +62,24 @@ export class S3StorageProvider implements StorageProvider {
     try {
       if (url.includes('.s3.') || url.includes('amazonaws.com')) {
         const urlObj = new URL(url);
-        return urlObj.pathname.substring(1); // Remove leading slash
+        let pathname = urlObj.pathname.substring(1); // Remove leading slash
+        
+        // Handle different S3 URL formats
+        // For path-style URLs like: https://s3.region.amazonaws.com/bucket/key
+        if (url.includes('s3.') && url.includes('amazonaws.com')) {
+          const pathParts = pathname.split('/');
+          if (pathParts.length > 1 && pathParts[0] === this.config.bucketName) {
+            // Remove bucket name from path for path-style URLs
+            pathname = pathParts.slice(1).join('/');
+          }
+        }
+        
+        // Decode URL components
+        return decodeURIComponent(pathname);
       }
       return null;
-    } catch {
+    } catch (error) {
+      console.error('Error extracting key from URL:', url, error);
       return null;
     }
   }
