@@ -198,7 +198,7 @@ export default function ProductsPage() {
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {filteredProducts.map((product) => {
                 const defaultVariant = product.variants[0];
                 const cartItem = cart?.items.find(i => i.variant.id === defaultVariant?.id);
@@ -235,7 +235,7 @@ export default function ProductsPage() {
                 };
 
                 return (
-                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                     <Link href={`/products/${product.slug}`}>
                       <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
                         {product.images.length > 0 ? (
@@ -260,31 +260,47 @@ export default function ProductsPage() {
                           </div>
                         )}
                       </div>
-                      <div className="p-2 sm:p-3 md:p-4">
-                        <h3 className="font-semibold text-xs sm:text-sm md:text-lg mb-1 sm:mb-2 line-clamp-2">{product.name}</h3>
+                      <div className="p-4 flex flex-col flex-grow">
+                        <h3 className="font-semibold text-sm md:text-base lg:text-lg mb-2 line-clamp-2">{product.name}</h3>
                         {product.description && (
-                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 line-clamp-2 hidden sm:block">
+                          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 flex-grow">
                             {product.description}
                           </p>
                         )}
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
+                        <div className="mt-auto space-y-3">
+                          <div className="text-center">
+                            <span className="text-lg md:text-xl font-bold text-green-600">
                             {formatPrice(Math.min(...product.variants.map(v => v.price)))}
-                          </span>
-                          {/* Cart Controls */}
+                            </span>
+                          </div>
+                          {/* Cart Controls - Full Width */}
                           {qty === 0 ? (
                             <Button
                               variant="secondary"
-                              className="h-8 px-3 text-xs md:h-9 md:px-4 md:text-sm lg:h-10 lg:px-5 whitespace-nowrap"
+                              className="w-full h-10 text-sm font-medium"
                               onClick={handleAdd}
                             >
-                              Add to cart
+                              Add to Cart
                             </Button>
                           ) : (
-                            <div className="flex items-center gap-2 md:gap-3">
-                              <Button className="h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10" variant="ghost" onClick={(e) => handleUpdate(e, qty - 1)}>-</Button>
-                              <span className="min-w-[1.5rem] text-center text-sm md:text-base font-medium md:min-w-[2rem]">{qty}</span>
-                              <Button className="h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10" variant="ghost" onClick={(e) => handleUpdate(e, qty + 1)}>+</Button>
+                            <div className="flex items-center justify-center gap-3">
+                              <Button 
+                                className="h-10 w-10 flex-shrink-0" 
+                                variant="ghost" 
+                                onClick={(e) => handleUpdate(e, qty - 1)}
+                              >
+                                -
+                              </Button>
+                              <span className="min-w-[3rem] text-center text-base font-medium bg-gray-100 dark:bg-gray-800 rounded px-3 py-2">
+                                {qty}
+                              </span>
+                              <Button 
+                                className="h-10 w-10 flex-shrink-0" 
+                                variant="ghost" 
+                                onClick={(e) => handleUpdate(e, qty + 1)}
+                              >
+                                +
+                              </Button>
                             </div>
                           )}
                         </div>

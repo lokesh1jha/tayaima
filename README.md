@@ -114,12 +114,6 @@ Visit `http://localhost:3000` 🎉
 
 See [SETUP.md](./SETUP.md) for detailed setup instructions without Docker.
 
-## 🔑 Default Admin Account
-
-After seeding the database:
-- **Email**: admin@tayaima.com
-- **Password**: admin123
-
 ## 📁 Project Structure
 
 ```
