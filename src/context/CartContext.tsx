@@ -140,8 +140,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       const items = data.items || data.cart?.items || [];
       persist({ sessionId, items });
-      toast.success("Added to cart");
-      setIsOpen(true);
+      // Keep drawer closed per UX request
+      // toast.success("Added to cart");
     } catch (e: any) {
       toast.error(e?.message || "Could not add to cart");
     }

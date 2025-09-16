@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { signUrlsInArray, signUrlsInObject } from "@/lib/urlSigner";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -21,7 +22,9 @@ export async function GET(req: Request) {
       return new NextResponse("Product not found", { status: 404 });
     }
 
-    return NextResponse.json({ data: [product] });
+    // Sign URLs before returning
+    const signedProduct = await signUrlsInObject(product, ['images']);
+    return NextResponse.json({ data: [signedProduct] });
   }
 
   // If slug is provided, return single product
@@ -35,19 +38,24 @@ export async function GET(req: Request) {
       return new NextResponse("Product not found", { status: 404 });
     }
 
-    return NextResponse.json({ data: [product] });
+    // Sign URLs before returning
+    const signedProduct = await signUrlsInObject(product, ['images']);
+    return NextResponse.json({ data: [signedProduct] });
   }
 
   // Filter by category if provided
   if (categoryId) {
     const products = await prisma.product.findMany({
-      where: { categoryId },
+      where: { categoryId: categoryId },
       include: { variants: true },
       orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,
     });
-    return NextResponse.json({ data: products });
+    
+    // Sign URLs before returning
+    const signedProducts = await signUrlsInArray(products, ['images']);
+    return NextResponse.json({ data: signedProducts });
   }
 
   // Otherwise return paginated products
@@ -58,5 +66,7 @@ export async function GET(req: Request) {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ data: products });
+  // Sign URLs before returning
+  const signedProducts = await signUrlsInArray(products, ['images']);
+  return NextResponse.json({ data: signedProducts });
 }

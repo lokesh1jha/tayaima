@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createProductSchema } from "@/lib/validations";
 import { z } from "zod";
+import { signUrlsInObject } from "@/lib/urlSigner";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions) as any;
@@ -37,7 +38,9 @@ export async function POST(req: Request) {
       include: { variants: true, category: true },
     });
 
-    return NextResponse.json(product);
+    // Sign URLs before returning
+    const signedProduct = await signUrlsInObject(product, ['images']);
+    return NextResponse.json(signedProduct);
   } catch (error: any) {
     return NextResponse.json({ error: error?.message ?? "Invalid data" }, { status: 400 });
   }

@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
+import { AlertModal } from "@/components/ui/Modal";
 import { useCart } from "@/context/CartContext";
 import { ROUTES } from "@/lib/constants";
 
@@ -72,6 +73,15 @@ export default function CheckoutPage() {
     city: "",
     pincode: "",
     paymentMode: "COD",
+  });
+  const [errorModal, setErrorModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
   });
 
   useEffect(() => {
@@ -188,11 +198,19 @@ export default function CheckoutPage() {
         router.push(ROUTES.ORDER_DETAIL(order.id) as any);
       } else {
         const error = await response.text();
-        alert(`Order failed: ${error}`);
+        setErrorModal({
+          isOpen: true,
+          title: "Order Failed",
+          message: `Order failed: ${error}`,
+        });
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      alert("Error placing order. Please try again.");
+      setErrorModal({
+        isOpen: true,
+        title: "Error",
+        message: "Error placing order. Please try again.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -448,6 +466,15 @@ export default function CheckoutPage() {
           </div>
         </form>
       </div>
+
+      {/* Error Modal */}
+      <AlertModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+        title={errorModal.title}
+        message={errorModal.message}
+        type="error"
+      />
     </div>
   );
 }

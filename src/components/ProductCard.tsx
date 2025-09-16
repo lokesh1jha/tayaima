@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Card from "./ui/Card";
-import { useSession, signIn } from "next-auth/react";
-import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 interface ProductVariant {
   id: string;
@@ -25,19 +24,11 @@ interface Product {
 
 export default function ProductCard({ product }: { product: Product }) {
   const { data: session } = useSession();
+  const imageUrl = product.images[0] || '/placeholder-product.jpg';
   
   const minPrice = Math.min(...product.variants.map(v => v.price));
   const maxPrice = Math.max(...product.variants.map(v => v.price));
   const formatPrice = (price: number) => `₹${(price / 100).toFixed(2)}`;
-
-  // If you want to require login before viewing details, uncomment below
-  // const handleClick = (e: React.MouseEvent) => {
-  //   if (!session) {
-  //     e.preventDefault();
-  //     toast.info("Please sign in to view product details");
-  //     signIn();
-  //   }
-  // };
 
   return (
     <Link href={`/products/${product.slug}`}
@@ -45,13 +36,23 @@ export default function ProductCard({ product }: { product: Product }) {
     >
       <Card className="p-2 sm:p-3 md:p-4 hover:shadow-lg transition-shadow cursor-pointer">
         <div className="aspect-square relative mb-2 sm:mb-3 md:mb-4">
-          <Image
-            src={product.images[0] || '/placeholder-product.jpg'}
-            alt={`${product.name} - Fresh ${product.name.toLowerCase()} available for delivery from TaYaima grocery store`}
-            fill
-            className="object-cover rounded-lg"
-            loading="lazy"
-          />
+          {imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageUrl}
+              alt={`${product.name} - Fresh ${product.name.toLowerCase()} available for delivery from TaYaima grocery store`}
+              className="w-full h-full object-cover rounded-lg"
+              loading="lazy"
+            />
+          ) : (
+            <Image
+              src={imageUrl}
+              alt={`${product.name} - Fresh ${product.name.toLowerCase()} available for delivery from TaYaima grocery store`}
+              fill
+              className="object-cover rounded-lg"
+              loading="lazy"
+            />
+          )}
         </div>
         <h3 className="font-semibold text-xs sm:text-sm md:text-lg line-clamp-2">{product.name}</h3>
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2 hidden sm:block">

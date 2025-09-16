@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import dynamic from "next/dynamic";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { toast } from "sonner";
 import ProductVariantManager, { ProductVariant } from "@/components/admin/ProductVariantManager";
 import MetadataManager from "@/components/admin/MetadataManager";
@@ -44,6 +45,15 @@ export default function AdminProductsPage() {
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [metadata, setMetadata] = useState<Record<string, any>>({});
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    productId: string;
+    productName: string;
+  }>({
+    isOpen: false,
+    productId: "",
+    productName: "",
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -138,16 +148,22 @@ export default function AdminProductsPage() {
   };
 
   const deleteProduct = async (productId: string, productName: string) => {
-    if (!confirm(`Are you sure you want to delete "${productName}"?`)) return;
-    
+    setDeleteModal({
+      isOpen: true,
+      productId,
+      productName,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
     try {
-      const response = await fetch(`/api/admin/products/${productId}`, {
+      const response = await fetch(`/api/admin/products/${deleteModal.productId}`, {
         method: "DELETE",
       });
       
       if (response.ok) {
-        setProducts(products.filter(p => p.id !== productId));
-        toast.success(`Product "${productName}" deleted successfully`);
+        setProducts(products.filter(p => p.id !== deleteModal.productId));
+        toast.success(`Product "${deleteModal.productName}" deleted successfully`);
       } else {
         const error = await response.text();
         toast.error(`Failed to delete product: ${error}`);
@@ -273,9 +289,9 @@ export default function AdminProductsPage() {
           )}
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
+            <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = `/admin/products/${product.id}`}>
               <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
                 {product.images.length > 0 ? (
                   <Image
@@ -291,43 +307,45 @@ export default function AdminProductsPage() {
                 )}
               </div>
               
-              <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+              <div className="p-3">
+                <h3 className="font-semibold text-sm mb-2 line-clamp-2">
                   {product.name}
                 </h3>
                 
-                {product.description && (
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                    {product.description}
-                  </p>
-                )}
-
-                <div className="space-y-2 mb-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                <div className="space-y-1 mb-3">
+                  <div className="text-xs text-gray-600 dark:text-gray-300">
                     <span className="font-medium">Variants:</span> {product.variants.length}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium">Total Stock:</span> {getTotalStock(product.variants)}
+                  <div className="text-xs text-gray-600 dark:text-gray-300">
+                    <span className="font-medium">Stock:</span> {getTotalStock(product.variants)}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium">Price Range:</span>{" "}
-                    {formatPrice(Math.min(...product.variants.map(v => v.price)))} -{" "}
-                    {formatPrice(Math.max(...product.variants.map(v => v.price)))}
+                  <div className="text-xs text-gray-600 dark:text-gray-300">
+                    <span className="font-medium">Price:</span>{" "}
+                    {formatPrice(Math.min(...product.variants.map(v => v.price)))}
+                    {product.variants.length > 1 && ` - ${formatPrice(Math.max(...product.variants.map(v => v.price)))}`}
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Link href={`/admin/products/${product.id}` as any} className="flex-1">
-                    <Button variant="secondary" className="w-full">
-                      Edit
-                    </Button>
-                  </Link>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="secondary" 
+                    className="flex-1 text-xs py-1 h-7"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = `/admin/products/${product.id}`;
+                    }}
+                  >
+                    Edit
+                  </Button>
                   <Button
                     variant="ghost"
-                    onClick={() => deleteProduct(product.id, product.name)}
-                    className="text-red-600 hover:text-red-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteProduct(product.id, product.name);
+                    }}
+                    className="text-red-600 hover:text-red-700 text-xs py-1 h-7 px-2"
                   >
-                    Delete
+                    Del
                   </Button>
                 </div>
               </div>
@@ -545,6 +563,18 @@ export default function AdminProductsPage() {
           </Card>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteModal.productName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
 }

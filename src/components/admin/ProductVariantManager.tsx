@@ -40,6 +40,13 @@ export default function ProductVariantManager({
       : [{ unit: "PIECE", amount: 1, price: 0, stock: 0, sku: "" }]
   );
 
+  // Update variants when initialVariants changes (for edit mode)
+  useEffect(() => {
+    if (initialVariants.length > 0) {
+      setVariants(initialVariants);
+    }
+  }, [initialVariants]);
+
   useEffect(() => {
     onChange?.(variants);
   }, [variants, onChange]);

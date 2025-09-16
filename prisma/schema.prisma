@@ -112,7 +112,7 @@ model Product {
 
 model ProductVariant {
   id          String   @id @default(cuid())
-  product     Product  @relation(fields: [productId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId   String
   sku         String?  @unique
   unit        Unit

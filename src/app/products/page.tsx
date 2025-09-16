@@ -7,6 +7,9 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
+import { useCart } from "@/context/CartContext";
+import { useSession, signIn } from "next-auth/react";
+import { toast } from "sonner";
 import LoadingSpinner, { LoadingPage, LoadingSection } from "@/components/ui/LoadingSpinner";
 
 interface ProductVariant {
@@ -32,6 +35,8 @@ interface Product {
 interface Category { id: string; name: string; slug: string }
 
 export default function ProductsPage() {
+  const { data: session } = useSession();
+  const { cart, addItem, updateQuantity } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -193,43 +198,101 @@ export default function ProductsPage() {
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
-              {filteredProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <Link href={`/products/${product.slug}`}>
-                    <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                      {product.images.length > 0 ? (
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-gray-400">
-                          No Image
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-2 sm:p-3 md:p-4">
-                      <h3 className="font-semibold text-xs sm:text-sm md:text-lg mb-1 sm:mb-2 line-clamp-2">{product.name}</h3>
-                      {product.description && (
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 line-clamp-2 hidden sm:block">
-                          {product.description}
-                        </p>
-                      )}
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
-                        <span className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
-                          {formatPrice(Math.min(...product.variants.map(v => v.price)))}
-                        </span>
-                        <span className="text-xs sm:text-sm text-gray-500">
-                          {getTotalStock(product.variants)} in stock
-                        </span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
+              {filteredProducts.map((product) => {
+                const defaultVariant = product.variants[0];
+                const cartItem = cart?.items.find(i => i.variant.id === defaultVariant?.id);
+                const qty = cartItem?.quantity || 0;
+
+                const handleAdd = async (e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!defaultVariant) return;
+                  if (!session) {
+                    toast.info("Please sign in to add items to cart");
+                    signIn();
+                    return;
+                  }
+                  await addItem(defaultVariant.id, 1);
+                };
+
+                const handleUpdate = async (e: React.MouseEvent, next: number) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!defaultVariant) return;
+                  if (!session) {
+                    toast.info("Please sign in to modify cart");
+                    signIn();
+                    return;
+                  }
+                  // updateQuantity expects cart item id; find it
+                  const itemId = cartItem?.id;
+                  if (!itemId && next > 0) {
+                    await addItem(defaultVariant.id, next);
+                  } else if (itemId) {
+                    await updateQuantity(itemId, Math.max(0, next));
+                  }
+                };
+
+                return (
+                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <Link href={`/products/${product.slug}`}>
+                      <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
+                        {product.images.length > 0 ? (
+                          product.images[0].includes('.s3.') || product.images[0].includes('amazonaws.com') ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={product.images[0]}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Image
+                              src={product.images[0]}
+                              alt={product.name}
+                              fill
+                              className="object-cover"
+                            />
+                          )
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-gray-400">
+                            No Image
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                </Card>
-              ))}
+                      <div className="p-2 sm:p-3 md:p-4">
+                        <h3 className="font-semibold text-xs sm:text-sm md:text-lg mb-1 sm:mb-2 line-clamp-2">{product.name}</h3>
+                        {product.description && (
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 line-clamp-2 hidden sm:block">
+                            {product.description}
+                          </p>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
+                            {formatPrice(Math.min(...product.variants.map(v => v.price)))}
+                          </span>
+                          {/* Cart Controls */}
+                          {qty === 0 ? (
+                            <Button
+                              variant="secondary"
+                              className="h-8 px-3 text-xs md:h-9 md:px-4 md:text-sm lg:h-10 lg:px-5 whitespace-nowrap"
+                              onClick={handleAdd}
+                            >
+                              Add to cart
+                            </Button>
+                          ) : (
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <Button className="h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10" variant="ghost" onClick={(e) => handleUpdate(e, qty - 1)}>-</Button>
+                              <span className="min-w-[1.5rem] text-center text-sm md:text-base font-medium md:min-w-[2rem]">{qty}</span>
+                              <Button className="h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10" variant="ghost" onClick={(e) => handleUpdate(e, qty + 1)}>+</Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </Card>
+                );
+              })}
             </div>
           )}
           {loadingMore && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 
@@ -9,21 +9,60 @@ type Props = {
   onChange: (images: string[]) => void;
 };
 
+// Simple image component since URLs are now pre-signed from APIs
+function ImagePreview({ src, alt, onRemove }: { src: string; alt: string; onRemove: () => void }) {
+  // Use regular img tag for S3 URLs (signed URLs) to avoid Next.js image optimization issues
+  const isS3Url = src.includes('.s3.') || src.includes('amazonaws.com');
+  
+  return (
+    <div className="relative aspect-square">
+      {isS3Url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img 
+          src={src} 
+          alt={alt} 
+          className="w-full h-full object-cover rounded"
+        />
+      ) : (
+        <Image src={src} alt={alt} fill className="object-cover rounded" />
+      )}
+      <div className="absolute top-2 right-2">
+        <Button variant="ghost" onClick={onRemove} className="text-red-600 h-8 w-8 p-0 bg-white/80 hover:bg-white">
+          ×
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function ImageManager({ images, onChange }: Props) {
   const [uploading, setUploading] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
 
-  const removeAt = (idx: number) => {
+  const removeAt = async (idx: number) => {
+    const imageUrl = images[idx];
+    
+    // Delete from storage if it's a managed URL (S3 or local)
+    if (imageUrl && (imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') || imageUrl.startsWith('/uploads/'))) {
+      try {
+        const response = await fetch('/api/admin/uploads/delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: imageUrl }),
+        });
+        
+        if (!response.ok) {
+          console.warn('Failed to delete image from S3:', imageUrl);
+        }
+      } catch (error) {
+        console.error('Error deleting image from S3:', error);
+      }
+    }
+    
+    // Remove from local state regardless of S3 deletion success
     const next = images.filter((_, i) => i !== idx);
     onChange(next);
   };
 
-  const addUrl = () => {
-    const url = urlInput.trim();
-    if (!url) return;
-    onChange([...images, url]);
-    setUrlInput("");
-  };
 
   const onFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -47,13 +86,11 @@ export default function ImageManager({ images, onChange }: Props) {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {images.map((src, i) => (
           <div key={`${src}-${i}`} className="relative border border-gray-200 dark:border-gray-800 rounded overflow-hidden">
-            <div className="relative aspect-square">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <Image src={src} alt="product" fill className="object-cover" />
-            </div>
-            <div className="p-2 flex justify-end">
-              <Button variant="ghost" onClick={() => removeAt(i)} className="text-red-600">Remove</Button>
-            </div>
+            <ImagePreview 
+              src={src} 
+              alt="product" 
+              onRemove={() => removeAt(i)}
+            />
           </div>
         ))}
       </div>
@@ -64,19 +101,15 @@ export default function ImageManager({ images, onChange }: Props) {
             accept="image/*"
             multiple
             onChange={(e) => onFiles(e.target.files)}
-            className="block w-full text-sm"
+            className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
-          <Button disabled={uploading}>{uploading ? "Uploading..." : "Upload"}</Button>
+          <Button disabled={uploading} className="min-w-[100px]">
+            {uploading ? "Uploading..." : "Upload"}
+          </Button>
         </div>
-        <div className="flex gap-2">
-          <input
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="Paste image URL"
-            className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
-          />
-          <Button type="button" onClick={addUrl}>Add URL</Button>
-        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Only file uploads are supported. Images will be stored securely in S3.
+        </p>
       </div>
     </div>
   );

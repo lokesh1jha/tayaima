@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { signUrlsInObject } from "@/lib/urlSigner";
 
 export async function GET(
   req: Request,
@@ -17,7 +18,10 @@ export async function GET(
     include: { variants: true, category: true },
   });
   if (!product) return new NextResponse("Not found", { status: 404 });
-  return NextResponse.json(product);
+  
+  // Sign URLs before returning
+  const signedProduct = await signUrlsInObject(product, ['images']);
+  return NextResponse.json(signedProduct);
 }
 
 export async function PATCH(
@@ -78,7 +82,12 @@ export async function PATCH(
       });
     });
 
-    return NextResponse.json(updated);
+    // Sign URLs before returning
+    if (!updated) {
+      return NextResponse.json({ error: "Product not found after update" }, { status: 404 });
+    }
+    const signedProduct = await signUrlsInObject(updated, ['images']);
+    return NextResponse.json(signedProduct);
   } catch (e: any) {
     console.error("Error updating product:", e);
     return NextResponse.json({ error: e?.message ?? "Update failed" }, { status: 400 });
@@ -100,20 +109,24 @@ export async function DELETE(
     // First check if product exists
     const product = await prisma.product.findUnique({
       where: { id: productId },
+      include: { variants: true },
     });
 
     if (!product) {
       return new NextResponse("Product not found", { status: 404 });
     }
 
-    // Delete the product (this will cascade delete variants due to foreign key constraints)
+    // Delete the product (variants will be cascade deleted automatically)
     await prisma.product.delete({
       where: { id: productId },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true, 
+      message: `Product "${product.name}" and ${product.variants.length} variant(s) deleted successfully` 
+    });
   } catch (error) {
     console.error("Error deleting product:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    return new NextResponse("Failed to delete product", { status: 500 });
   }
 }

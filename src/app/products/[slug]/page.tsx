@@ -126,12 +126,21 @@ export default function ProductDetailPage() {
         <div className="space-y-4">
           <div className="aspect-square relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
             {product.images.length > 0 ? (
-              <Image
-                src={product.images[selectedImage]}
-                alt={product.name}
-                fill
-                className="object-cover"
-              />
+              product.images[selectedImage].includes('.s3.') || product.images[selectedImage].includes('amazonaws.com') ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={product.images[selectedImage]}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                />
+              )
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400">
                 No Image Available
@@ -149,12 +158,21 @@ export default function ProductDetailPage() {
                     selectedImage === index ? "border-blue-500" : "border-gray-200"
                   }`}
                 >
-                  <Image
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
+                  {image.includes('.s3.') || image.includes('amazonaws.com') ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  )}
                 </button>
               ))}
             </div>
