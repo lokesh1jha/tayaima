@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { toast } from "sonner";
@@ -47,12 +47,27 @@ export default function ProductVariantManager({
     }
   }, [initialVariants]);
 
+  // Debounce onChange calls to prevent excessive updates
+  const debouncedOnChange = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (newVariants: ProductVariant[]) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          onChange?.(newVariants);
+        }, 100); // 100ms debounce
+      };
+    })(),
+    [onChange]
+  );
+
   useEffect(() => {
-    onChange?.(variants);
-  }, [variants, onChange]);
+    debouncedOnChange(variants);
+  }, [variants, debouncedOnChange]);
 
   const addVariant = () => {
     const newVariant: ProductVariant = {
+      id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Temporary ID for new variants
       unit: "PIECE",
       amount: 1,
       price: 0,
@@ -71,9 +86,24 @@ export default function ProductVariantManager({
   };
 
   const updateVariant = (index: number, field: keyof ProductVariant, value: any) => {
+    // Prevent unnecessary updates if value hasn't changed
+    if (variants[index] && variants[index][field] === value) {
+      return;
+    }
+
     const updated = variants.map((variant, i) => {
       if (i === index) {
-        return { ...variant, [field]: value };
+        // Ensure proper type conversion for numeric fields
+        let processedValue = value;
+        if (field === 'price' && typeof value === 'string') {
+          processedValue = parsePrice(value);
+        } else if (field === 'amount' && typeof value === 'string') {
+          processedValue = parseFloat(value) || 0;
+        } else if (field === 'stock' && typeof value === 'string') {
+          processedValue = parseInt(value) || 0;
+        }
+        
+        return { ...variant, [field]: processedValue };
       }
       return variant;
     });
@@ -81,11 +111,20 @@ export default function ProductVariantManager({
   };
 
   const formatPrice = (priceInPaise: number) => {
+    if (typeof priceInPaise !== 'number' || isNaN(priceInPaise)) {
+      return '0.00';
+    }
     return (priceInPaise / 100).toFixed(2);
   };
 
   const parsePrice = (priceString: string) => {
-    const price = parseFloat(priceString) || 0;
+    if (!priceString || priceString.trim() === '') {
+      return 0;
+    }
+    const price = parseFloat(priceString);
+    if (isNaN(price) || price < 0) {
+      return 0;
+    }
     return Math.round(price * 100); // Convert to paise
   };
 
@@ -119,7 +158,7 @@ export default function ProductVariantManager({
       <div className="space-y-4">
         {variants.map((variant, index) => (
           <div
-            key={index}
+            key={variant.id || `variant-${index}`}
             className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800"
           >
             <div className="flex items-center justify-between mb-3">
@@ -162,7 +201,12 @@ export default function ProductVariantManager({
                   step="0.01"
                   min="0.01"
                   value={variant.amount}
-                  onChange={(e) => updateVariant(index, 'amount', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const newValue = parseFloat(e.target.value) || 0;
+                    if (newValue !== variant.amount) {
+                      updateVariant(index, 'amount', newValue);
+                    }
+                  }}
                   className="text-sm"
                   placeholder="1.0"
                   required
@@ -177,7 +221,14 @@ export default function ProductVariantManager({
                   step="0.01"
                   min="0"
                   value={formatPrice(variant.price)}
-                  onChange={(e) => updateVariant(index, 'price', parsePrice(e.target.value))}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    // Only update if the value is different to prevent excessive re-renders
+                    const currentFormatted = formatPrice(variant.price);
+                    if (newValue !== currentFormatted) {
+                      updateVariant(index, 'price', parsePrice(newValue));
+                    }
+                  }}
                   className="text-sm"
                   placeholder="0.00"
                   required
@@ -191,7 +242,12 @@ export default function ProductVariantManager({
                   type="number"
                   min="0"
                   value={variant.stock}
-                  onChange={(e) => updateVariant(index, 'stock', parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const newValue = parseInt(e.target.value) || 0;
+                    if (newValue !== variant.stock) {
+                      updateVariant(index, 'stock', newValue);
+                    }
+                  }}
                   className="text-sm"
                   placeholder="0"
                   required
