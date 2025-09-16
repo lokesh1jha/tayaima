@@ -79,7 +79,9 @@ export class S3StorageProvider implements StorageProvider {
       }
       return null;
     } catch (error) {
-      console.error('Error extracting key from URL:', url, error);
+      // Import logger dynamically to avoid circular dependencies
+      const { logger } = require('./logger');
+      logger.error('Error extracting key from URL', error, { url });
       return null;
     }
   }

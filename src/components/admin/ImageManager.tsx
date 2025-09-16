@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
+import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 type Props = {
   images: string[];
@@ -44,7 +46,9 @@ export default function ImageManager({ images, onChange }: Props) {
     // Delete from storage if it's a managed URL (S3 or local)
     if (imageUrl && (imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') || imageUrl.startsWith('/uploads/'))) {
       try {
-        console.log('Attempting to delete image:', imageUrl);
+        logger.storage('DELETE_ATTEMPT', imageUrl);
+        toast.loading('Deleting image...', { id: `delete-${idx}` });
+        
         const response = await fetch('/api/admin/uploads/delete', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
@@ -54,15 +58,20 @@ export default function ImageManager({ images, onChange }: Props) {
         const result = await response.json();
         
         if (!response.ok) {
-          console.error('Failed to delete image from storage:', result.error || 'Unknown error');
-          alert(`Failed to delete image from storage: ${result.error || 'Unknown error'}`);
+          logger.error('Failed to delete image from storage', null, { 
+            url: imageUrl, 
+            error: result.error,
+            status: response.status 
+          });
+          toast.error(`Failed to delete image: ${result.error || 'Unknown error'}`, { id: `delete-${idx}` });
           return; // Don't remove from UI if storage deletion failed
         } else {
-          console.log('Successfully deleted image from storage:', result.message);
+          logger.storage('DELETE_SUCCESS', imageUrl, { message: result.message });
+          toast.success('Image deleted successfully', { id: `delete-${idx}` });
         }
       } catch (error) {
-        console.error('Error deleting image from storage:', error);
-        alert('Error deleting image from storage. Please try again.');
+        logger.error('Error deleting image from storage', error, { url: imageUrl });
+        toast.error('Error deleting image. Please try again.', { id: `delete-${idx}` });
         return; // Don't remove from UI if there was an error
       }
     }

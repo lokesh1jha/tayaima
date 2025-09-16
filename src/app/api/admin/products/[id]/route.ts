@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { signUrlsInObject } from "@/lib/urlSigner";
 import { createStorageProvider } from "@/lib/storage";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   req: Request,
@@ -97,7 +98,10 @@ export async function PATCH(
     if (Array.isArray(images)) {
       const removedImages = currentProduct.images.filter(img => !images.includes(img));
       if (removedImages.length > 0) {
-        console.log(`Cleaning up ${removedImages.length} removed images from product ${id}`);
+        logger.info('Cleaning up removed images from product update', { 
+          productId: id, 
+          removedCount: removedImages.length 
+        });
         const storage = createStorageProvider();
         
         // Delete removed images in background (don't wait or fail the request)
@@ -107,14 +111,14 @@ export async function PATCH(
               const storageKey = storage.extractKey(imageUrl);
               if (storageKey) {
                 await storage.delete(storageKey);
-                console.log(`Successfully cleaned up removed image: ${storageKey}`);
+                logger.storage('CLEANUP_SUCCESS', storageKey, { productId: id });
               }
             }
           } catch (error) {
-            console.error(`Failed to clean up removed image ${imageUrl}:`, error);
+            logger.error('Failed to clean up removed image', error, { imageUrl, productId: id });
           }
         })).then(() => {
-          console.log(`Completed cleanup of removed images for product ${id}`);
+          logger.info('Completed cleanup of removed images', { productId: id });
         });
       }
     }
@@ -126,7 +130,7 @@ export async function PATCH(
     const signedProduct = await signUrlsInObject(updated, ['images']);
     return NextResponse.json(signedProduct);
   } catch (e: any) {
-    console.error("Error updating product:", e);
+    logger.error("Error updating product", e, { productId: id });
     return NextResponse.json({ error: e?.message ?? "Update failed" }, { status: 400 });
   }
 }
@@ -153,7 +157,11 @@ export async function DELETE(
       return new NextResponse("Product not found", { status: 404 });
     }
 
-    console.log(`Deleting product "${product.name}" with ${product.images.length} images`);
+    logger.info('Deleting product with images', { 
+      productId, 
+      productName: product.name, 
+      imageCount: product.images.length 
+    });
 
     // Delete associated images from storage
     const storage = createStorageProvider();
@@ -169,13 +177,13 @@ export async function DELETE(
             if (storageKey) {
               await storage.delete(storageKey);
               deletedImagesCount++;
-              console.log(`Successfully deleted image: ${storageKey}`);
+              logger.storage('DELETE_SUCCESS', storageKey, { productId });
             } else {
-              console.warn(`Could not extract key from image URL: ${imageUrl}`);
+              logger.warn('Could not extract key from image URL', { imageUrl, productId });
               failedImagesCount++;
             }
           } catch (error) {
-            console.error(`Failed to delete image ${imageUrl}:`, error);
+            logger.error('Failed to delete image during product deletion', error, { imageUrl, productId });
             failedImagesCount++;
           }
         })();
@@ -192,7 +200,13 @@ export async function DELETE(
     });
 
     const message = `Product "${product.name}" and ${product.variants.length} variant(s) deleted successfully. Images: ${deletedImagesCount} deleted, ${failedImagesCount} failed.`;
-    console.log(message);
+    logger.info('Product deletion completed', { 
+      productId, 
+      productName: product.name,
+      variantsDeleted: product.variants.length,
+      imagesDeleted: deletedImagesCount,
+      imagesFailed: failedImagesCount 
+    });
 
     return NextResponse.json({ 
       success: true, 
@@ -205,7 +219,7 @@ export async function DELETE(
       }
     });
   } catch (error) {
-    console.error("Error deleting product:", error);
+    logger.error("Error deleting product", error, { productId });
     return new NextResponse("Failed to delete product", { status: 500 });
   }
 }
