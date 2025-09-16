@@ -198,7 +198,7 @@ export default function ProductsPage() {
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {filteredProducts.map((product) => {
                 const defaultVariant = product.variants[0];
                 const cartItem = cart?.items.find(i => i.variant.id === defaultVariant?.id);
@@ -260,16 +260,16 @@ export default function ProductsPage() {
                           </div>
                         )}
                       </div>
-                      <div className="p-4 flex flex-col flex-grow">
-                        <h3 className="font-semibold text-sm md:text-base lg:text-lg mb-2 line-clamp-2">{product.name}</h3>
+                      <div className="p-2 sm:p-3 md:p-4 flex flex-col flex-grow">
+                        <h3 className="font-semibold text-xs sm:text-sm md:text-base lg:text-lg mb-1 sm:mb-2 line-clamp-2">{product.name}</h3>
                         {product.description && (
-                          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 flex-grow">
+                          <p className="hidden sm:block text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 flex-grow">
                             {product.description}
                           </p>
                         )}
-                        <div className="mt-auto space-y-3">
+                        <div className="mt-auto space-y-2 sm:space-y-3">
                           <div className="text-center">
-                            <span className="text-lg md:text-xl font-bold text-green-600">
+                            <span className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
                             {formatPrice(Math.min(...product.variants.map(v => v.price)))}
                             </span>
                           </div>
@@ -277,25 +277,25 @@ export default function ProductsPage() {
                           {qty === 0 ? (
                             <Button
                               variant="secondary"
-                              className="w-full h-10 text-sm font-medium"
+                              className="w-full h-8 sm:h-9 md:h-10 text-xs sm:text-sm font-medium"
                               onClick={handleAdd}
                             >
                               Add to Cart
                             </Button>
                           ) : (
-                            <div className="flex items-center justify-center gap-3">
+                            <div className="flex items-center justify-center gap-2 sm:gap-3">
                               <Button 
-                                className="h-10 w-10 flex-shrink-0" 
+                                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 flex-shrink-0" 
                                 variant="ghost" 
                                 onClick={(e) => handleUpdate(e, qty - 1)}
                               >
                                 -
                               </Button>
-                              <span className="min-w-[3rem] text-center text-base font-medium bg-gray-100 dark:bg-gray-800 rounded px-3 py-2">
+                              <span className="min-w-[2rem] sm:min-w-[2.5rem] md:min-w-[3rem] text-center text-sm sm:text-base font-medium bg-gray-100 dark:bg-gray-800 rounded px-2 sm:px-3 py-1 sm:py-2">
                                 {qty}
                               </span>
                               <Button 
-                                className="h-10 w-10 flex-shrink-0" 
+                                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 flex-shrink-0" 
                                 variant="ghost" 
                                 onClick={(e) => handleUpdate(e, qty + 1)}
                               >

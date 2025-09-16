@@ -22,6 +22,10 @@ model User {
   passwordHash  String?
   role          Role     @default(USER)
 
+  // Password reset fields
+  resetToken    String?   // Token for password reset
+  resetTokenExpiry DateTime? // Expiry time for reset token
+
   accounts      Account[]
   sessions      Session[]
   orders        Order[]

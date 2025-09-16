@@ -291,8 +291,13 @@ export default function AdminProductsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = `/admin/products/${product.id}`}>
-              <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
+            <div 
+              key={product.id} 
+              className="cursor-pointer" 
+              onClick={() => window.location.href = `/admin/products/${product.id}`}
+            >
+              <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
                 {product.images.length > 0 ? (
                   <Image
                     src={product.images[0]}
@@ -349,7 +354,8 @@ export default function AdminProductsPage() {
                   </Button>
                 </div>
               </div>
-            </Card>
+              </Card>
+            </div>
           ))}
         </div>
       )}
