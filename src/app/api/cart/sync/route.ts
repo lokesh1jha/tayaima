@@ -16,7 +16,7 @@ const CartItemSchema = z.object({
   price: z.number(),
   quantity: z.number().min(1),
   imageUrl: z.string().optional(),
-  maxStock: z.number(),
+  maxStock: z.number().optional(), // Optional - only used for admin reference
 });
 
 const CartSyncSchema = z.object({
