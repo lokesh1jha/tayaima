@@ -1,16 +1,31 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { addToCartSchema, removeFromCartSchema, validateRequestBody } from "@/lib/validations";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const sessionId = url.searchParams.get("sessionId");
-  if (!sessionId) return NextResponse.json({ items: [] });
-
-  const cart = await prisma.cart.findUnique({
-    where: { sessionId },
-    include: { items: { include: { variant: { include: { product: true } } } } },
-  });
+  
+  // Check if user is authenticated
+  const session = await getServerSession(authOptions);
+  
+  let cart = null;
+  
+  if (session?.user?.id) {
+    // For authenticated users, find cart by userId
+    cart = await prisma.cart.findFirst({
+      where: { userId: session.user.id },
+      include: { items: { include: { variant: { include: { product: true } } } } },
+    });
+  } else if (sessionId) {
+    // For guest users, find cart by sessionId
+    cart = await prisma.cart.findUnique({
+      where: { sessionId },
+      include: { items: { include: { variant: { include: { product: true } } } } },
+    });
+  }
 
   return NextResponse.json(cart ?? { items: [] });
 }
@@ -21,11 +36,31 @@ export async function POST(req: Request) {
     const validatedData = validateRequestBody(addToCartSchema, body);
     const { sessionId, variantId, qty } = validatedData;
 
-    let cart = await prisma.cart.upsert({
-      where: { sessionId },
-      create: { sessionId },
-      update: {},
-    });
+    // Check if user is authenticated
+    const session = await getServerSession(authOptions);
+    
+    let cart;
+    if (session?.user?.id) {
+      // For authenticated users, use userId
+      cart = await prisma.cart.findFirst({
+        where: { userId: session.user.id },
+      });
+      if (!cart) {
+        cart = await prisma.cart.create({
+          data: {
+            sessionId: `user_${session.user.id}`,
+            userId: session.user.id,
+          },
+        });
+      }
+    } else {
+      // For guest users, use sessionId
+      cart = await prisma.cart.upsert({
+        where: { sessionId },
+        create: { sessionId },
+        update: {},
+      });
+    }
 
     const variant = await prisma.productVariant.findUnique({ where: { id: variantId } });
     if (!variant) return new NextResponse("Variant not found", { status: 404 });
@@ -68,10 +103,23 @@ export async function DELETE(req: Request) {
     const validatedData = validateRequestBody(removeFromCartSchema, body);
     const { sessionId, itemId } = validatedData;
 
-    const cart = await prisma.cart.findUnique({
-      where: { sessionId },
-      include: { items: true },
-    });
+    // Check if user is authenticated
+    const session = await getServerSession(authOptions);
+    
+    let cart;
+    if (session?.user?.id) {
+      // For authenticated users, find cart by userId
+      cart = await prisma.cart.findFirst({
+        where: { userId: session.user.id },
+        include: { items: true },
+      });
+    } else {
+      // For guest users, find cart by sessionId
+      cart = await prisma.cart.findUnique({
+        where: { sessionId },
+        include: { items: true },
+      });
+    }
 
     if (!cart) {
       return new NextResponse("Cart not found", { status: 404 });

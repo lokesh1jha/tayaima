@@ -31,6 +31,7 @@
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
+    "cookie": "^1.0.2",
     "framer-motion": "^12.23.12",
     "next": "15.5.3",
     "next-auth": "^4.24.11",
