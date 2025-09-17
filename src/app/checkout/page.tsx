@@ -9,7 +9,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
 import { AlertModal } from "@/components/ui/Modal";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { ROUTES } from "@/lib/constants";
 
 interface CartItem {

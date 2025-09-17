@@ -7,7 +7,8 @@ import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
+import { useCartDrawer } from "@/components/cart/CartDrawerProvider";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
 
 interface ProductVariant {
@@ -37,7 +38,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
-  const { addItem, openCart } = useCart();
+  const { addToCart } = useCart();
+  const { openCart } = useCartDrawer();
 
   useEffect(() => {
     if (params.slug) {
@@ -84,11 +86,21 @@ export default function ProductDetailPage() {
     return `${amount}${unitMap[unit] || unit.toLowerCase()}`;
   };
 
-  const addToCart = async () => {
-    if (!selectedVariant) return;
+  const handleAddToCart = async () => {
+    if (!selectedVariant || !product) return;
     setAddingToCart(true);
     try {
-      await addItem(selectedVariant.id, quantity);
+      addToCart({
+        productId: product.id,
+        variantId: selectedVariant.id,
+        productName: product.name,
+        variantUnit: selectedVariant.unit,
+        variantAmount: selectedVariant.amount,
+        price: selectedVariant.price,
+        quantity,
+        maxStock: selectedVariant.stock,
+        imageUrl: product.images[0],
+      });
       openCart();
     } finally {
       setAddingToCart(false);
@@ -244,7 +256,7 @@ export default function ProductDetailPage() {
                   />
                 </div>
                 <Button
-                  onClick={addToCart}
+                  onClick={handleAddToCart}
                   disabled={addingToCart || selectedVariant.stock === 0}
                   className="flex-1"
                 >

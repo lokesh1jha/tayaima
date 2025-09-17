@@ -5,7 +5,8 @@ import Button from "./ui/Button";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
+import { useCartDrawer } from "@/components/cart/CartDrawerProvider";
 import { ROUTES } from "@/lib/constants";
 
 export default function Navbar() {
@@ -14,7 +15,8 @@ export default function Navbar() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const { data: session, status } = useSession();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { openCart, cart } = useCart();
+  const { itemCount } = useCart();
+  const { openCart } = useCartDrawer();
 
   useEffect(() => setMounted(true), []);
 
@@ -32,7 +34,7 @@ export default function Navbar() {
     };
   }, []);
 
-  const cartCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+  const cartCount = itemCount;
   const isAdmin = (session?.user as any)?.role === "ADMIN";
 
   return (

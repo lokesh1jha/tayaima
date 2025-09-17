@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
 import { Toast } from "@/components/ui/toast";
 import CartDrawer from "@/components/CartDrawer";
+import { CartDrawerWrapper } from "@/components/cart/CartDrawerWrapper";
 import StructuredData from "@/components/StructuredData";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -76,7 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
-          <CartDrawer />
+          <CartDrawerWrapper />
           <Toast />
         </Providers>
       </body>

@@ -7,7 +7,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { useSession, signIn } from "next-auth/react";
 import { toast } from "sonner";
 import LoadingSpinner, { LoadingPage, LoadingSection } from "@/components/ui/LoadingSpinner";
@@ -36,7 +36,7 @@ interface Category { id: string; name: string; slug: string }
 
 export default function ProductsPage() {
   const { data: session } = useSession();
-  const { cart, addItem, updateQuantity } = useCart();
+  const { items: cartItems, addToCart, updateCartItem } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -201,7 +201,7 @@ export default function ProductsPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {filteredProducts.map((product) => {
                 const defaultVariant = product.variants[0];
-                const cartItem = cart?.items.find(i => i.variant.id === defaultVariant?.id);
+                const cartItem = cartItems.find(i => i.variantId === defaultVariant?.id);
                 const qty = cartItem?.quantity || 0;
 
                 const handleAdd = async (e: React.MouseEvent) => {
@@ -213,7 +213,17 @@ export default function ProductsPage() {
                     signIn();
                     return;
                   }
-                  await addItem(defaultVariant.id, 1);
+                  addToCart({
+                    productId: product.id,
+                    variantId: defaultVariant.id,
+                    productName: product.name,
+                    variantUnit: defaultVariant.unit,
+                    variantAmount: defaultVariant.amount,
+                    price: defaultVariant.price,
+                    quantity: 1,
+                    maxStock: defaultVariant.stock,
+                    imageUrl: product.images[0],
+                  });
                 };
 
                 const handleUpdate = async (e: React.MouseEvent, next: number) => {
@@ -225,12 +235,20 @@ export default function ProductsPage() {
                     signIn();
                     return;
                   }
-                  // updateQuantity expects cart item id; find it
-                  const itemId = cartItem?.id;
-                  if (!itemId && next > 0) {
-                    await addItem(defaultVariant.id, next);
-                  } else if (itemId) {
-                    await updateQuantity(itemId, Math.max(0, next));
+                  if (!cartItem && next > 0) {
+                    addToCart({
+                      productId: product.id,
+                      variantId: defaultVariant.id,
+                      productName: product.name,
+                      variantUnit: defaultVariant.unit,
+                      variantAmount: defaultVariant.amount,
+                      price: defaultVariant.price,
+                      quantity: next,
+                      maxStock: defaultVariant.stock,
+                      imageUrl: product.images[0],
+                    });
+                  } else if (cartItem) {
+                    updateCartItem({ itemId: cartItem.id, quantity: Math.max(0, next) });
                   }
                 };
 
