@@ -43,10 +43,7 @@ export const useCartStore = create<CartStore>()(
       if (existingItemIndex >= 0) {
         // Update existing item
         const existingItem = get().items[existingItemIndex];
-        const newQuantity = Math.min(
-          existingItem.quantity + quantity,
-          existingItem.maxStock
-        );
+        const newQuantity = existingItem.quantity + quantity;
 
         set(state => ({
           ...state,
@@ -66,9 +63,9 @@ export const useCartStore = create<CartStore>()(
           variantUnit: params.variantUnit,
           variantAmount: params.variantAmount,
           price: params.price,
-          quantity: Math.min(quantity, params.maxStock),
+          quantity: quantity,
           imageUrl: params.imageUrl,
-          maxStock: params.maxStock,
+          maxStock: params.maxStock, // Keep for admin reference if provided
         };
 
         set(state => ({
@@ -113,7 +110,7 @@ export const useCartStore = create<CartStore>()(
         ...state,
         items: state.items.map(item =>
           item.id === itemId
-            ? { ...item, quantity: Math.min(quantity, item.maxStock) }
+            ? { ...item, quantity: quantity }
             : item
         ),
       }));

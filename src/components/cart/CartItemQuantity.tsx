@@ -10,7 +10,6 @@ interface CartItemQuantityProps {
   productId: string;
   variantId: string;
   currentQuantity: number;
-  maxStock: number;
   productName: string;
 }
 
@@ -19,7 +18,6 @@ export const CartItemQuantity = ({
   productId,
   variantId,
   currentQuantity,
-  maxStock,
   productName,
 }: CartItemQuantityProps) => {
   const { updateCartItem, removeFromCart, isLoading } = useCart();
@@ -30,11 +28,6 @@ export const CartItemQuantity = ({
     
     if (newQuantity <= 0) {
       handleRemove();
-      return;
-    }
-
-    if (newQuantity > maxStock) {
-      toast.error(`Only ${maxStock} items available in stock`);
       return;
     }
 
@@ -65,7 +58,7 @@ export const CartItemQuantity = ({
   };
 
   const canDecrease = currentQuantity > 1;
-  const canIncrease = currentQuantity < maxStock;
+  const canIncrease = true; // Always allow increasing quantity
   const isButtonDisabled = isUpdating || isLoading;
 
   return (

@@ -98,7 +98,6 @@ export default function ProductDetailPage() {
         variantAmount: selectedVariant.amount,
         price: selectedVariant.price,
         quantity,
-        maxStock: selectedVariant.stock,
         imageUrl: product.images[0],
       });
       openCart();

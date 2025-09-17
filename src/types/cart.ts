@@ -8,7 +8,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   imageUrl?: string;
-  maxStock: number;
+  maxStock?: number; // Optional - only used in admin
 }
 
 export interface CartState {
@@ -50,7 +50,7 @@ export interface AddToCartParams {
   price: number;
   quantity: number;
   imageUrl?: string;
-  maxStock: number;
+  maxStock?: number; // Optional - only used in admin
 }
 
 export interface UpdateCartItemParams {

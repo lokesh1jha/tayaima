@@ -221,7 +221,6 @@ export default function ProductsPage() {
                     variantAmount: defaultVariant.amount,
                     price: defaultVariant.price,
                     quantity: 1,
-                    maxStock: defaultVariant.stock,
                     imageUrl: product.images[0],
                   });
                 };
@@ -244,7 +243,6 @@ export default function ProductsPage() {
                       variantAmount: defaultVariant.amount,
                       price: defaultVariant.price,
                       quantity: next,
-                      maxStock: defaultVariant.stock,
                       imageUrl: product.images[0],
                     });
                   } else if (cartItem) {

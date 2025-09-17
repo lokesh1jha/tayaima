@@ -77,7 +77,6 @@ export default function CartDrawer({ isOpen, closeCart }: CartDrawerProps) {
                         productId={item.productId}
                         variantId={item.variantId}
                         currentQuantity={item.quantity}
-                        maxStock={item.maxStock}
                         productName={item.productName}
                       />
                     </div>

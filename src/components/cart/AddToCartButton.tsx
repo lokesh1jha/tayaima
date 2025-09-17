@@ -13,7 +13,6 @@ interface AddToCartButtonProps {
   variantUnit: string;
   variantAmount: number;
   price: number;
-  maxStock: number;
   imageUrl?: string;
   className?: string;
   disabled?: boolean;
@@ -27,24 +26,15 @@ export const AddToCartButton = ({
   variantUnit,
   variantAmount,
   price,
-  maxStock,
   imageUrl,
   className,
   disabled,
   children = 'Add to Cart',
 }: AddToCartButtonProps) => {
-  const { addToCart, getItemQuantity, isLoading } = useCart();
+  const { addToCart, isLoading } = useCart();
   const [isAdding, setIsAdding] = useState(false);
 
-  const currentQuantity = getItemQuantity(productId, variantId);
-  const canAddMore = currentQuantity < maxStock;
-
   const handleAddToCart = async () => {
-    if (!canAddMore) {
-      toast.error('Maximum stock reached for this item');
-      return;
-    }
-
     setIsAdding(true);
 
     try {
@@ -56,7 +46,6 @@ export const AddToCartButton = ({
         variantAmount,
         price,
         quantity: 1,
-        maxStock,
         imageUrl,
       };
 
@@ -71,7 +60,7 @@ export const AddToCartButton = ({
     }
   };
 
-  const isButtonDisabled = disabled || isAdding || isLoading || !canAddMore;
+  const isButtonDisabled = disabled || isAdding || isLoading;
 
   return (
     <Button

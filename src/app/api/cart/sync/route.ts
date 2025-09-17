@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Validate that all products and variants exist and have sufficient stock
+      // Validate that all products and variants exist (no stock validation for users)
       const productVariantChecks = await Promise.all(
         validatedData.items.map(async (item) => {
           const variant = await tx.productVariant.findUnique({
@@ -77,12 +77,6 @@ export async function POST(request: NextRequest) {
 
           if (variant.product.id !== item.productId) {
             throw new Error(`Variant ${item.variantId} does not belong to product ${item.productId}`);
-          }
-
-          if (variant.stock < item.quantity) {
-            throw new Error(
-              `Insufficient stock for ${variant.product.name}. Available: ${variant.stock}, Requested: ${item.quantity}`
-            );
           }
 
           return {

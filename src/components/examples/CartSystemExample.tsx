@@ -24,7 +24,6 @@ export const CartSystemExample = () => {
     variantUnit: 'KG',
     variantAmount: 1,
     price: 8000, // 80.00 INR in paise
-    maxStock: 50,
     imageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500&h=500&fit=crop'
   };
 
@@ -60,7 +59,6 @@ export const CartSystemExample = () => {
             variantUnit={exampleProduct.variantUnit}
             variantAmount={exampleProduct.variantAmount}
             price={exampleProduct.price}
-            maxStock={exampleProduct.maxStock}
             imageUrl={exampleProduct.imageUrl}
           />
         </div>
@@ -86,7 +84,6 @@ export const CartSystemExample = () => {
                   productId={item.productId}
                   variantId={item.variantId}
                   currentQuantity={item.quantity}
-                  maxStock={item.maxStock}
                   productName={item.productName}
                 />
               </div>
