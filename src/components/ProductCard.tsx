@@ -78,12 +78,6 @@ export default function ProductCard({ product }: { product: Product }) {
         <h3 className="font-semibold text-xs sm:text-sm md:text-lg line-clamp-2">{product.name}</h3>
       </Link>
 
-      {product.description && (
-        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2 hidden sm:block">
-          {product.description}
-        </p>
-      )}
-
       {/* Variant selector */}
       {product.variants.length > 1 && (
         <div className="mt-2 flex flex-wrap gap-1.5">

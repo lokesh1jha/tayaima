@@ -113,7 +113,7 @@ export default function ProductsPage() {
   // helpers no longer needed here as ProductCard shows price and variants
 
   return (
-    <div className="container py-8">
+    <div className="container max-w-screen-2xl py-8">
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-0">
         {/* Left: Category Sidebar - Desktop */}
         <div className="hidden md:block">
@@ -182,7 +182,7 @@ export default function ProductsPage() {
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
