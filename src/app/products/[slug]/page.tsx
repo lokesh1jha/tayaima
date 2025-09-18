@@ -218,7 +218,7 @@ export default function ProductDetailPage() {
                   >
                     <div className="font-medium">{formatUnit(variant.unit, variant.amount)}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-300">
-                      {formatPrice(variant.price)} • {variant.stock} in stock
+                      {formatPrice(variant.price)}
                     </div>
                   </button>
                 ))}
@@ -232,9 +232,6 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-4">
                 <span className="text-3xl font-bold text-green-600">
                   {formatPrice(selectedVariant.price)}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {selectedVariant.stock} in stock
                 </span>
               </div>
 
@@ -259,7 +256,7 @@ export default function ProductDetailPage() {
                   disabled={addingToCart || selectedVariant.stock === 0}
                   className="flex-1"
                 >
-                  {addingToCart ? "Adding..." : selectedVariant.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                  {addingToCart ? "Adding..." : selectedVariant.stock === 0 ? "Unavailable" : "Add to Cart"}
                 </Button>
               </div>
             </div>
@@ -271,7 +268,6 @@ export default function ProductDetailPage() {
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
               <div>SKU: {selectedVariant?.sku || "N/A"}</div>
               <div>Available variants: {product.variants.length}</div>
-              <div>Total stock: {product.variants.reduce((sum, v) => sum + v.stock, 0)}</div>
             </div>
           </Card>
         </div>

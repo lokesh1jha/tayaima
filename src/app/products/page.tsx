@@ -1,16 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
-import { useCart } from "@/hooks/useCart";
-import { useSession, signIn } from "next-auth/react";
-import { toast } from "sonner";
-import LoadingSpinner, { LoadingPage, LoadingSection } from "@/components/ui/LoadingSpinner";
+import LoadingSpinner, { LoadingPage } from "@/components/ui/LoadingSpinner";
+import ProductCard from "@/components/ProductCard";
 
 interface ProductVariant {
   id: string;
@@ -25,7 +20,7 @@ interface Product {
   id: string;
   name: string;
   slug: string;
-  description?: string;
+  description: string | null;
   images: string[];
   variants: ProductVariant[];
   createdAt: string;
@@ -35,8 +30,6 @@ interface Product {
 interface Category { id: string; name: string; slug: string }
 
 export default function ProductsPage() {
-  const { data: session } = useSession();
-  const { items: cartItems, addToCart, updateCartItem } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,16 +110,7 @@ export default function ProductsPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [page, hasMore, loadingMore, selectedCategory]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(price / 100);
-  };
-
-  const getTotalStock = (variants: ProductVariant[]) => {
-    return variants.reduce((sum, v) => sum + v.stock, 0);
-  };
+  // helpers no longer needed here as ProductCard shows price and variants
 
   return (
     <div className="container py-8">
@@ -199,132 +183,9 @@ export default function ProductsPage() {
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-              {filteredProducts.map((product) => {
-                const defaultVariant = product.variants[0];
-                const cartItem = cartItems.find(i => i.variantId === defaultVariant?.id);
-                const qty = cartItem?.quantity || 0;
-
-                const handleAdd = async (e: React.MouseEvent) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!defaultVariant) return;
-                  if (!session) {
-                    toast.info("Please sign in to add items to cart");
-                    signIn();
-                    return;
-                  }
-                  addToCart({
-                    productId: product.id,
-                    variantId: defaultVariant.id,
-                    productName: product.name,
-                    variantUnit: defaultVariant.unit,
-                    variantAmount: defaultVariant.amount,
-                    price: defaultVariant.price,
-                    quantity: 1,
-                    imageUrl: product.images[0],
-                  });
-                };
-
-                const handleUpdate = async (e: React.MouseEvent, next: number) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!defaultVariant) return;
-                  if (!session) {
-                    toast.info("Please sign in to modify cart");
-                    signIn();
-                    return;
-                  }
-                  if (!cartItem && next > 0) {
-                    addToCart({
-                      productId: product.id,
-                      variantId: defaultVariant.id,
-                      productName: product.name,
-                      variantUnit: defaultVariant.unit,
-                      variantAmount: defaultVariant.amount,
-                      price: defaultVariant.price,
-                      quantity: next,
-                      imageUrl: product.images[0],
-                    });
-                  } else if (cartItem) {
-                    updateCartItem({ itemId: cartItem.id, quantity: Math.max(0, next) });
-                  }
-                };
-
-                return (
-                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
-                    <Link href={`/products/${product.slug}`}>
-                      <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                        {product.images.length > 0 ? (
-                          product.images[0].includes('.s3.') || product.images[0].includes('amazonaws.com') ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Image
-                              src={product.images[0]}
-                              alt={product.name}
-                              fill
-                              className="object-cover"
-                            />
-                          )
-                        ) : (
-                          <div className="flex items-center justify-center h-full text-gray-400">
-                            No Image
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-2 sm:p-3 md:p-4 flex flex-col flex-grow">
-                        <h3 className="font-semibold text-xs sm:text-sm md:text-base lg:text-lg mb-1 sm:mb-2 line-clamp-2">{product.name}</h3>
-                        {product.description && (
-                          <p className="hidden sm:block text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 flex-grow">
-                            {product.description}
-                          </p>
-                        )}
-                        <div className="mt-auto space-y-2 sm:space-y-3">
-                          <div className="text-center">
-                            <span className="text-sm sm:text-lg md:text-xl font-bold text-green-600">
-                            {formatPrice(Math.min(...product.variants.map(v => v.price)))}
-                            </span>
-                          </div>
-                          {/* Cart Controls - Full Width */}
-                          {qty === 0 ? (
-                            <Button
-                              variant="secondary"
-                              className="w-full h-8 sm:h-9 md:h-10 text-xs sm:text-sm font-medium"
-                              onClick={handleAdd}
-                            >
-                              Add to Cart
-                            </Button>
-                          ) : (
-                            <div className="flex items-center justify-center gap-2 sm:gap-3">
-                              <Button 
-                                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 flex-shrink-0" 
-                                variant="ghost" 
-                                onClick={(e) => handleUpdate(e, qty - 1)}
-                              >
-                                -
-                              </Button>
-                              <span className="min-w-[2rem] sm:min-w-[2.5rem] md:min-w-[3rem] text-center text-sm sm:text-base font-medium bg-gray-100 dark:bg-gray-800 rounded px-2 sm:px-3 py-1 sm:py-2">
-                                {qty}
-                              </span>
-                              <Button 
-                                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 flex-shrink-0" 
-                                variant="ghost" 
-                                onClick={(e) => handleUpdate(e, qty + 1)}
-                              >
-                                +
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  </Card>
-                );
-              })}
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
           )}
           {loadingMore && (

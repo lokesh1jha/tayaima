@@ -2,9 +2,16 @@
 
 import { useCart } from '@/hooks/useCart';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { useSession } from 'next-auth/react';
 
 export const CartSyncIndicator = () => {
   const { syncStatus, isRetrying } = useCart();
+  const { data: session } = useSession();
+
+  // Hide indicator entirely for guests
+  if (!session?.user?.id) {
+    return null;
+  }
 
   if (syncStatus === 'idle') {
     return null;

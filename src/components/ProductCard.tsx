@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Card from "./ui/Card";
-import { useSession } from "next-auth/react";
+import Button from "./ui/Button";
+import { AddToCartButton } from "./cart/AddToCartButton";
 
 interface ProductVariant {
   id: string;
@@ -23,18 +25,37 @@ interface Product {
 }
 
 export default function ProductCard({ product }: { product: Product }) {
-  const { data: session } = useSession();
   const imageUrl = product.images[0] || '/placeholder-product.jpg';
-  
+
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+    product.variants[0]?.id || null
+  );
+
+  const selectedVariant = useMemo(() => {
+    return product.variants.find(v => v.id === selectedVariantId) || product.variants[0];
+  }, [product.variants, selectedVariantId]);
+
   const minPrice = Math.min(...product.variants.map(v => v.price));
   const maxPrice = Math.max(...product.variants.map(v => v.price));
-  const formatPrice = (price: number) => `₹${(price / 100).toFixed(2)}`;
+
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(price / 100);
+
+  const formatUnit = (unit: string, amount: number) => {
+    const unitMap: { [key: string]: string } = {
+      PIECE: "piece",
+      KG: "kg",
+      G: "g",
+      LITER: "L",
+      ML: "ml",
+      OTHER: "unit",
+    };
+    return `${amount}${unitMap[unit] || unit.toLowerCase()}`;
+  };
 
   return (
-    <Link href={`/products/${product.slug}`}
-      // onClick={handleClick}
-    >
-      <Card className="p-2 sm:p-3 md:p-4 hover:shadow-lg transition-shadow cursor-pointer">
+    <Card className="p-2 sm:p-3 md:p-4 hover:shadow-lg transition-shadow">
+      <Link href={`/products/${product.slug}`} className="block">
         <div className="aspect-square relative mb-2 sm:mb-3 md:mb-4">
           {imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -55,18 +76,59 @@ export default function ProductCard({ product }: { product: Product }) {
           )}
         </div>
         <h3 className="font-semibold text-xs sm:text-sm md:text-lg line-clamp-2">{product.name}</h3>
+      </Link>
+
+      {product.description && (
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2 hidden sm:block">
           {product.description}
         </p>
-        <div className="mt-2 sm:mt-3 flex items-center justify-between">
-          <div className="text-sm sm:text-base md:text-lg font-bold">
-            {minPrice === maxPrice 
-              ? formatPrice(minPrice)
-              : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
-            }
-          </div>
+      )}
+
+      {/* Variant selector */}
+      {product.variants.length > 1 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {product.variants.map((variant) => (
+            <button
+              key={variant.id}
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedVariantId(variant.id);
+              }}
+              className={`px-2 py-1 rounded-md border text-xs sm:text-sm transition-colors ${
+                selectedVariant?.id === variant.id
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              {formatUnit(variant.unit, variant.amount)}
+            </button>
+          ))}
         </div>
-      </Card>
-    </Link>
+      )}
+
+      <div className="mt-2 sm:mt-3 flex items-center justify-between">
+        <div className="text-sm sm:text-base md:text-lg font-bold text-green-600">
+          {selectedVariant
+            ? formatPrice(selectedVariant.price)
+            : minPrice === maxPrice
+              ? formatPrice(minPrice)
+              : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`}
+        </div>
+        {selectedVariant && (
+          <AddToCartButton
+            productId={product.id}
+            variantId={selectedVariant.id}
+            productName={product.name}
+            variantUnit={selectedVariant.unit}
+            variantAmount={selectedVariant.amount}
+            price={selectedVariant.price}
+            imageUrl={product.images[0]}
+            className="h-8 sm:h-9 text-xs sm:text-sm"
+          >
+            Add
+          </AddToCartButton>
+        )}
+      </div>
+    </Card>
   );
 }

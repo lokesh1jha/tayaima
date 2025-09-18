@@ -1,4 +1,5 @@
 import { CartState, CartSyncRequest, CartSyncResponse, CartSyncAction } from '@/types/cart';
+import { getSession } from 'next-auth/react';
 
 interface RetryConfig {
   maxRetries: number;
@@ -85,6 +86,18 @@ class CartSyncManager {
 
     if (!this.isOnline) {
       console.log('Device offline, queuing sync for later');
+      return;
+    }
+
+    // Skip sync if user is not authenticated
+    try {
+      const session = await getSession();
+      if (!session?.user?.id) {
+        // Not logged in; do not sync cart to server
+        return;
+      }
+    } catch (e) {
+      // If session check fails for any reason, do not attempt sync
       return;
     }
 
