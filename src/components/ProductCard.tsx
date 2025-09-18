@@ -24,7 +24,12 @@ interface Product {
   variants: ProductVariant[];
 }
 
-export default function ProductCard({ product }: { product: Product }) {
+interface ProductCardProps {
+  product: Product;
+  compact?: boolean;
+}
+
+export default function ProductCard({ product, compact = false }: ProductCardProps) {
   const imageUrl = product.images[0] || '/placeholder-product.jpg';
 
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
@@ -54,9 +59,9 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <Card className="p-2 sm:p-3 md:p-4 hover:shadow-lg transition-shadow">
+    <Card className={`${compact ? 'p-2 sm:p-2' : 'p-2 sm:p-3 md:p-4'} hover:shadow-lg transition-shadow`}>
       <Link href={`/products/${product.slug}`} className="block">
-        <div className="aspect-square relative mb-2 sm:mb-3 md:mb-4">
+        <div className={`${compact ? 'mb-2' : 'mb-2 sm:mb-3 md:mb-4'} aspect-square relative`}>
           {imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -75,12 +80,12 @@ export default function ProductCard({ product }: { product: Product }) {
             />
           )}
         </div>
-        <h3 className="font-semibold text-xs sm:text-sm md:text-lg line-clamp-2">{product.name}</h3>
+        <h3 className={`font-semibold ${compact ? 'text-xs sm:text-sm' : 'text-xs sm:text-sm md:text-lg'} line-clamp-2`}>{product.name}</h3>
       </Link>
 
       {/* Variant selector */}
       {product.variants.length > 1 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className={`${compact ? 'mt-2 gap-1' : 'mt-2'} flex flex-wrap gap-1.5`}>
           {product.variants.map((variant) => (
             <button
               key={variant.id}
@@ -100,8 +105,8 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       )}
 
-      <div className="mt-2 sm:mt-3 flex items-center justify-between">
-        <div className="text-sm sm:text-base md:text-lg font-bold text-green-600">
+      <div className={`${compact ? 'mt-2' : 'mt-2 sm:mt-3'} flex items-center justify-between`}>
+        <div className={`${compact ? 'text-sm' : 'text-sm sm:text-base md:text-lg'} font-bold text-green-600`}>
           {selectedVariant
             ? formatPrice(selectedVariant.price)
             : minPrice === maxPrice
@@ -117,7 +122,7 @@ export default function ProductCard({ product }: { product: Product }) {
             variantAmount={selectedVariant.amount}
             price={selectedVariant.price}
             imageUrl={product.images[0]}
-            className="h-8 sm:h-9 text-xs sm:text-sm"
+            className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'}`}
           >
             Add
           </AddToCartButton>

@@ -70,9 +70,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
       </head>
-      <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}>
+      <body className={`${inter.className}`}>
         <Providers>
-          <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
+          <div className="min-h-screen flex flex-col" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />

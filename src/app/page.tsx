@@ -11,89 +11,109 @@ export default async function HomePage() {
   
   // Fetch featured products
   const featuredProducts = await prisma.product.findMany({
-    take: 8,
+    take: 12,
     include: { variants: true },
     orderBy: { createdAt: "desc" },
   });
 
+  // Fetch categories for chips and sections
+  const categories = await prisma.category.findMany({
+    take: 10,
+    orderBy: { name: "asc" },
+  });
+
+  // Prepare a few category sections with products
+  const categorySections = await Promise.all(
+    categories.slice(0, 3).map(async (category) => {
+      const products = await prisma.product.findMany({
+        where: { categoryId: category.id },
+        include: { variants: true },
+        take: 10,
+        orderBy: { createdAt: "desc" },
+      });
+      return { category, products };
+    })
+  );
+
   return (
     <>
-      {/* Hero */}
-      <section className="container py-12 sm:py-16 md:py-20 text-center">
-        <div className="flex justify-center mb-4 sm:mb-6">
-          <span className="text-6xl sm:text-7xl md:text-8xl">🏪</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight" style={{ color: 'var(--color-primary)' }}>
-          Welcome to TaYaima
-        </h1>
-        <p className="mt-4 sm:mt-6 text-base sm:text-lg max-w-2xl mx-auto px-4" style={{ color: 'var(--color-text-secondary)' }}>
-          Your neighborhood's trusted grocery store. Fresh vegetables, daily essentials, and quality products delivered to your doorstep with care.
-        </p>
-        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
-          <Link href="/products"><Button variant="primary" className="w-full sm:w-auto">🛒 Shop Now</Button></Link>
-          {!session && <Link href="/signup"><Button variant="secondary" className="w-full sm:w-auto">✨ Create Account</Button></Link>}
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="container py-12 sm:py-16">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center px-4">Featured Products</h2>
-        <p className="text-center text-gray-600 dark:text-gray-300 mt-2 px-4">Fresh products delivered to your doorstep</p>
-        <div className="mt-10 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-        <div className="text-center mt-8">
-          <Link href="/products">
-            <Button>View All Products</Button>
-          </Link>
+      {/* Hero / Top CTA */}
+      <section className="container max-w-[1400px] py-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Groceries delivered fast</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">Fresh veggies, daily essentials, and more.</p>
+            <div className="mt-4 flex gap-3">
+              <Link href="/products"><Button variant="primary">Shop Now</Button></Link>
+              {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-4 text-sm">
+            <div className="px-3 py-2 rounded-md bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300">Fast delivery</div>
+            <div className="px-3 py-2 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">Quality assured</div>
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="container grid sm:grid-cols-2 lg:grid-cols-3 gap-6 py-12">
-        {[
-          { title: "Fresh Products", desc: "High-quality groceries and household items sourced fresh daily." },
-          { title: "Fast Delivery", desc: "Quick and reliable delivery to your doorstep within hours." },
-          { title: "Easy Ordering", desc: "Simple and intuitive shopping experience with secure checkout." },
-          { title: "Multiple Payment", desc: "Pay with COD, PhonePe, or other convenient payment methods." },
-          { title: "Order Tracking", desc: "Track your orders in real-time from placement to delivery." },
-          { title: "Customer Support", desc: "24/7 customer support to help with any questions or issues." },
-        ].map((f) => (
-          <Card key={f.title} className="p-6">
-            <h3 className="font-semibold text-lg">{f.title}</h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{f.desc}</p>
-          </Card>
-        ))}
+      {/* Category chips */}
+      {categories.length > 0 && (
+        <section className="container max-w-[1400px] py-2">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {categories.map((c) => (
+              <Link key={c.id} href="/products" className="flex-shrink-0">
+                <span className="inline-block px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+                  {c.name}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Featured carousel */}
+      <section className="container max-w-[1400px] py-6">
+        <div className="flex items-center justify-between mb-4 px-1">
+          <h2 className="text-xl font-semibold">Featured</h2>
+          <Link href="/products" className="text-sm text-blue-600">View all</Link>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="grid grid-flow-col auto-cols-[minmax(180px,1fr)] gap-3">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} compact />
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Categories */}
-      <section id="categories" className="container py-16">
-        <h2 className="text-3xl font-bold text-center">Shop by Category</h2>
-        <p className="text-center text-gray-600 dark:text-gray-300 mt-2">Find everything you need in one place.</p>
-        <div className="mt-10 grid md:grid-cols-3 gap-6">
-          {[
-            { name: "Groceries", price: "Fresh & Organic", features: ["Vegetables", "Fruits", "Dairy Products", "Grains & Pulses"], cta: "Shop Groceries" },
-            { name: "Household", price: "Daily Essentials", features: ["Cleaning Supplies", "Personal Care", "Kitchen Items", "Home Decor"], cta: "Shop Household" },
-            { name: "Snacks", price: "Quick Bites", features: ["Biscuits & Cookies", "Chips & Nuts", "Beverages", "Ready to Eat"], cta: "Shop Snacks" },
-          ].map((tier) => (
-            <Card key={tier.name} className="p-6">
-              <div className="flex items-baseline justify-between">
-                <h3 className="text-xl font-semibold">{tier.name}</h3>
-                <span className="text-sm text-gray-600 dark:text-gray-300">{tier.price}</span>
-              </div>
-              <ul className="mt-4 space-y-2 text-sm">
-                {tier.features.map((ft) => (
-                  <li key={ft} className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span> {ft}
-                  </li>
-                ))}
-              </ul>
-              <Button className="mt-6 w-full">{tier.cta}</Button>
-            </Card>
-          ))}
-        </div>
+      {/* Category rows */}
+      {categorySections.map(({ category, products }) => (
+        <section key={category.id} className="container max-w-[1400px] py-6">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-xl font-semibold">Popular in {category.name}</h2>
+            <Link href="/products" className="text-sm text-blue-600">See all</Link>
+          </div>
+          <div className="overflow-x-auto">
+            <div className="grid grid-flow-col auto-cols-[minmax(180px,1fr)] gap-3">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} compact />
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
+
+      {/* Compact CTA */}
+      <section className="container max-w-[1400px] py-12 text-center">
+        <Card className="p-8">
+          <h3 className="text-2xl font-semibold">Ready to start shopping?</h3>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
+            Browse our wide selection and get everything you need delivered.
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <Link href="/products"><Button>Start Shopping</Button></Link>
+            {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
+          </div>
+        </Card>
       </section>
 
       {/* CTA */}
