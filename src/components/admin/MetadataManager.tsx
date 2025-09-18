@@ -15,9 +15,17 @@ export default function MetadataManager({
   initialMeta = {}, 
   onChange 
 }: MetadataManagerProps) {
-  const [metadata, setMetadata] = useState<Record<string, any>>(initialMeta);
+  const [metadata, setMetadata] = useState<Record<string, any>>(initialMeta || {});
   const [newKey, setNewKey] = useState("");
   const [newValue, setNewValue] = useState("");
+
+  // Update local state when initialMeta changes (for edit mode)
+  useEffect(() => {
+    if (initialMeta && Object.keys(initialMeta).length > 0) {
+      setMetadata(initialMeta);
+    }
+    console.log("initialMeta", initialMeta);
+  }, [initialMeta]);
 
   useEffect(() => {
     onChange?.(metadata);
@@ -31,6 +39,7 @@ export default function MetadataManager({
       [newKey.trim()]: newValue.trim() || null
     };
     setMetadata(updated);
+    onChange?.(updated); // Ensure onChange is called immediately
     setNewKey("");
     setNewValue("");
   };
@@ -39,6 +48,7 @@ export default function MetadataManager({
     const updated = { ...metadata };
     delete updated[key];
     setMetadata(updated);
+    onChange?.(updated); // Ensure onChange is called immediately
   };
 
   const updateMetadata = (key: string, value: string) => {
@@ -47,6 +57,7 @@ export default function MetadataManager({
       [key]: value.trim() || null
     };
     setMetadata(updated);
+    onChange?.(updated); // Ensure onChange is called immediately
   };
 
   const commonFields = [
@@ -66,6 +77,7 @@ export default function MetadataManager({
       [key]: ""
     };
     setMetadata(updated);
+    onChange?.(updated); // Ensure onChange is called immediately
   };
 
   return (
@@ -117,6 +129,7 @@ export default function MetadataManager({
                       delete updated[key];
                       updated[newKey] = value;
                       setMetadata(updated);
+                      onChange?.(updated); // Ensure onChange is called immediately
                     }
                   }}
                   className="text-sm"

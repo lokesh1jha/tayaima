@@ -424,7 +424,6 @@ export default function AdminProductsPage() {
                 e.preventDefault();
                 const form = e.currentTarget as HTMLFormElement;
                 const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-                const slug = (form.elements.namedItem("slug") as HTMLInputElement).value;
                 const description = (form.elements.namedItem("description") as HTMLTextAreaElement).value;
                 const imagesJson = (form.elements.namedItem("imagesJson") as HTMLInputElement)?.value || "[]";
                 const variantsJson = (form.elements.namedItem("variantsJson") as HTMLInputElement)?.value || "[]";
@@ -441,10 +440,6 @@ export default function AdminProductsPage() {
                     toast.error("Product name is required");
                     return;
                   }
-                  if (!slug.trim()) {
-                    toast.error("Product slug is required");
-                    return;
-                  }
                   if (variants.length === 0) {
                     toast.error("At least one variant is required");
                     return;
@@ -455,7 +450,6 @@ export default function AdminProductsPage() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                       name: name.trim(),
-                      slug: slug.trim(),
                       description: description.trim() || null,
                       images,
                       variants,
@@ -489,18 +483,9 @@ export default function AdminProductsPage() {
                     placeholder="Enter product name"
                     required
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Slug *
-                  </label>
-                  <Input
-                    name="slug"
-                    type="text"
-                    placeholder="product-slug"
-                    required
-                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    URL slug will be generated automatically from the product name
+                  </p>
                 </div>
 
                 <div>

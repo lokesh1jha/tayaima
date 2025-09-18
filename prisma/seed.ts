@@ -119,6 +119,13 @@ async function main() {
       images: [
         'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=500&h=500&fit=crop'
       ],
+      meta: {
+        brand: 'Kashmir Apples',
+        origin: 'Kashmir, India',
+        organic: 'true',
+        storage: 'Refrigerate',
+        nutritional_info: 'High in fiber and vitamin C'
+      },
       variants: [
         { unit: 'KG', amount: 1, price: 15000, stock: 40, sku: 'APP-1KG' },
         { unit: 'KG', amount: 0.5, price: 8000, stock: 25, sku: 'APP-500G' },
@@ -134,6 +141,13 @@ async function main() {
       images: [
         'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&h=500&fit=crop'
       ],
+      meta: {
+        brand: 'Amul',
+        fat_content: '3.5%',
+        pasteurized: 'true',
+        storage: 'Refrigerate below 4°C',
+        expiry_days: '3'
+      },
       variants: [
         { unit: 'LITER', amount: 1, price: 6000, stock: 100, sku: 'MILK-1L' },
         { unit: 'ML', amount: 500, price: 3500, stock: 50, sku: 'MILK-500ML' },
@@ -269,13 +283,14 @@ async function main() {
 
   // Create products with category assignment
   for (const productData of products) {
-    const { category, variants, ...productInfo } = productData;
+    const { category, variants, meta, ...productInfo } = productData;
     
     const product = await prisma.product.upsert({
       where: { slug: productData.slug },
       update: {},
       create: {
         ...productInfo,
+        meta: meta || undefined,
         category: {
           connect: { id: createdCategories[category] }
         },

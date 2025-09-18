@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { signUrlsInObject } from "@/lib/urlSigner";
 import { createStorageProvider } from "@/lib/storage";
 import { logger } from "@/lib/logger";
+import { generateSKU } from "@/lib/utils";
 
 export async function GET(
   req: Request,
@@ -61,27 +62,82 @@ export async function PATCH(
           description: description ?? undefined,
           images: Array.isArray(images) ? images : undefined,
           categoryId: categoryId === null ? null : categoryId ?? undefined,
-          meta: meta ?? undefined,
+          meta: meta === null ? null : meta ?? undefined,
         },
       });
 
       // Handle variants if provided
       if (Array.isArray(variants)) {
-        // Delete existing variants
-        await tx.productVariant.deleteMany({
+        // Get the product name for SKU generation (use updated name or existing name)
+        const productName = name || product.name;
+        
+        // Get current variants from database
+        const currentVariants = await tx.productVariant.findMany({
           where: { productId: id },
+          select: { id: true }
         });
-
+        const currentVariantIds = new Set(currentVariants.map(v => v.id));
+        
+        // Separate existing variants from new ones
+        const existingVariants = variants.filter((v: any) => 
+          v.id && !v.id.startsWith('temp-') && currentVariantIds.has(v.id)
+        );
+        const newVariants = variants.filter((v: any) => 
+          !v.id || v.id.startsWith('temp-') || !currentVariantIds.has(v.id)
+        );
+        
+        // Get IDs of variants that should remain (from the request)
+        const variantsToKeep = new Set(existingVariants.map((v: any) => v.id));
+        
+        // Find variants to delete (existing in DB but not in request)
+        const variantsToDelete = currentVariants.filter(v => !variantsToKeep.has(v.id));
+        
+        // Only delete variants that are not referenced in orders
+        if (variantsToDelete.length > 0) {
+          const variantIdsToDelete = variantsToDelete.map(v => v.id);
+          
+          // Check which variants are referenced in orders
+          const referencedVariants = await tx.orderItem.findMany({
+            where: { variantId: { in: variantIdsToDelete } },
+            select: { variantId: true },
+            distinct: ['variantId']
+          });
+          const referencedVariantIds = new Set(referencedVariants.map(item => item.variantId));
+          
+          // Only delete variants that are not referenced
+          const safeToDeleteIds = variantIdsToDelete.filter(id => !referencedVariantIds.has(id));
+          
+          if (safeToDeleteIds.length > 0) {
+            await tx.productVariant.deleteMany({
+              where: { id: { in: safeToDeleteIds } }
+            });
+          }
+        }
+        
+        // Update existing variants
+        for (const variant of existingVariants) {
+          await tx.productVariant.update({
+            where: { id: variant.id },
+            data: {
+              unit: variant.unit,
+              amount: variant.amount,
+              price: variant.price,
+              stock: variant.stock,
+              sku: variant.sku || generateSKU(productName, variant.unit, variant.amount),
+            },
+          });
+        }
+        
         // Create new variants
-        if (variants.length > 0) {
+        if (newVariants.length > 0) {
           await tx.productVariant.createMany({
-            data: variants.map((v: any) => ({
+            data: newVariants.map((v: any) => ({
               productId: id,
               unit: v.unit,
               amount: v.amount,
               price: v.price,
               stock: v.stock,
-              sku: v.sku || null,
+              sku: v.sku || generateSKU(productName, v.unit, v.amount),
             })),
           });
         }

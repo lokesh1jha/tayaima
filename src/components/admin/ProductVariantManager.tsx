@@ -37,7 +37,7 @@ export default function ProductVariantManager({
   const [variants, setVariants] = useState<ProductVariant[]>(
     initialVariants.length > 0 
       ? initialVariants 
-      : [{ unit: "PIECE", amount: 1, price: 0, stock: 0, sku: "" }]
+      : [{ unit: "PIECE", amount: 1, price: 0, stock: 0 }]
   );
 
   // Update variants when initialVariants changes (for edit mode)
@@ -72,7 +72,6 @@ export default function ProductVariantManager({
       amount: 1,
       price: 0,
       stock: 0,
-      sku: "",
     };
     setVariants([...variants, newVariant]);
   };
@@ -128,14 +127,6 @@ export default function ProductVariantManager({
     return Math.round(price * 100); // Convert to paise
   };
 
-  const generateSKU = (index: number) => {
-    const variant = variants[index];
-    const timestamp = Date.now().toString().slice(-4);
-    const unitCode = variant.unit.substring(0, 2);
-    const amountCode = variant.amount.toString().replace('.', '');
-    const sku = `${unitCode}${amountCode}-${timestamp}`.toUpperCase();
-    updateVariant(index, 'sku', sku);
-  };
 
   return (
     <div className="space-y-4">
@@ -254,26 +245,15 @@ export default function ProductVariantManager({
                 />
               </div>
 
-              {/* SKU */}
+              {/* SKU Display */}
               <div>
                 <label className="block text-xs font-medium mb-1">SKU</label>
-                <div className="flex gap-1">
-                  <Input
-                    type="text"
-                    value={variant.sku || ""}
-                    onChange={(e) => updateVariant(index, 'sku', e.target.value)}
-                    className="text-sm flex-1"
-                    placeholder="Optional SKU"
-                  />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => generateSKU(index)}
-                    className="text-xs px-2 py-1 whitespace-nowrap"
-                  >
-                    Generate
-                  </Button>
+                <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded border">
+                  {variant.sku || "Auto-generated"}
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  SKU will be generated automatically
+                </p>
               </div>
 
               {/* Display Info */}
@@ -297,7 +277,7 @@ export default function ProductVariantManager({
 
       <div className="text-xs text-gray-600 dark:text-gray-400">
         <p>* Required fields. Price is stored in paise (₹1.00 = 100 paise).</p>
-        <p>SKU (Stock Keeping Unit) is optional but recommended for inventory tracking.</p>
+        <p>SKU (Stock Keeping Unit) will be generated automatically for inventory tracking.</p>
       </div>
     </div>
   );

@@ -38,6 +38,8 @@ export default function AdminProductEditPage() {
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -46,7 +48,6 @@ export default function AdminProductEditPage() {
   useEffect(() => {
     if (params.id) {
       fetchProduct(params.id as string);
-      fetchCategories();
     }
   }, [params.id]);
 
@@ -77,14 +78,26 @@ export default function AdminProductEditPage() {
   };
 
   const fetchCategories = async () => {
+    if (categoriesLoaded || categoriesLoading) return; // Don't fetch if already loaded or loading
+    
+    setCategoriesLoading(true);
     try {
       const response = await fetch("/api/admin/categories");
       if (response.ok) {
         const data = await response.json();
         setCategories(data.categories || []);
+        setCategoriesLoaded(true);
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  const handleCategoryDropdownClick = () => {
+    if (!categoriesLoaded) {
+      fetchCategories();
     }
   };
 
@@ -95,25 +108,20 @@ export default function AdminProductEditPage() {
     setSaving(true);
     const form = e.currentTarget as HTMLFormElement;
     const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-    const slug = (form.elements.namedItem("slug") as HTMLInputElement).value;
     const description = (form.elements.namedItem("description") as HTMLTextAreaElement).value;
     const imagesJson = (form.elements.namedItem("imagesJson") as HTMLInputElement)?.value || "[]";
     const variantsJson = (form.elements.namedItem("variantsJson") as HTMLInputElement)?.value || "[]";
-    const metaJson = (form.elements.namedItem("metaJson") as HTMLInputElement)?.value || "{}";
     const categoryId = (form.elements.namedItem("categoryId") as HTMLSelectElement).value || undefined;
 
     try {
       const images = JSON.parse(imagesJson || "[]");
       const variants = JSON.parse(variantsJson || "[]");
-      const meta = JSON.parse(metaJson || "{}");
+      // Use the metadata state directly instead of parsing from hidden input
+      const meta = metadata;
 
       // Validation
       if (!name.trim()) {
         toast.error("Product name is required");
-        return;
-      }
-      if (!slug.trim()) {
-        toast.error("Product slug is required");
         return;
       }
       if (variants.length === 0) {
@@ -126,7 +134,6 @@ export default function AdminProductEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          slug: slug.trim(),
           description: description.trim() || null,
           images,
           variants,
@@ -184,32 +191,20 @@ export default function AdminProductEditPage() {
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Product Name *
-              </label>
-              <Input
-                name="name"
-                type="text"
-                defaultValue={product.name}
-                placeholder="Enter product name"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Slug *
-              </label>
-              <Input
-                name="slug"
-                type="text"
-                defaultValue={product.slug}
-                placeholder="product-slug"
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Product Name *
+            </label>
+            <Input
+              name="name"
+              type="text"
+              defaultValue={product.name}
+              placeholder="Enter product name"
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Current slug: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{product.slug}</code>
+            </p>
           </div>
 
           <div>
@@ -219,12 +214,33 @@ export default function AdminProductEditPage() {
             <select
               name="categoryId"
               defaultValue={product.categoryId || ""}
+              onClick={handleCategoryDropdownClick}
+              onFocus={handleCategoryDropdownClick}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700"
             >
-              <option value="">-- Select category --</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              {/* Show current category first if it exists */}
+              {product.category ? (
+                <option key={product.category.id} value={product.category.id}>
+                  {product.category.name}
+                </option>
+              ) : (
+                <option value="">
+                  {categoriesLoading ? "Loading categories..." : "-- Select category --"}
+                </option>
+              )}
+              
+              {/* Show other categories when loaded, excluding current category to avoid duplicates */}
+              {categoriesLoaded && categories
+                .filter(c => c.id !== product.categoryId)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))
+              }
+              
+              {/* Show "No category" option */}
+              {categoriesLoaded && (
+                <option value="">-- No category --</option>
+              )}
             </select>
           </div>
 
@@ -259,7 +275,7 @@ export default function AdminProductEditPage() {
           <div>
             <MetadataManager 
               name="metaJson"
-              initialMeta={metadata}
+              initialMeta={product?.meta || {}}
               onChange={setMetadata}
             />
           </div>

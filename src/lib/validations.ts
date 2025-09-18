@@ -11,11 +11,11 @@ export const productVariantSchema = z.object({
 
 export const createProductSchema = z.object({
   name: z.string().min(1, "Product name is required").max(255),
-  slug: z.string().min(1, "Slug is required").max(255).regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
+  slug: z.string().min(1, "Slug is required").max(255).regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens").optional(),
   description: z.string().optional(),
   images: z.array(z.string().url()).default([]),
   variants: z.array(productVariantSchema).min(1, "At least one variant is required"),
-  meta: z.record(z.any()).optional(),
+  meta: z.record(z.any()).optional().nullable(),
 });
 
 export const updateProductSchema = createProductSchema.partial();
