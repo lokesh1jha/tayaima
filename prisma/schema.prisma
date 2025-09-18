@@ -16,8 +16,10 @@ enum Role {
 model User {
   id            String   @id @default(cuid())
   name          String? 
-  email         String   @unique
+  email         String?  @unique
+  phone         String?  @unique
   emailVerified DateTime?
+  phoneVerified DateTime?
   image         String?
   passwordHash  String?
   role          Role     @default(USER)
@@ -25,6 +27,10 @@ model User {
   // Password reset fields
   resetToken    String?   // Token for password reset
   resetTokenExpiry DateTime? // Expiry time for reset token
+
+  // Phone OTP fields
+  phoneOtp      String?   // OTP for phone verification
+  phoneOtpExpiry DateTime? // Expiry time for phone OTP
 
   accounts      Account[]
   sessions      Session[]

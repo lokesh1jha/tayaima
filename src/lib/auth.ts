@@ -16,7 +16,8 @@ export const authConfig = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
     }),
     Credentials({
-      name: "credentials",
+      id: "email-password",
+      name: "Email & Password",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
@@ -31,6 +32,49 @@ export const authConfig = {
         return {
           id: user.id,
           email: user.email,
+          phone: user.phone,
+          name: user.name,
+          image: user.image ?? undefined,
+          role: user.role,
+        } as any;
+      },
+    }),
+    Credentials({
+      id: "phone-otp",
+      name: "Phone & OTP",
+      credentials: {
+        phone: { label: "Phone", type: "tel" },
+        otp: { label: "OTP", type: "text" },
+      },
+      authorize: async (credentials) => {
+        if (!credentials?.phone || !credentials?.otp) return null;
+        
+        // Import OTP utilities
+        const { validatePhoneNumber, normalizePhoneNumber, isOTPExpired } = await import("@/lib/otp");
+        
+        if (!validatePhoneNumber(credentials.phone)) return null;
+        
+        const normalizedPhone = normalizePhoneNumber(credentials.phone);
+        const user = await prisma.user.findUnique({ where: { phone: normalizedPhone } });
+        
+        if (!user?.phoneOtp) return null;
+        if (user.phoneOtp !== credentials.otp) return null;
+        if (!user.phoneOtpExpiry || isOTPExpired(user.phoneOtpExpiry)) return null;
+        
+        // Clear OTP after successful verification
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            phoneOtp: null,
+            phoneOtpExpiry: null,
+            phoneVerified: user.phoneVerified || new Date(),
+          }
+        });
+        
+        return {
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
           name: user.name,
           image: user.image ?? undefined,
           role: user.role,
