@@ -8,10 +8,11 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import dynamic from "next/dynamic";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
-import { ConfirmModal } from "@/components/ui/Modal";
+import Modal, { ConfirmModal } from "@/components/ui/Modal";
 import { toast } from "sonner";
 import ProductVariantManager, { ProductVariant } from "@/components/admin/ProductVariantManager";
 import MetadataManager from "@/components/admin/MetadataManager";
+import { generateSlug } from "@/lib/utils";
 
 const AdminProductImagesField = dynamic(() => import("@/components/admin/AdminProductImagesField"), { ssr: false });
 
@@ -54,6 +55,13 @@ export default function AdminProductsPage() {
     productId: "",
     productName: "",
   });
+
+  // Add Category Modal state
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategorySlug, setNewCategorySlug] = useState("");
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [formCategoryId, setFormCategoryId] = useState<string>("");
 
   useEffect(() => {
     fetchProducts();
@@ -119,8 +127,10 @@ export default function AdminProductsPage() {
       const res = await fetch("/api/categories");
       const data = await res.json();
       setCategories(data.categories || []);
+      return data.categories || [];
     } catch (e) {
       setCategories([]);
+      return [] as Category[];
     }
   };
 
@@ -492,15 +502,30 @@ export default function AdminProductsPage() {
                   <label className="block text-sm font-medium mb-1">
                     Category
                   </label>
-                  <select
-                    name="categoryId"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900"
-                  >
-                    <option value="">-- Select category --</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-start gap-2">
+                    <select
+                      name="categoryId"
+                      value={formCategoryId}
+                      onChange={(e) => setFormCategoryId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900"
+                    >
+                      <option value="">-- Select category --</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setNewCategoryName("");
+                        setNewCategorySlug("");
+                        setShowAddCategoryModal(true);
+                      }}
+                    >
+                      Add new Category
+                    </Button>
+                  </div>
                 </div>
 
                 <div>
@@ -566,6 +591,85 @@ export default function AdminProductsPage() {
         cancelText="Cancel"
         type="danger"
       />
+
+      {/* Add Category Modal */}
+      <Modal
+        isOpen={showAddCategoryModal}
+        onClose={() => setShowAddCategoryModal(false)}
+        title="Add New Category"
+        size="sm"
+      >
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const name = newCategoryName.trim();
+            const slug = newCategorySlug.trim();
+            if (!name || !slug) {
+              toast.error("Name and slug are required");
+              return;
+            }
+            try {
+              setCreatingCategory(true);
+              const res = await fetch("/api/admin/categories", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, slug })
+              });
+              if (res.ok) {
+                const created = await res.json();
+                await fetchCategories();
+                setFormCategoryId(created.id);
+                setShowAddCategoryModal(false);
+                setNewCategoryName("");
+                setNewCategorySlug("");
+                toast.success("Category added");
+              } else {
+                const err = await res.json().catch(() => ({ error: "Failed to add category" }));
+                toast.error(err.error || "Failed to add category");
+              }
+            } catch (error) {
+              toast.error("Failed to add category");
+            } finally {
+              setCreatingCategory(false);
+            }
+          }}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Name</label>
+              <Input
+                value={newCategoryName}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setNewCategoryName(val);
+                  setNewCategorySlug(generateSlug(val));
+                }}
+                placeholder="e.g. Snacks"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Slug</label>
+              <Input
+                value={newCategorySlug}
+                onChange={(e) => setNewCategorySlug(e.target.value)}
+                placeholder="e.g. snacks"
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowAddCategoryModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={creatingCategory}>
+              {creatingCategory ? "Adding..." : "Add Category"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
