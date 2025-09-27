@@ -6,15 +6,13 @@ import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import dynamic from "next/dynamic";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
 import Modal, { ConfirmModal } from "@/components/ui/Modal";
 import { toast } from "sonner";
 import ProductVariantManager, { ProductVariant } from "@/components/admin/ProductVariantManager";
 import MetadataManager from "@/components/admin/MetadataManager";
-import { generateSlug } from "@/lib/utils";
-
-const AdminProductImagesField = dynamic(() => import("@/components/admin/AdminProductImagesField"), { ssr: false });
+import AdminProductImagesField from "@/components/admin/AdminProductImagesField";
+import { slugify } from "@/lib/slugify";
 
 interface Product {
   id: string;
@@ -605,8 +603,8 @@ export default function AdminProductsPage() {
             e.preventDefault();
             const name = newCategoryName.trim();
             const slug = newCategorySlug.trim();
-            if (!name || !slug) {
-              toast.error("Name and slug are required");
+            if (!name) {
+              toast.error("Category name is required");
               return;
             }
             try {
@@ -614,7 +612,7 @@ export default function AdminProductsPage() {
               const res = await fetch("/api/admin/categories", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, slug })
+                body: JSON.stringify({ name, slug: slug || undefined }) // Let API auto-generate if empty
               });
               if (res.ok) {
                 const created = await res.json();
@@ -643,18 +641,21 @@ export default function AdminProductsPage() {
                 onChange={(e) => {
                   const val = e.target.value;
                   setNewCategoryName(val);
-                  setNewCategorySlug(generateSlug(val));
+                  setNewCategorySlug(slugify(val));
                 }}
                 placeholder="e.g. Snacks"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Slug</label>
+              <label className="block text-sm font-medium mb-1">Slug (Auto-generated)</label>
               <Input
                 value={newCategorySlug}
                 onChange={(e) => setNewCategorySlug(e.target.value)}
-                placeholder="e.g. snacks"
+                placeholder="e.g. snacks (auto-generated from name)"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                URL-friendly version. Auto-generated from name but can be customized.
+              </p>
             </div>
           </div>
           <div className="mt-6 flex justify-end gap-2">

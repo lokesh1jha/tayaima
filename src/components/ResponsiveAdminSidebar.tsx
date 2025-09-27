@@ -8,6 +8,7 @@ import clsx from "clsx";
 const links = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/products", label: "Products", icon: "📦" },
+  { href: "/admin/categories", label: "Categories", icon: "🏷️" },
   { href: "/admin/orders", label: "Orders", icon: "📋" },
   { href: "/admin/customers", label: "Customers", icon: "👥" },
   { href: "/admin/admins", label: "Admins", icon: "👨‍💼" },
