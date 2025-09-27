@@ -8,41 +8,61 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { signUrlsInArray } from "@/lib/urlSigner";
+import { cachedQuery } from "@/lib/cache";
+
+// Enable ISR (Incremental Static Regeneration) for better performance
+export const revalidate = 300; // Revalidate every 5 minutes
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
   
-  // Fetch featured products (limited to 5 for better performance)
-  const rawFeaturedProducts = await prisma.product.findMany({
-    take: 5,
-    include: { variants: true },
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    // Fetch all data in parallel with caching for better performance
+    const [rawFeaturedProducts, categories] = await Promise.all([
+      // Cached featured products (10 minute cache)
+      cachedQuery(
+        'homepage:featured-products',
+        () => prisma.product.findMany({
+          take: 5,
+          include: { variants: true },
+          orderBy: { createdAt: "desc" },
+        }),
+        600 // 10 minutes
+      ),
+      // Cached categories (30 minute cache)
+      cachedQuery(
+        'homepage:categories',
+        () => prisma.category.findMany({
+          take: 10,
+          orderBy: { name: "asc" },
+        }),
+        1800 // 30 minutes
+      )
+    ]);
 
-  // Sign URLs for featured products
-  const featuredProducts = await signUrlsInArray(rawFeaturedProducts, ['images']);
+    // Sign URLs for featured products
+    const featuredProducts = await signUrlsInArray(rawFeaturedProducts, ['images']);
 
-  // Fetch categories for chips and sections
-  const categories = await prisma.category.findMany({
-    take: 10,
-    orderBy: { name: "asc" },
-  });
-
-  // Prepare a few category sections with products (limited for performance)
-  const categorySections = await Promise.all(
-    categories.slice(0, 3).map(async (category) => {
-      const rawProducts = await prisma.product.findMany({
-        where: { categoryId: category.id },
-        include: { variants: true },
-        take: 6, // Reduced from 10 to 6 for better performance
-        orderBy: { createdAt: "desc" },
-      });
-      
-      // Sign URLs for category products
-      const products = await signUrlsInArray(rawProducts, ['images']);
-      return { category, products };
-    })
-  );
+    // Prepare category sections with cached products (limited for performance)
+    const categorySections = await Promise.all(
+      categories.slice(0, 3).map(async (category) => {
+        // Cache products per category (15 minute cache)
+        const rawProducts = await cachedQuery(
+          `homepage:category-products:${category.id}`,
+          () => prisma.product.findMany({
+            where: { categoryId: category.id },
+            include: { variants: true },
+            take: 6, // Reduced from 10 to 6 for better performance
+            orderBy: { createdAt: "desc" },
+          }),
+          900 // 15 minutes
+        );
+        
+        // Sign URLs for category products
+        const products = await signUrlsInArray(rawProducts, ['images']);
+        return { category, products };
+      })
+    );
 
   return (
     <>
@@ -131,4 +151,23 @@ export default async function HomePage() {
       </section>
     </>
   );
+  
+  } catch (error) {
+    console.error('Error loading homepage data:', error);
+    
+    // Return a fallback page if data loading fails
+    return (
+      <div className="container max-w-[1400px] py-8">
+        <Card className="p-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Welcome to Tayaima</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            We're having trouble loading the latest products. Please try refreshing the page.
+          </p>
+          <Link href="/products">
+            <Button>Browse Products</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 }
