@@ -44,9 +44,8 @@ export async function POST(req: Request) {
       urls.push(url);
     }
 
-    // Sign URLs before returning so they're immediately viewable in admin UI
-    const signedUrls = await signUrls(urls);
-    return NextResponse.json({ urls: signedUrls });
+    // Return base URLs (not signed) - they will be signed when displayed
+    return NextResponse.json({ urls });
   } catch (error) {
     console.error('Upload Error:', error);
     return NextResponse.json(

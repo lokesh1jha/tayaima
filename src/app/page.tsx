@@ -5,16 +5,20 @@ import ProductCard from "@/components/ProductCard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { signUrlsInArray } from "@/lib/urlSigner";
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
   
   // Fetch featured products
-  const featuredProducts = await prisma.product.findMany({
+  const rawFeaturedProducts = await prisma.product.findMany({
     take: 12,
     include: { variants: true },
     orderBy: { createdAt: "desc" },
   });
+
+  // Sign URLs for featured products
+  const featuredProducts = await signUrlsInArray(rawFeaturedProducts, ['images']);
 
   // Fetch categories for chips and sections
   const categories = await prisma.category.findMany({
@@ -25,12 +29,15 @@ export default async function HomePage() {
   // Prepare a few category sections with products
   const categorySections = await Promise.all(
     categories.slice(0, 3).map(async (category) => {
-      const products = await prisma.product.findMany({
+      const rawProducts = await prisma.product.findMany({
         where: { categoryId: category.id },
         include: { variants: true },
         take: 10,
         orderBy: { createdAt: "desc" },
       });
+      
+      // Sign URLs for category products
+      const products = await signUrlsInArray(rawProducts, ['images']);
       return { category, products };
     })
   );

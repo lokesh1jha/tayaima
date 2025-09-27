@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowSignedURLAccess",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::tayaima/*",
+      "Condition": {
+        "StringEquals": {
+          "s3:ExistingObjectTag/public": "true"
+        }
+      }
+    },
+    {
+      "Sid": "AllowSignedURLAccessForProducts",
+      "Effect": "Allow", 
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::tayaima/products/*"
+    }
+  ]
+}

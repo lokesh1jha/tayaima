@@ -4,18 +4,21 @@ import { createStorageProvider } from './storage';
 export async function signUrl(url: string): Promise<string> {
   if (!url) return url;
   
-  // If it's a local URL or already signed, return as-is
-  if (url.startsWith('/uploads/') || url.includes('X-Amz-Signature')) {
+  // If it's a local URL, return as-is
+  if (url.startsWith('/uploads/')) {
     return url;
   }
   
-  // If it's an S3 URL, sign it
+  // If it's an S3 URL, always sign it (even if already signed, in case it's expired)
   if (url.includes('.s3.') || url.includes('amazonaws.com')) {
     try {
       const storage = createStorageProvider();
+      
+      // Extract key from URL (handles both signed and unsigned URLs)
       const key = storage.extractKey(url);
       
       if (key) {
+        // Generate fresh signed URL
         return await storage.getViewUrl(key);
       }
     } catch (error) {
