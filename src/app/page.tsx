@@ -2,6 +2,8 @@ import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import ProductCard from "@/components/ProductCard";
+import CategoryChips from "@/components/CategoryChips";
+import ProductsPrefetch from "@/components/ProductsPrefetch";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -10,9 +12,9 @@ import { signUrlsInArray } from "@/lib/urlSigner";
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
   
-  // Fetch featured products
+  // Fetch featured products (limited to 5 for better performance)
   const rawFeaturedProducts = await prisma.product.findMany({
-    take: 12,
+    take: 5,
     include: { variants: true },
     orderBy: { createdAt: "desc" },
   });
@@ -26,13 +28,13 @@ export default async function HomePage() {
     orderBy: { name: "asc" },
   });
 
-  // Prepare a few category sections with products
+  // Prepare a few category sections with products (limited for performance)
   const categorySections = await Promise.all(
     categories.slice(0, 3).map(async (category) => {
       const rawProducts = await prisma.product.findMany({
         where: { categoryId: category.id },
         include: { variants: true },
-        take: 10,
+        take: 6, // Reduced from 10 to 6 for better performance
         orderBy: { createdAt: "desc" },
       });
       
@@ -63,19 +65,10 @@ export default async function HomePage() {
       </section>
 
       {/* Category chips */}
-      {categories.length > 0 && (
-        <section className="container max-w-[1400px] py-2">
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {categories.map((c) => (
-              <Link key={c.id} href="/products" className="flex-shrink-0">
-                <span className="inline-block px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
-                  {c.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <CategoryChips categories={categories} />
+      
+      {/* Prefetch products for better performance */}
+      <ProductsPrefetch categories={categories} />
 
       {/* Featured carousel */}
       <section className="container max-w-[1400px] py-6">

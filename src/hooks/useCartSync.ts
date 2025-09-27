@@ -19,7 +19,9 @@ export const useCartSync = () => {
 
     // Trigger sync on login/logout state change
     if (wasLoggedIn !== isLoggedIn) {
-      console.log('Auth state changed, forcing cart sync');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Auth state changed, forcing cart sync');
+      }
       forceSync();
     }
 

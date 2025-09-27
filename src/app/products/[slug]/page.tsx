@@ -48,14 +48,15 @@ export default function ProductDetailPage() {
   }, [params.slug]);
 
   useEffect(() => {
-    if (product && product.variants.length > 0) {
+    if (product && product.variants && product.variants.length > 0) {
       setSelectedVariant(product.variants[0]);
     }
   }, [product]);
 
   const fetchProduct = async (slug: string) => {
     try {
-      const response = await fetch(`/api/products?slug=${slug}`);
+      // Product detail page needs variants, so explicitly request them
+      const response = await fetch(`/api/products?slug=${slug}&includeVariants=true`);
       const data = await response.json();
       if (data.data && data.data.length > 0) {
         setProduct(data.data[0]);
@@ -202,7 +203,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Variants */}
-          {product.variants.length > 1 && (
+          {product.variants && product.variants.length > 1 && (
             <div>
               <h3 className="text-lg font-semibold mb-3">Available Sizes</h3>
               <div className="grid grid-cols-2 gap-2">
@@ -267,7 +268,7 @@ export default function ProductDetailPage() {
             <h3 className="font-semibold mb-2">Product Information</h3>
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
               <div>SKU: {selectedVariant?.sku || "N/A"}</div>
-              <div>Available variants: {product.variants.length}</div>
+              <div>Available variants: {product.variants?.length || 0}</div>
             </div>
           </Card>
         </div>

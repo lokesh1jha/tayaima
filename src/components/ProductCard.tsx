@@ -21,7 +21,7 @@ interface Product {
   slug: string;
   description: string | null;
   images: string[];
-  variants: ProductVariant[];
+  variants?: ProductVariant[]; // Optional since API might not include variants
 }
 
 interface ProductCardProps {
@@ -32,16 +32,21 @@ interface ProductCardProps {
 export default function ProductCard({ product, compact = false }: ProductCardProps) {
   const imageUrl = product.images[0] || '/placeholder-product.jpg';
 
+  // Handle cases where variants might not be loaded
+  const variants = product.variants || [];
+  const hasVariants = variants.length > 0;
+
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    product.variants[0]?.id || null
+    variants[0]?.id || null
   );
 
   const selectedVariant = useMemo(() => {
-    return product.variants.find(v => v.id === selectedVariantId) || product.variants[0];
-  }, [product.variants, selectedVariantId]);
+    if (!hasVariants) return null;
+    return variants.find(v => v.id === selectedVariantId) || variants[0];
+  }, [variants, selectedVariantId, hasVariants]);
 
-  const minPrice = Math.min(...product.variants.map(v => v.price));
-  const maxPrice = Math.max(...product.variants.map(v => v.price));
+  const minPrice = hasVariants ? Math.min(...variants.map(v => v.price)) : 0;
+  const maxPrice = hasVariants ? Math.max(...variants.map(v => v.price)) : 0;
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(price / 100);
@@ -84,9 +89,9 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
       </Link>
 
       {/* Variant selector */}
-      {product.variants.length > 1 && (
+      {hasVariants && variants.length > 1 && (
         <div className={`${compact ? 'mt-2 gap-1' : 'mt-2'} flex flex-wrap gap-1.5`}>
-          {product.variants.map((variant) => (
+          {variants.map((variant) => (
             <button
               key={variant.id}
               onClick={(e) => {
@@ -107,11 +112,15 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
 
       <div className={`${compact ? 'mt-2' : 'mt-2 sm:mt-3'} flex items-center justify-between`}>
         <div className={`${compact ? 'text-sm' : 'text-sm sm:text-base md:text-lg'} font-bold text-green-600`}>
-          {selectedVariant
-            ? formatPrice(selectedVariant.price)
-            : minPrice === maxPrice
-              ? formatPrice(minPrice)
-              : `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`}
+          {!hasVariants ? (
+            <span className="text-gray-500">Price not available</span>
+          ) : selectedVariant ? (
+            formatPrice(selectedVariant.price)
+          ) : minPrice === maxPrice ? (
+            formatPrice(minPrice)
+          ) : (
+            `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
+          )}
         </div>
         {selectedVariant && (
           <AddToCartButton
@@ -126,6 +135,13 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
           >
             Add
           </AddToCartButton>
+        )}
+        {!hasVariants && (
+          <Link href={`/products/${product.slug}`}>
+            <Button className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'}`}>
+              View Details
+            </Button>
+          </Link>
         )}
       </div>
     </Card>

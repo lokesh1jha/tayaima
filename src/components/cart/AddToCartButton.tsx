@@ -53,7 +53,9 @@ export const AddToCartButton = ({
       
       toast.success(`Added ${productName} to cart`);
     } catch (error) {
-      console.error('Failed to add to cart:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to add to cart:', error);
+      }
       toast.error('Failed to add item to cart');
     } finally {
       setIsAdding(false);

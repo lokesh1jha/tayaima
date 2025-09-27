@@ -45,6 +45,16 @@ export async function POST(request: NextRequest) {
 
     // Start a transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
+      // First, verify that the user exists in the database
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      });
+
+      if (!user) {
+        throw new Error(`User with ID ${userId} not found in database. Session may be stale.`);
+      }
+
       // Get user's current cart by userId (find first cart for this user)
       const existingCart = await tx.cart.findFirst({
         where: { userId },
@@ -146,7 +156,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Cart sync error:', error);
+    // Only log cart sync errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Cart sync error:', error);
+    }
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -160,6 +173,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof Error) {
+      // If user not found, return 401 to trigger logout
+      if (error.message.includes('User with ID') && error.message.includes('not found')) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Session expired. Please log in again.',
+          },
+          { status: 401 }
+        );
+      }
+
       return NextResponse.json(
         {
           success: false,
@@ -240,7 +264,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(cartData);
   } catch (error) {
-    console.error('Get cart error:', error);
+    // Only log get cart errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Get cart error:', error);
+    }
     return NextResponse.json(
       {
         success: false,

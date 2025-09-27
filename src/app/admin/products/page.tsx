@@ -112,7 +112,8 @@ export default function AdminProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("/api/products");
+      // Admin page needs variants for display and management
+      const response = await fetch("/api/products?includeVariants=true");
       const data = await response.json();
       setProducts(data.data || []);
     } catch (error) {

@@ -27,12 +27,16 @@ class CartSyncManager {
 
     window.addEventListener('online', () => {
       this.isOnline = true;
-      console.log('Network back online, attempting to sync cart');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Network back online, attempting to sync cart');
+      }
     });
 
     window.addEventListener('offline', () => {
       this.isOnline = false;
-      console.log('Network offline, cart sync will be queued');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Network offline, cart sync will be queued');
+      }
     });
   }
 
@@ -111,7 +115,7 @@ class CartSyncManager {
     }));
 
     try {
-      const success = await this.syncToServer(cartState);
+      const success = await this.syncToServer(cartState, updateCartState);
 
       if (success) {
         // Clear sync queue on successful sync
@@ -121,12 +125,17 @@ class CartSyncManager {
           syncQueue: [],
           retryCount: 0,
         }));
-        console.log('Cart synced successfully');
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Cart synced successfully');
+        }
       } else {
         throw new Error('Sync failed');
       }
     } catch (error) {
-      console.error('Cart sync failed:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Cart sync failed:', error);
+      }
       await this.handleSyncFailure(getCartState, updateCartState);
     } finally {
       this.syncInProgress = false;
@@ -165,7 +174,9 @@ class CartSyncManager {
       retryCount: newRetryCount,
     }));
 
-    console.log(`Retrying cart sync in ${delay}ms (attempt ${newRetryCount})`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Retrying cart sync in ${delay}ms (attempt ${newRetryCount})`);
+    }
 
     setTimeout(() => {
       this.performSync(getCartState, updateCartState);
@@ -175,7 +186,10 @@ class CartSyncManager {
   /**
    * Sync cart data to server
    */
-  private async syncToServer(cartState: CartState): Promise<boolean> {
+  private async syncToServer(
+    cartState: CartState,
+    updateCartState?: (updater: (state: CartState) => CartState) => void
+  ): Promise<boolean> {
     try {
       const syncData: CartSyncRequest = {
         items: cartState.items,
@@ -198,11 +212,132 @@ class CartSyncManager {
       }
 
       const result: CartSyncResponse = await response.json();
+      
+      // If we have an update function and server returned updated items, apply them
+      if (updateCartState && result.updatedItems) {
+        this.applyServerUpdates(result.updatedItems, updateCartState);
+      }
+      
       return result.success;
     } catch (error) {
-      console.error('Server sync failed:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Server sync failed:', error);
+      }
       return false;
     }
+  }
+
+  /**
+   * Apply server updates to the cart state
+   */
+  private applyServerUpdates(
+    serverItems: any[],
+    updateCartState: (updater: (state: CartState) => CartState) => void
+  ): void {
+    updateCartState((state) => {
+      const updatedItems = [...state.items];
+      let hasChanges = false;
+
+      // Check each server item against local items
+      serverItems.forEach((serverItem) => {
+        const localIndex = updatedItems.findIndex(
+          (item) => item.id === serverItem.id
+        );
+
+        if (localIndex >= 0) {
+          const localItem = updatedItems[localIndex];
+          
+          // Check for differences and update
+          if (
+            localItem.quantity !== serverItem.quantity ||
+            localItem.price !== serverItem.price ||
+            localItem.maxStock !== serverItem.maxStock
+          ) {
+            updatedItems[localIndex] = {
+              ...localItem,
+              quantity: serverItem.quantity,
+              price: serverItem.price,
+              maxStock: serverItem.maxStock,
+            };
+            hasChanges = true;
+
+            // Show toast notification for changes
+            if (typeof window !== 'undefined') {
+              this.notifyItemUpdated(localItem, serverItem);
+            }
+          }
+        }
+      });
+
+      // Remove items that no longer exist on server
+      const serverItemIds = new Set(serverItems.map(item => item.id));
+      const filteredItems = updatedItems.filter(item => {
+        const exists = serverItemIds.has(item.id);
+        if (!exists && typeof window !== 'undefined') {
+          this.notifyItemRemoved(item);
+          hasChanges = true;
+        }
+        return exists;
+      });
+
+      if (hasChanges) {
+        // Recalculate totals
+        const newTotal = filteredItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        const newItemCount = filteredItems.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        );
+
+        return {
+          ...state,
+          items: filteredItems,
+          total: newTotal,
+          itemCount: newItemCount,
+          lastUpdated: Date.now(),
+        };
+      }
+
+      return state;
+    });
+  }
+
+  /**
+   * Notify user about item updates
+   */
+  private notifyItemUpdated(localItem: any, serverItem: any): void {
+    if (localItem.quantity !== serverItem.quantity) {
+      // Dynamic import to avoid SSR issues
+      import('sonner').then(({ toast }) => {
+        toast.info(
+          `${localItem.productName} quantity updated to ${serverItem.quantity}`,
+          { duration: 3000 }
+        );
+      });
+    }
+    
+    if (localItem.price !== serverItem.price) {
+      import('sonner').then(({ toast }) => {
+        toast.info(
+          `${localItem.productName} price updated`,
+          { duration: 3000 }
+        );
+      });
+    }
+  }
+
+  /**
+   * Notify user about removed items
+   */
+  private notifyItemRemoved(item: any): void {
+    import('sonner').then(({ toast }) => {
+      toast.warning(
+        `${item.productName} is no longer available and was removed from your cart`,
+        { duration: 4000 }
+      );
+    });
   }
 
   /**

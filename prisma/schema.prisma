@@ -27,7 +27,6 @@ model User {
   resetTokenExpiry DateTime? // Expiry time for reset token
 
   accounts      Account[]
-  sessions      Session[]
   orders        Order[]
   carts         Cart[]
   addresses     Address[]
@@ -55,14 +54,6 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
 model VerificationToken {
   identifier String

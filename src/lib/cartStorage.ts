@@ -27,7 +27,9 @@ class CartStorage {
 
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(storageData));
     } catch (error) {
-      console.error('Failed to save cart to localStorage:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to save cart to localStorage:', error);
+      }
     }
   }
 
@@ -45,7 +47,9 @@ class CartStorage {
 
       // Check version compatibility
       if (storageData.version !== CART_VERSION) {
-        console.warn('Cart storage version mismatch, clearing cart');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Cart storage version mismatch, clearing cart');
+        }
         this.clearCart();
         return null;
       }
@@ -53,14 +57,18 @@ class CartStorage {
       // Check if cart is not too old (7 days)
       const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
       if (Date.now() - storageData.timestamp > maxAge) {
-        console.warn('Cart data is too old, clearing cart');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Cart data is too old, clearing cart');
+        }
         this.clearCart();
         return null;
       }
 
       return storageData.data;
     } catch (error) {
-      console.error('Failed to load cart from localStorage:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to load cart from localStorage:', error);
+      }
       this.clearCart();
       return null;
     }
@@ -75,7 +83,9 @@ class CartStorage {
     try {
       localStorage.removeItem(CART_STORAGE_KEY);
     } catch (error) {
-      console.error('Failed to clear cart from localStorage:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to clear cart from localStorage:', error);
+      }
     }
   }
 

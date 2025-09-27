@@ -14,11 +14,20 @@ export async function GET(req: Request) {
   let cart = null;
   
   if (session?.user?.id) {
-    // For authenticated users, find cart by userId
-    cart = await prisma.cart.findFirst({
-      where: { userId: session.user.id },
-      include: { items: { include: { variant: { include: { product: true } } } } },
+    // For authenticated users, verify user exists first
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true },
     });
+
+    if (user) {
+      // Find cart by userId only if user exists
+      cart = await prisma.cart.findFirst({
+        where: { userId: session.user.id },
+        include: { items: { include: { variant: { include: { product: true } } } } },
+      });
+    }
+    // If user doesn't exist, cart remains null (empty cart returned)
   } else if (sessionId) {
     // For guest users, find cart by sessionId
     cart = await prisma.cart.findUnique({
@@ -41,7 +50,17 @@ export async function POST(req: Request) {
     
     let cart;
     if (session?.user?.id) {
-      // For authenticated users, use userId
+      // For authenticated users, first verify user exists
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true },
+      });
+
+      if (!user) {
+        return new NextResponse("Session expired. Please log in again.", { status: 401 });
+      }
+
+      // Find or create cart for authenticated user
       cart = await prisma.cart.findFirst({
         where: { userId: session.user.id },
       });
@@ -89,7 +108,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json(updated ?? { items: [] });
   } catch (error) {
-    console.error("Error adding to cart:", error);
+    // Only log cart errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error adding to cart:", error);
+    }
     if (error instanceof Error) {
       return new NextResponse(error.message, { status: 400 });
     }

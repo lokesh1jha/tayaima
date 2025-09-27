@@ -1,6 +1,20 @@
 import { createStorageProvider } from './storage';
 
-// Utility to sign URLs automatically
+// Cache for signed URLs to avoid repeated signing
+const signedUrlCache = new Map<string, { url: string; timestamp: number }>();
+const SIGNED_URL_CACHE_TTL = 50 * 60 * 1000; // 50 minutes (URLs expire in 1 hour)
+
+// Shared storage provider instance
+let storageProvider: any = null;
+
+function getStorageProvider() {
+  if (!storageProvider) {
+    storageProvider = createStorageProvider();
+  }
+  return storageProvider;
+}
+
+// Utility to sign URLs automatically with caching
 export async function signUrl(url: string): Promise<string> {
   if (!url) return url;
   
@@ -9,20 +23,33 @@ export async function signUrl(url: string): Promise<string> {
     return url;
   }
   
-  // If it's an S3 URL, always sign it (even if already signed, in case it's expired)
+  // If it's an S3 URL, sign it with caching
   if (url.includes('.s3.') || url.includes('amazonaws.com')) {
     try {
-      const storage = createStorageProvider();
+      // Check cache first
+      const cached = signedUrlCache.get(url);
+      if (cached && Date.now() - cached.timestamp < SIGNED_URL_CACHE_TTL) {
+        return cached.url;
+      }
+      
+      const storage = getStorageProvider();
       
       // Extract key from URL (handles both signed and unsigned URLs)
       const key = storage.extractKey(url);
       
       if (key) {
         // Generate fresh signed URL
-        return await storage.getViewUrl(key);
+        const signedUrl = await storage.getViewUrl(key);
+        
+        // Cache the signed URL
+        signedUrlCache.set(url, { url: signedUrl, timestamp: Date.now() });
+        
+        return signedUrl;
       }
     } catch (error) {
-      console.error('Failed to sign URL:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to sign URL:', error);
+      }
     }
   }
   

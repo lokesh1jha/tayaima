@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
 import { AlertModal } from "@/components/ui/Modal";
+import { CheckoutSkeleton } from "@/components/ui/CheckoutSkeleton";
 import { useCart } from "@/hooks/useCart";
 import { ROUTES } from "@/lib/constants";
 
@@ -63,6 +64,8 @@ export default function CheckoutPage() {
   const { clearCart } = useCart();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cartLoading, setCartLoading] = useState(true);
+  const [addressesLoading, setAddressesLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
@@ -85,10 +88,25 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    fetchCart();
-    if (session) {
-      fetchAddresses();
-    }
+    // Fetch data in parallel for better performance
+    const fetchCheckoutData = async () => {
+      const promises = [fetchCart()];
+      
+      if (session) {
+        promises.push(fetchAddresses());
+      } else {
+        // If no session, addresses loading is complete
+        setAddressesLoading(false);
+      }
+      
+      // Execute all API calls in parallel
+      await Promise.allSettled(promises);
+      
+      // Set overall loading to false when both are done
+      setLoading(false);
+    };
+    
+    fetchCheckoutData();
   }, [session]);
 
   const fetchCart = async () => {
@@ -99,7 +117,14 @@ export default function CheckoutPage() {
         return;
       }
 
-      const response = await fetch(`/api/cart?sessionId=${sessionId}`);
+      const response = await fetch('/api/cart/fetch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId }),
+      });
+      
       const data = await response.json();
       
       if (!data.items || data.items.length === 0) {
@@ -109,10 +134,12 @@ export default function CheckoutPage() {
       
       setCart(data);
     } catch (error) {
-      console.error("Error fetching cart:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error fetching cart:", error);
+      }
       router.push("/cart");
     } finally {
-      setLoading(false);
+      setCartLoading(false);
     }
   };
 
@@ -130,7 +157,11 @@ export default function CheckoutPage() {
         }
       }
     } catch (error) {
-      console.error("Error fetching addresses:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error fetching addresses:", error);
+      }
+    } finally {
+      setAddressesLoading(false);
     }
   };
 
@@ -246,11 +277,7 @@ export default function CheckoutPage() {
   };
 
   if (loading) {
-    return (
-      <div className="container py-8">
-        <LoadingPage message="Loading checkout..." />
-      </div>
-    );
+    return <CheckoutSkeleton />;
   }
 
   if (!cart) {
@@ -402,12 +429,21 @@ export default function CheckoutPage() {
                   <div key={item.id} className="flex gap-3">
                     <div className="w-12 h-12 relative bg-gray-100 dark:bg-gray-800 rounded overflow-hidden flex-shrink-0">
                       {item.variant.product.images.length > 0 ? (
-                        <Image
-                          src={item.variant.product.images[0]}
-                          alt={item.variant.product.name}
-                          fill
-                          className="object-cover"
-                        />
+                        item.variant.product.images[0].includes('.s3.') || item.variant.product.images[0].includes('amazonaws.com') ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.variant.product.images[0]}
+                            alt={item.variant.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Image
+                            src={item.variant.product.images[0]}
+                            alt={item.variant.product.name}
+                            fill
+                            className="object-cover"
+                          />
+                        )
                       ) : (
                         <div className="flex items-center justify-center h-full text-gray-400 text-xs">
                           No Image

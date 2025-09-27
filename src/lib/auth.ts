@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { CustomPrismaAdapter } from "@/lib/customPrismaAdapter";
 import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcryptjs";
 
 export const authConfig = {
-  adapter: PrismaAdapter(prisma),
+  adapter: CustomPrismaAdapter(prisma),
   session: { strategy: "jwt" as const },
   pages: {
     signIn: "/login",

@@ -49,11 +49,20 @@ export default function CartPage() {
         return;
       }
 
-      const response = await fetch(`/api/cart?sessionId=${sessionId}`);
+      const response = await fetch('/api/cart/fetch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId }),
+      });
+      
       const data = await response.json();
       setCart(data);
     } catch (error) {
-      console.error("Error fetching cart:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error fetching cart:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -211,12 +220,21 @@ export default function CartPage() {
                 <div className="flex gap-4">
                   <div className="w-20 h-20 relative bg-gray-100 dark:bg-gray-800 rounded overflow-hidden flex-shrink-0">
                     {item.variant.product.images.length > 0 ? (
-                      <Image
-                        src={item.variant.product.images[0]}
-                        alt={item.variant.product.name}
-                        fill
-                        className="object-cover"
-                      />
+                      item.variant.product.images[0].includes('.s3.') || item.variant.product.images[0].includes('amazonaws.com') ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.variant.product.images[0]}
+                          alt={item.variant.product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Image
+                          src={item.variant.product.images[0]}
+                          alt={item.variant.product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      )
                     ) : (
                       <div className="flex items-center justify-center h-full text-gray-400 text-xs">
                         No Image

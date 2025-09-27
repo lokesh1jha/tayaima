@@ -21,7 +21,9 @@ export const useCheckoutSync = () => {
       // Navigate to checkout page after successful sync
       router.push('/checkout');
     } catch (error) {
-      console.error('Failed to sync cart before checkout:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to sync cart before checkout:', error);
+      }
       throw new Error('Failed to sync cart. Please try again.');
     }
   }, [forceSync, items.length, router]);
