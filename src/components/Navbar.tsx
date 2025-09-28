@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import Button from "./ui/Button";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
@@ -40,9 +41,18 @@ export default function Navbar() {
   return (
     <header className="border-b backdrop-blur sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
       <div className="container flex h-16 items-center justify-between">
-        <Link href={ROUTES.HOME} className="font-bold text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
-          <span className="text-2xl">🏪</span>
-          TaYaima
+        <Link href={ROUTES.HOME} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Image
+            src="/tayaima-logo.jpeg"
+            alt="TaYaima Logo"
+            width={40}
+            height={40}
+            className="rounded-lg object-contain"
+            priority
+          />
+          <span className="font-bold text-xl text-blue-600 dark:text-blue-400">
+            TaYaima
+          </span>
         </Link>
         <nav className="flex items-center gap-4">
           {/* Desktop Navigation - Products and Cart */}

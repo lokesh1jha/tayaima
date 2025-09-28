@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     description: "Fresh groceries, household items, and daily essentials delivered to your doorstep. Shop online with ease and convenience.",
     url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
     siteName: "TaYaima",
-    images: [{ url: "/icon-512x512.svg", width: 512, height: 512, alt: "TaYaima - Fresh Grocery Delivery Service" }],
+    images: [{ url: "/tayaima-logo.jpeg", width: 1200, height: 630, alt: "TaYaima - Fresh Grocery Delivery Service" }],
     locale: "en_US",
     type: "website",
   },
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TaYaima - Your Daily Needs Delivered",
     description: "Fresh groceries, household items, and daily essentials delivered to your doorstep. Shop online with ease and convenience.",
-    images: ["/icon-512x512.svg"],
+    images: ["/tayaima-logo.jpeg"],
     creator: "@tayaima",
   },
 };

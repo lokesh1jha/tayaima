@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input-enhanced";
 import { cn } from "@/lib/utils";
@@ -12,10 +13,26 @@ type Props = {
 export default function SignupFormDemo({ onSubmit }: Props) {
   return (
     <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
-      <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+      {/* Logo */}
+      <div className="flex justify-center mb-6">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/tayaima-logo.jpeg"
+            alt="TaYaima Logo"
+            width={48}
+            height={48}
+            className="rounded-lg object-contain"
+          />
+          <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
+            TaYaima
+          </span>
+        </div>
+      </div>
+      
+      <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 text-center">
         Welcome to TaYaima
       </h2>
-      <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300 text-center mx-auto">
         Create your account to start shopping for fresh groceries and daily essentials
       </p>
 
