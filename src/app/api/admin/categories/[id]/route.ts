@@ -114,7 +114,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     // Check if category has products
     if (existingCategory._count.products > 0) {
       return NextResponse.json({ 
-        error: `Cannot delete category with ${existingCategory._count.products} products. Please move or delete the products first.` 
+        error: `Cannot delete "${existingCategory.name}" because it has ${existingCategory._count.products} product(s). You need to change the category of these products first before deleting this category.`,
+        productCount: existingCategory._count.products,
+        canDelete: false
       }, { status: 400 });
     }
 
