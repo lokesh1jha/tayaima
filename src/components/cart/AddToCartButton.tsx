@@ -31,8 +31,12 @@ export const AddToCartButton = ({
   disabled,
   children = 'Add to Cart',
 }: AddToCartButtonProps) => {
-  const { addToCart } = useCart();
+  const { addToCart, updateCartItem, removeFromCart, getItemQuantity, isLoading } = useCart();
   const [isAdding, setIsAdding] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const currentQuantity = getItemQuantity(productId, variantId);
+  const isInCart = currentQuantity > 0;
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -62,8 +66,78 @@ export const AddToCartButton = ({
     }
   };
 
-  const isButtonDisabled = disabled || isAdding;
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (newQuantity === currentQuantity) return;
+    
+    if (newQuantity <= 0) {
+      handleRemove();
+      return;
+    }
 
+    setIsUpdating(true);
+
+    try {
+      const itemId = `${productId}-${variantId}`;
+      updateCartItem({ itemId, quantity: newQuantity });
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to update quantity:', error);
+      }
+      toast.error('Failed to update quantity');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    setIsUpdating(true);
+
+    try {
+      const itemId = `${productId}-${variantId}`;
+      removeFromCart(itemId);
+      toast.success(`Removed ${productName} from cart`);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to remove item:', error);
+      }
+      toast.error('Failed to remove item');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const isButtonDisabled = disabled || isAdding || isUpdating || isLoading;
+
+  // If item is in cart, show quantity controls
+  if (isInCart) {
+    return (
+      <div className={`flex items-center gap-1 ${className}`}>
+        <Button
+          variant="secondary"
+          onClick={() => handleQuantityChange(currentQuantity - 1)}
+          disabled={isButtonDisabled}
+          className="h-8 w-8 p-0 text-sm"
+        >
+          -
+        </Button>
+        
+        <span className="min-w-[2rem] text-center text-sm font-medium px-2">
+          {currentQuantity}
+        </span>
+        
+        <Button
+          variant="secondary"
+          onClick={() => handleQuantityChange(currentQuantity + 1)}
+          disabled={isButtonDisabled}
+          className="h-8 w-8 p-0 text-sm"
+        >
+          +
+        </Button>
+      </div>
+    );
+  }
+
+  // If item is not in cart, show Add button
   return (
     <Button
       onClick={handleAddToCart}

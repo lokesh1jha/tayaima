@@ -54,7 +54,6 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-
 model VerificationToken {
   identifier String
   token      String   @unique

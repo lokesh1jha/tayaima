@@ -1,11 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { CustomPrismaAdapter } from "@/lib/customPrismaAdapter";
 import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcryptjs";
 
 export const authConfig = {
-  adapter: CustomPrismaAdapter(prisma),
   session: { strategy: "jwt" as const },
   pages: {
     signIn: "/login",
@@ -40,21 +38,31 @@ export const authConfig = {
   ],
   callbacks: {
     async jwt({ token, user }: any) {
-      if (user) {
-        // First time JWT callback is run, user object is available
-        token.role = (user as any).role ?? "USER";
-        token.id = (user as any).id;
+      try {
+        if (user) {
+          token.id = user.id;
+          token.role = user.role ?? "USER";
+        }
+        return token;
+      } catch (error) {
+        console.error('JWT callback error:', error);
+        return token;
       }
-      return token;
     },
     async session({ session, token }: any) {
-      if (session.user) {
-        session.user.id = (token.sub as string) || ((token as any).id as string);
-        (session.user as any).role = (token as any).role ?? "USER";
+      try {
+        if (session.user && token) {
+          session.user.id = token.id;
+          (session.user as any).role = token.role ?? "USER";
+        }
+        return session;
+      } catch (error) {
+        console.error('Session callback error:', error);
+        return session;
       }
-      return session;
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 };
 
 export const authOptions = authConfig;
