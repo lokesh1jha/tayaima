@@ -43,17 +43,26 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.id;
 
+    // First, verify that the user exists in the database
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      // User not found - session is stale, return specific error
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Session expired. Please log in again.',
+          error: 'STALE_SESSION'
+        },
+        { status: 401 }
+      );
+    }
+
     // Start a transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
-      // First, verify that the user exists in the database
-      const user = await tx.user.findUnique({
-        where: { id: userId },
-        select: { id: true },
-      });
-
-      if (!user) {
-        throw new Error(`User with ID ${userId} not found in database. Session may be stale.`);
-      }
 
       // Get user's current cart by userId (find first cart for this user)
       const existingCart = await tx.cart.findFirst({
@@ -173,17 +182,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof Error) {
-      // If user not found, return 401 to trigger logout
-      if (error.message.includes('User with ID') && error.message.includes('not found')) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'Session expired. Please log in again.',
-          },
-          { status: 401 }
-        );
-      }
-
       return NextResponse.json(
         {
           success: false,

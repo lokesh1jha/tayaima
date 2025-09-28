@@ -25,7 +25,7 @@ Disallow: /api/
 Disallow: *.json$
 
 # Sitemap location
-Sitemap: ${process.env.NEXT_PUBLIC_APP_URL || 'https://tayaima.store'}/sitemap.xml
+Sitemap: ${process.env.NEXT_PUBLIC_APP_URL || 'https://tayaima.com'}/sitemap.xml
 
 # Crawl delay (optional - helps with server load)
 Crawl-delay: 1

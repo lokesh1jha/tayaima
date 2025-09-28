@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
-import LoadingSpinner, { LoadingPage } from "@/components/ui/LoadingSpinner";
+import { SkeletonProductCard, Skeleton } from "@/components/ui/Skeleton";
 import ProductCard from "@/components/ProductCard";
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
@@ -59,7 +59,31 @@ function ProductsPageContent() {
 
   // Loading state for initial load
   if (categoriesLoading) {
-    return <LoadingPage message="Loading categories..." />;
+    return (
+      <div className="container max-w-screen-2xl py-8">
+        <div className="flex gap-6">
+          {/* Sidebar Skeleton */}
+          <div className="w-64 space-y-4">
+            <Skeleton className="h-6 w-24" />
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 w-full" />
+              ))}
+            </div>
+          </div>
+          
+          {/* Main Content Skeleton */}
+          <div className="flex-1 space-y-6">
+            <Skeleton className="h-10 w-full max-w-md" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <SkeletonProductCard key={i} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Error states
@@ -99,7 +123,6 @@ function ProductsPageContent() {
               <div className="h-full w-full bg-neutral-100 dark:bg-neutral-800 p-4 border-r border-gray-200 dark:border-gray-800">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
                   Categories
-                  {categoriesLoading && <LoadingSpinner className="inline ml-2 w-4 h-4" />}
                 </h3>
                 <div className="flex flex-col gap-1">
                   {categories.map((category) => (
@@ -128,7 +151,7 @@ function ProductsPageContent() {
               <h1 className="text-3xl font-bold">Our Products</h1>
               {productsFetching && (
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <LoadingSpinner className="w-4 h-4" />
+                  <div className="w-4 h-4 bg-gray-300 rounded animate-pulse" />
                   <span>Loading products...</span>
                 </div>
               )}
@@ -166,7 +189,11 @@ function ProductsPageContent() {
 
           {/* Products Grid */}
           {productsLoading ? (
-            <LoadingPage message="Loading products..." />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <SkeletonProductCard key={i} />
+              ))}
+            </div>
           ) : filteredProducts.length === 0 ? (
             <Card className="p-8 text-center">
               <h3 className="text-lg font-semibold mb-2">No products found</h3>
@@ -204,7 +231,28 @@ function ProductsPageContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<LoadingPage message="Loading..." />}>
+    <Suspense fallback={
+      <div className="container max-w-screen-2xl py-8">
+        <div className="flex gap-6">
+          <div className="w-64 space-y-4">
+            <Skeleton className="h-6 w-24" />
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 w-full" />
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 space-y-6">
+            <Skeleton className="h-10 w-full max-w-md" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <SkeletonProductCard key={i} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
       <ProductsPageContent />
     </Suspense>
   );

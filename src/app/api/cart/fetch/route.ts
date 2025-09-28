@@ -27,14 +27,22 @@ export async function POST(req: Request) {
         select: { id: true },
       });
 
-      if (user) {
-        // Find cart by userId only if user exists
-        cart = await prisma.cart.findFirst({
-          where: { userId: session.user.id },
-          include: { items: { include: { variant: { include: { product: true } } } } },
-        });
+      if (!user) {
+        // User not found - session is stale
+        return NextResponse.json(
+          { 
+            error: 'Session expired. Please log in again.',
+            code: 'STALE_SESSION'
+          },
+          { status: 401 }
+        );
       }
-      // If user doesn't exist, cart remains null (empty cart returned)
+      
+      // Find cart by userId
+      cart = await prisma.cart.findFirst({
+        where: { userId: session.user.id },
+        include: { items: { include: { variant: { include: { product: true } } } } },
+      });
     } else if (sessionId) {
       // For guest users, find cart by sessionId
       cart = await prisma.cart.findUnique({

@@ -57,7 +57,14 @@ export async function POST(req: Request) {
       });
 
       if (!user) {
-        return new NextResponse("Session expired. Please log in again.", { status: 401 });
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'Session expired. Please log in again.',
+            error: 'STALE_SESSION'
+          },
+          { status: 401 }
+        );
       }
 
       // Find or create cart for authenticated user

@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import LoginFormDemo from "@/components/login-form-demo";
@@ -9,6 +9,14 @@ import LoginFormDemo from "@/components/login-form-demo";
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check for session expiry message using utility function
+    const { checkAndClearSessionExpiry } = require('@/lib/sessionUtils');
+    if (checkAndClearSessionExpiry()) {
+      toast.error('Your session has expired. Please log in again.');
+    }
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

@@ -183,7 +183,7 @@ npm run dev
 ### **Production Testing:**
 ```bash
 # Test S3 upload via API
-curl -X POST https://tayaima.store/api/admin/uploads \
+curl -X POST https://tayaima.com/api/admin/uploads \
   -H "Authorization: Bearer admin-token" \
   -F "file=@test-image.jpg"
 ```

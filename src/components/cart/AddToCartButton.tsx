@@ -31,7 +31,7 @@ export const AddToCartButton = ({
   disabled,
   children = 'Add to Cart',
 }: AddToCartButtonProps) => {
-  const { addToCart, isLoading } = useCart();
+  const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddToCart = async () => {
@@ -62,7 +62,7 @@ export const AddToCartButton = ({
     }
   };
 
-  const isButtonDisabled = disabled || isAdding || isLoading;
+  const isButtonDisabled = disabled || isAdding;
 
   return (
     <Button

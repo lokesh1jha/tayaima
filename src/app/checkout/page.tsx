@@ -11,6 +11,7 @@ import { LoadingPage } from "@/components/ui/LoadingSpinner";
 import { AlertModal } from "@/components/ui/Modal";
 import { CheckoutSkeleton } from "@/components/ui/CheckoutSkeleton";
 import { useCart } from "@/hooks/useCart";
+import { useCartSync } from "@/hooks/useCartSync";
 import { ROUTES } from "@/lib/constants";
 
 interface CartItem {
@@ -62,6 +63,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const { clearCart } = useCart();
+  const { syncForCheckout } = useCartSync();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [cartLoading, setCartLoading] = useState(true);
@@ -90,6 +92,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     // Fetch data in parallel for better performance
     const fetchCheckoutData = async () => {
+      // Sync cart before checkout to ensure latest data
+      await syncForCheckout();
+      
       const promises = [fetchCart()];
       
       if (session) {
@@ -107,7 +112,7 @@ export default function CheckoutPage() {
     };
     
     fetchCheckoutData();
-  }, [session]);
+  }, [session, syncForCheckout]);
 
   const fetchCart = async () => {
     try {
@@ -124,6 +129,16 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({ sessionId }),
       });
+      
+      if (!response.ok && response.status === 401) {
+        const errorData = await response.json();
+        if (errorData.code === 'STALE_SESSION') {
+          // Session is stale, trigger logout
+          const { handleSessionExpiry } = await import('@/lib/sessionUtils');
+          await handleSessionExpiry();
+          return;
+        }
+      }
       
       const data = await response.json();
       

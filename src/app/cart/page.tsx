@@ -57,6 +57,16 @@ export default function CartPage() {
         body: JSON.stringify({ sessionId }),
       });
       
+      if (!response.ok && response.status === 401) {
+        const errorData = await response.json();
+        if (errorData.code === 'STALE_SESSION') {
+          // Session is stale, trigger logout
+          const { handleSessionExpiry } = await import('@/lib/sessionUtils');
+          await handleSessionExpiry();
+          return;
+        }
+      }
+      
       const data = await response.json();
       setCart(data);
     } catch (error) {

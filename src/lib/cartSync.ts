@@ -208,6 +208,26 @@ class CartSyncManager {
       });
 
       if (!response.ok) {
+        // Handle 401 errors gracefully - user session expired
+        if (response.status === 401) {
+          const errorData = await response.json().catch(() => ({}));
+          
+          // If it's a stale session, trigger logout
+          if (errorData.error === 'STALE_SESSION') {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Stale session detected, triggering logout');
+            }
+            
+            // Use utility function to handle session expiry
+            const { handleSessionExpiry } = await import('@/lib/sessionUtils');
+            await handleSessionExpiry();
+          } else {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Cart sync failed: User session expired');
+            }
+          }
+          return false; // Don't throw error for auth issues
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 

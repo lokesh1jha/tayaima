@@ -160,7 +160,7 @@ AWS_S3_BUCKET_NAME="tayaima"
   {
     "AllowedHeaders": ["*"],
     "AllowedMethods": ["GET", "PUT", "POST"],
-    "AllowedOrigins": ["https://tayaima.store", "http://localhost:3000"],
+    "AllowedOrigins": ["https://tayaima.com", "http://localhost:3000"],
     "ExposeHeaders": ["ETag"],
     "MaxAgeSeconds": 3000
   }

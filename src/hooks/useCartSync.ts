@@ -52,7 +52,16 @@ export const useCartSync = () => {
     };
   }, [forceSync]);
 
+  // Manual sync function for checkout
+  const syncForCheckout = async () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Syncing cart for checkout');
+    }
+    return await forceSync();
+  };
+
   return {
     forceSync,
+    syncForCheckout,
   };
 };

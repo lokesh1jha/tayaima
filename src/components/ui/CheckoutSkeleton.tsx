@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonCard } from "./Skeleton";
+import { Skeleton } from "./Skeleton";
 
 export function CheckoutSkeleton() {
   return (
@@ -6,7 +6,7 @@ export function CheckoutSkeleton() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Address & Payment */}
         <div className="lg:col-span-2 space-y-8">
-          <SkeletonCard className="p-6 space-y-4">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
             <Skeleton className="h-8 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
@@ -15,19 +15,19 @@ export function CheckoutSkeleton() {
               <Skeleton className="h-10 w-24" />
               <Skeleton className="h-10 w-24" />
             </div>
-          </SkeletonCard>
+          </div>
           
-          <SkeletonCard className="p-6 space-y-4">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
             <Skeleton className="h-8 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-1/2" />
-          </SkeletonCard>
+          </div>
         </div>
 
         {/* Right Column: Order Summary */}
         <div className="lg:col-span-1 space-y-8">
-          <SkeletonCard className="p-6 space-y-4">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
             <Skeleton className="h-8 w-2/3" />
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -41,7 +41,7 @@ export function CheckoutSkeleton() {
               ))}
             </div>
             <Skeleton className="h-10 w-full mt-4" />
-          </SkeletonCard>
+          </div>
         </div>
       </div>
     </div>
