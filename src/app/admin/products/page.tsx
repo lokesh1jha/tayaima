@@ -7,6 +7,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
+import { SkeletonProductCard, SkeletonForm, Skeleton } from "@/components/ui/Skeleton";
 import Modal, { ConfirmModal } from "@/components/ui/Modal";
 import { toast } from "sonner";
 import ProductVariantManager, { ProductVariant } from "@/components/admin/ProductVariantManager";
@@ -184,7 +185,37 @@ export default function AdminProductsPage() {
   };
 
   if (loading) {
-    return <LoadingPage message="Loading products..." />;
+    return (
+      <div className="space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center">
+          <div>
+            <Skeleton className="h-9 w-32 mb-2" />
+            <Skeleton className="h-5 w-48" />
+          </div>
+          <Skeleton className="h-10 w-28" />
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="flex gap-4 items-end">
+          <div className="flex-1 max-w-xs">
+            <Skeleton className="h-4 w-32 mb-2" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="flex-1 max-w-md">
+            <Skeleton className="h-4 w-28 mb-2" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+
+        {/* Products Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <SkeletonProductCard key={i} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

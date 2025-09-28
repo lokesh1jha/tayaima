@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
+import { SkeletonTable, Skeleton } from "@/components/ui/Skeleton";
 
 interface User {
   id: string;
@@ -33,7 +34,14 @@ export default function AdminUsersPage() {
   };
 
   if (loading) {
-    return <LoadingPage message="Loading users..." />;
+    return (
+      <div className="grid gap-6">
+        <Skeleton className="h-8 w-32" />
+        <Card className="p-4">
+          <SkeletonTable rows={8} cols={2} />
+        </Card>
+      </div>
+    );
   }
 
   return (

@@ -5,6 +5,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { LoadingPage } from "@/components/ui/LoadingSpinner";
+import { SkeletonCategoryDropdown, SkeletonCategoryDetails, SkeletonForm } from "@/components/ui/Skeleton";
 import Modal, { ConfirmModal } from "@/components/ui/Modal";
 import { toast } from "sonner";
 import { slugify } from "@/lib/slugify";
@@ -200,7 +201,20 @@ export default function AdminCategoriesPage() {
   };
 
   if (loading) {
-    return <LoadingPage message="Loading categories..." />;
+    return (
+      <div className="grid gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        
+        <Card className="p-6">
+          <SkeletonCategoryDropdown />
+        </Card>
+        
+        <SkeletonCategoryDetails />
+      </div>
+    );
   }
 
   return (
