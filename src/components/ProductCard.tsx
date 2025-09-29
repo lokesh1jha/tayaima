@@ -48,8 +48,11 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
   const minPrice = hasVariants ? Math.min(...variants.map(v => v.price)) : 0;
   const maxPrice = hasVariants ? Math.max(...variants.map(v => v.price)) : 0;
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(price / 100);
+  const formatPrice = (price: number) => {
+    const formatted = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(price / 100);
+    // Remove .00 for whole numbers
+    return formatted.replace(/\.00$/, '');
+  };
 
   const formatUnit = (unit: string, amount: number) => {
     const unitMap: { [key: string]: string } = {
@@ -88,30 +91,9 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         <h3 className={`font-semibold ${compact ? 'text-xs sm:text-sm' : 'text-xs sm:text-sm md:text-lg'} line-clamp-2`}>{product.name}</h3>
       </Link>
 
-      {/* Variant selector */}
-      {hasVariants && variants.length > 1 && (
-        <div className={`${compact ? 'mt-2 gap-1' : 'mt-2'} flex flex-wrap gap-1.5`}>
-          {variants.map((variant) => (
-            <button
-              key={variant.id}
-              onClick={(e) => {
-                e.preventDefault();
-                setSelectedVariantId(variant.id);
-              }}
-              className={`px-2 py-1 rounded-md border text-xs sm:text-sm transition-colors ${
-                selectedVariant?.id === variant.id
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              {formatUnit(variant.unit, variant.amount)}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className={`${compact ? 'mt-2' : 'mt-2 sm:mt-3'} flex items-center justify-between`}>
-        <div className={`${compact ? 'text-sm' : 'text-sm sm:text-base md:text-lg'} font-bold text-green-600`}>
+      {/* Price and Variant Row */}
+      <div className={`${compact ? 'mt-2' : 'mt-2 sm:mt-3'} flex items-center justify-between gap-2`}>
+        <div className={`${compact ? 'text-sm' : 'text-sm sm:text-base xl:text-lg'} font-bold text-green-600 flex-shrink min-w-0`}>
           {!hasVariants ? (
             <span className="text-gray-500">Price not available</span>
           ) : selectedVariant ? (
@@ -122,6 +104,27 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
             `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
           )}
         </div>
+        
+        {/* Variant Dropdown */}
+        {hasVariants && variants.length > 1 && (
+          <div className="flex-shrink-0">
+            <select
+              value={selectedVariantId || ''}
+              onChange={(e) => setSelectedVariantId(e.target.value)}
+              className={`${compact ? 'text-xs px-2 py-1' : 'text-xs sm:text-sm px-2 py-1'} border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600`}
+            >
+              {variants.map((variant) => (
+                <option key={variant.id} value={variant.id}>
+                  {formatUnit(variant.unit, variant.amount)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Cart Button Row */}
+      <div className={`${compact ? 'mt-2' : 'mt-2'} flex justify-center`}>
         {selectedVariant && (
           <AddToCartButton
             productId={product.id}
@@ -131,14 +134,16 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
             variantAmount={selectedVariant.amount}
             price={selectedVariant.price}
             imageUrl={product.images[0]}
-            className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'}`}
+            className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'} w-full`}
           >
-            Add
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 1.5M7 13l1.5 1.5m4.5-1.5h6" />
+            </svg>
           </AddToCartButton>
         )}
         {!hasVariants && (
-          <Link href={`/products/${product.slug}`}>
-            <Button className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'}`}>
+          <Link href={`/products/${product.slug}`} className="w-full">
+            <Button className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'} w-full`}>
               View Details
             </Button>
           </Link>

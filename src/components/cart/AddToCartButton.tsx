@@ -110,18 +110,21 @@ export const AddToCartButton = ({
 
   // If item is in cart, show quantity controls
   if (isInCart) {
+    // Extract responsive classes from the passed className
+    const isCompact = className?.includes('h-8 text-xs') && !className?.includes('sm:h-9');
+    
     return (
-      <div className={`flex items-center gap-1 ${className}`}>
+      <div className={`flex items-center justify-center ${isCompact ? 'gap-1' : 'gap-2'} ${className?.replace(/h-\d+|text-\w+|w-full/g, '').trim()}`}>
         <Button
           variant="secondary"
           onClick={() => handleQuantityChange(currentQuantity - 1)}
           disabled={isButtonDisabled}
-          className="h-8 w-8 p-0 text-sm"
+          className={`p-0 ${isCompact ? 'h-8 w-8 text-xs' : 'h-8 w-8 sm:h-9 sm:w-9 text-xs sm:text-sm'}`}
         >
           -
         </Button>
         
-        <span className="min-w-[2rem] text-center text-sm font-medium px-2">
+        <span className={`text-center font-medium ${isCompact ? 'min-w-[2rem] text-xs px-2' : 'min-w-[2.5rem] text-xs sm:text-sm px-2 sm:px-3'}`}>
           {currentQuantity}
         </span>
         
@@ -129,7 +132,7 @@ export const AddToCartButton = ({
           variant="secondary"
           onClick={() => handleQuantityChange(currentQuantity + 1)}
           disabled={isButtonDisabled}
-          className="h-8 w-8 p-0 text-sm"
+          className={`p-0 ${isCompact ? 'h-8 w-8 text-xs' : 'h-8 w-8 sm:h-9 sm:w-9 text-xs sm:text-sm'}`}
         >
           +
         </Button>
