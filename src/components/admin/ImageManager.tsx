@@ -11,19 +11,62 @@ type Props = {
   onChange: (images: string[]) => void;
 };
 
-// Simple image component since URLs are now pre-signed from APIs
+// Image component that handles URL signing for S3 images
 function ImagePreview({ src, alt, onRemove }: { src: string; alt: string; onRemove: () => void }) {
+  const [signedUrl, setSignedUrl] = useState<string>(src);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  
   // Use regular img tag for S3 URLs (signed URLs) to avoid Next.js image optimization issues
   const isS3Url = src.includes('.s3.') || src.includes('amazonaws.com');
   
+  useEffect(() => {
+    if (isS3Url) {
+      setLoading(true);
+      setError(false);
+      
+      // Call API to sign the URL
+      fetch('/api/admin/sign-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: src }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.signedUrl) {
+            setSignedUrl(data.signedUrl);
+          } else {
+            throw new Error(data.error || 'Failed to sign URL');
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error('Failed to sign URL:', err);
+          setError(true);
+          setLoading(false);
+        });
+    }
+  }, [src, isS3Url]);
+  
   return (
     <div className="relative aspect-square">
-      {isS3Url ? (
+      {loading ? (
+        <div className="w-full h-full bg-gray-100 rounded flex items-center justify-center">
+          <div className="text-sm text-gray-500">Loading...</div>
+        </div>
+      ) : error ? (
+        <div className="w-full h-full bg-red-50 rounded flex items-center justify-center">
+          <div className="text-sm text-red-500">Failed to load</div>
+        </div>
+      ) : isS3Url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img 
-          src={src} 
+          src={signedUrl} 
           alt={alt} 
           className="w-full h-full object-cover rounded"
+          onError={() => setError(true)}
         />
       ) : (
         <Image src={src} alt={alt} fill className="object-cover rounded" />
