@@ -72,7 +72,12 @@ function ImagePreview({ src, alt, onRemove }: { src: string; alt: string; onRemo
         <Image src={src} alt={alt} fill className="object-cover rounded" />
       )}
       <div className="absolute top-2 right-2">
-        <Button variant="ghost" onClick={onRemove} className="text-red-600 h-8 w-8 p-0 bg-white/80 hover:bg-white">
+        <Button 
+          type="button"
+          variant="ghost" 
+          onClick={onRemove} 
+          className="text-red-600 h-8 w-8 p-0 bg-white/80 hover:bg-white"
+        >
           ×
         </Button>
       </div>
@@ -164,7 +169,11 @@ export default function ImageManager({ images, onChange }: Props) {
             onChange={(e) => onFiles(e.target.files)}
             className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
-          <Button disabled={uploading} className="min-w-[100px]">
+          <Button 
+            type="button"
+            disabled={uploading} 
+            className="min-w-[100px]"
+          >
             {uploading ? "Uploading..." : "Upload"}
           </Button>
         </div>
