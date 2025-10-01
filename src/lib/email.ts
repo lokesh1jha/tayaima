@@ -278,6 +278,179 @@ This is an automated email. Please do not reply to this message.
       return false;
     }
   }
+
+  public async sendOrderConfirmationEmail(
+    to: string,
+    orderId: string,
+    customerName: string,
+    totalAmount: number,
+    items: any[]
+  ): Promise<boolean> {
+    const template = this.getOrderConfirmationTemplate(orderId, customerName, totalAmount, items);
+    return await this.sendEmail(to, template.subject, template.html, template.text);
+  }
+
+  public async sendOrderStatusUpdateEmail(
+    to: string,
+    orderId: string,
+    customerName: string,
+    status: string,
+    items: any[]
+  ): Promise<boolean> {
+    const template = this.getOrderStatusUpdateTemplate(orderId, customerName, status, items);
+    return await this.sendEmail(to, template.subject, template.html, template.text);
+  }
+
+  private getOrderConfirmationTemplate(
+    orderId: string,
+    customerName: string,
+    totalAmount: number,
+    items: any[]
+  ): EmailTemplate {
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Confirmation - TaYaima</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #28a745; margin-bottom: 20px;">Order Confirmation - TaYaima</h2>
+          <p>Hello ${customerName},</p>
+          <p>Thank you for your order! Your order has been placed successfully.</p>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Order Details:</h3>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Total Amount:</strong> ₹${(totalAmount / 100).toFixed(2)}</p>
+          </div>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Items Ordered:</h3>
+            <ul style="list-style: none; padding: 0;">
+              ${items.map(item => `
+                <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                  ${item.variant.product.name} - ${item.variant.amount} ${item.variant.unit} × ${item.quantity} = ₹${(item.total / 100).toFixed(2)}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          
+          <p>We'll notify you when your order is shipped.</p>
+          <p>Best regards,<br><strong>TaYaima Team</strong></p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+      Order Confirmation - TaYaima
+      
+      Hello ${customerName},
+      
+      Thank you for your order! Your order has been placed successfully.
+      
+      Order Details:
+      Order ID: ${orderId}
+      Total Amount: ₹${(totalAmount / 100).toFixed(2)}
+      
+      Items Ordered:
+      ${items.map(item => `- ${item.variant.product.name} - ${item.variant.amount} ${item.variant.unit} × ${item.quantity} = ₹${(item.total / 100).toFixed(2)}`).join('\n')}
+      
+      We'll notify you when your order is shipped.
+      
+      Best regards,
+      TaYaima Team
+    `;
+
+    return {
+      subject: `Order Confirmation #${orderId} - TaYaima`,
+      html,
+      text
+    };
+  }
+
+  private getOrderStatusUpdateTemplate(
+    orderId: string,
+    customerName: string,
+    status: string,
+    items: any[]
+  ): EmailTemplate {
+    const statusMessages = {
+      'SHIPPED': 'Your order has been shipped and is on its way!',
+      'DELIVERED': 'Your order has been delivered successfully!',
+      'CANCELLED': 'Your order has been cancelled.'
+    };
+    
+    const message = statusMessages[status as keyof typeof statusMessages] || 'Your order status has been updated.';
+    const statusColor = status === 'DELIVERED' ? '#28a745' : status === 'CANCELLED' ? '#dc3545' : '#007bff';
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Update - TaYaima</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+          <h2 style="color: ${statusColor}; margin-bottom: 20px;">Order Update - TaYaima</h2>
+          <p>Hello ${customerName},</p>
+          <p>${message}</p>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Order Details:</h3>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Status:</strong> <span style="color: ${statusColor}; font-weight: bold;">${status}</span></p>
+          </div>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Items:</h3>
+            <ul style="list-style: none; padding: 0;">
+              ${items.map(item => `
+                <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                  ${item.variant.product.name} - ${item.variant.amount} ${item.variant.unit} × ${item.quantity}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          
+          <p>Thank you for choosing TaYaima!</p>
+          <p>Best regards,<br><strong>TaYaima Team</strong></p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+      Order Update - TaYaima
+      
+      Hello ${customerName},
+      
+      ${message}
+      
+      Order Details:
+      Order ID: ${orderId}
+      Status: ${status}
+      
+      Items:
+      ${items.map(item => `- ${item.variant.product.name} - ${item.variant.amount} ${item.variant.unit} × ${item.quantity}`).join('\n')}
+      
+      Thank you for choosing TaYaima!
+      
+      Best regards,
+      TaYaima Team
+    `;
+
+    return {
+      subject: `Order Update #${orderId} - ${status} - TaYaima`,
+      html,
+      text
+    };
+  }
 }
 
 // Export singleton instance

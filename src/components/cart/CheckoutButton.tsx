@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useCheckoutSync } from '@/hooks/useCheckoutSync';
+import { useCartDrawer } from './CartDrawerProvider';
 import Button from '@/components/ui/Button';
 import { CartSyncIndicator } from './CartSyncIndicator';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ export const CheckoutButton = ({
     checkoutItems,
   } = useCheckoutSync();
   
+  const { closeCart } = useCartDrawer();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCheckout = async () => {
@@ -37,6 +39,8 @@ export const CheckoutButton = ({
 
     try {
       await proceedToCheckout();
+      // Close cart drawer after successful checkout navigation
+      closeCart();
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to proceed to checkout');

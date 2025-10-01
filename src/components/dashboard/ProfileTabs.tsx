@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import { LoadingSection } from "@/components/ui/LoadingSpinner";
 import { toast } from "sonner";
 import { ROUTES, NAV_ITEMS, UTILS } from "@/lib/constants";
+import CancelOrderModal from "@/components/ui/CancelOrderModal";
 
 type Props = {
   user: { id?: string; name?: string | null; email?: string | null };
@@ -25,6 +26,15 @@ export default function ProfileTabs({ user }: Props) {
   const [nameInput, setNameInput] = useState(user.name ?? "");
   const [editAddressId, setEditAddressId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [cancelModal, setCancelModal] = useState<{
+    isOpen: boolean;
+    orderId: string;
+    orderTotal: number;
+  }>({
+    isOpen: false,
+    orderId: '',
+    orderTotal: 0,
+  });
 
   // Listen for hash changes
   useEffect(() => {
@@ -165,12 +175,25 @@ export default function ProfileTabs({ user }: Props) {
     return `${amount}${unitMap[unit] || unit.toLowerCase()}`;
   };
 
-  const cancelOrder = async (orderId: string) => {
-    const reason = prompt("Enter cancellation reason (optional):");
-    if (!confirm("Are you sure you want to cancel this order?")) return;
-    
+  const openCancelModal = (orderId: string, orderTotal: number) => {
+    setCancelModal({
+      isOpen: true,
+      orderId,
+      orderTotal,
+    });
+  };
+
+  const closeCancelModal = () => {
+    setCancelModal({
+      isOpen: false,
+      orderId: '',
+      orderTotal: 0,
+    });
+  };
+
+  const cancelOrder = async (reason?: string) => {
     try {
-      const res = await fetch(ROUTES.API.ORDER_CANCEL(orderId), { 
+      const res = await fetch(ROUTES.API.ORDER_CANCEL(cancelModal.orderId), { 
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: reason || undefined }),
@@ -178,6 +201,7 @@ export default function ProfileTabs({ user }: Props) {
       if (res.ok) {
         toast.success("Order cancelled successfully");
         await loadOrders(); // Refresh orders
+        closeCancelModal();
       } else {
         const error = await res.text();
         toast.error(error || "Failed to cancel order");
@@ -241,7 +265,7 @@ export default function ProfileTabs({ user }: Props) {
                       {o.status === "PLACED" && (
                         <Button 
                           variant="error" 
-                          onClick={() => cancelOrder(o.id)}
+                          onClick={() => openCancelModal(o.id, o.totalAmount)}
                           className="text-xs px-2 py-1"
                         >
                           Cancel
@@ -428,15 +452,15 @@ export default function ProfileTabs({ user }: Props) {
         </Card>
       )}
 
-      {active === "settings" && (
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold">Settings</h2>
-          <div className="mt-4 grid gap-3 text-sm text-gray-600 dark:text-gray-300">
-            <div>Notification preferences, privacy, and more will appear here.</div>
-            <Button variant="secondary" className="w-max">Open Settings</Button>
-          </div>
-        </Card>
-      )}
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={cancelModal.isOpen}
+        onClose={closeCancelModal}
+        onConfirm={cancelOrder}
+        orderId={cancelModal.orderId}
+        orderTotal={cancelModal.orderTotal}
+      />
     </div>
   );
 }

@@ -70,7 +70,6 @@ export const NAV_ITEMS = {
     { key: 'orders', label: 'Orders' },
     { key: 'address', label: 'Address' },
     { key: 'personal', label: 'Personal Details' },
-    { key: 'settings', label: 'Settings' },
   ],
 } as const;
 
@@ -87,7 +86,7 @@ export const UTILS = {
   getCurrentProfileTab: () => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.replace('#', '');
-      const validTabs = ['orders', 'address', 'personal', 'settings'];
+      const validTabs = ['orders', 'address', 'personal'];
       return validTabs.includes(hash) ? hash : 'orders';
     }
     return 'orders';

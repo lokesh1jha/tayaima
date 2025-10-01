@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { updateOrderStatusSchema, validateRequestBody } from "@/lib/validations";
+import { emailService } from "@/lib/email";
 
 export async function PATCH(
   req: Request,
@@ -44,6 +45,9 @@ export async function PATCH(
         cancellationReason: status === "CANCELLED" ? cancellationReason : null,
       },
       include: {
+        user: {
+          select: { email: true },
+        },
         items: {
           include: {
             variant: {
@@ -55,6 +59,22 @@ export async function PATCH(
         },
       },
     });
+
+    // Send order status update email (non-blocking)
+    try {
+      if (order.user?.email) {
+        await emailService.sendOrderStatusUpdateEmail(
+          order.user.email,
+          order.id,
+          order.customerName,
+          status,
+          order.items
+        );
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the status update
+      console.error('Failed to send order status update email:', emailError);
+    }
 
     return NextResponse.json(order);
   } catch (error) {

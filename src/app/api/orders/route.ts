@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createOrderSchema, validateRequestBody } from "@/lib/validations";
+import { emailService } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -44,7 +45,17 @@ export async function POST(req: Request) {
           })),
         },
       },
-      include: { items: true },
+      include: { 
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     // naive stock decrement; consider transactions in production
@@ -62,6 +73,34 @@ export async function POST(req: Request) {
         await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
       }
       await prisma.cart.deleteMany({ where: { sessionId } });
+    }
+
+    // Send order confirmation email (non-blocking)
+    try {
+      // Get user email if logged in, otherwise use phone as fallback
+      let customerEmail = null;
+      if (userId) {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true },
+        });
+        customerEmail = user?.email;
+      }
+      
+      // For now, we'll skip email if no user email is available
+      // In a real app, you might want to collect email during checkout
+      if (customerEmail) {
+        await emailService.sendOrderConfirmationEmail(
+          customerEmail,
+          order.id,
+          order.customerName,
+          order.totalAmount,
+          order.items
+        );
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the order
+      console.error('Failed to send order confirmation email:', emailError);
     }
 
     return NextResponse.json(order);

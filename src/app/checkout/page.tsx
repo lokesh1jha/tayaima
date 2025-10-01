@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -87,36 +87,7 @@ export default function CheckoutPage() {
     message: "",
   });
 
-  useEffect(() => {
-    // Fetch data in parallel for better performance
-    const fetchCheckoutData = async () => {
-      const promises = [];
-      
-      if (session) {
-        promises.push(fetchAddresses());
-      } else {
-        // If no session, addresses loading is complete
-        setAddressesLoading(false);
-      }
-      
-      // Execute all API calls in parallel
-      await Promise.allSettled(promises);
-      
-      // Set overall loading to false when both are done
-      setLoading(false);
-    };
-    
-    fetchCheckoutData();
-  }, [session]);
-
-  // Redirect to cart if empty
-  useEffect(() => {
-    if (!isLoading && (!items || items.length === 0)) {
-      router.push("/cart");
-    }
-  }, [items, isLoading, router]);
-
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
     try {
       const response = await fetch(ROUTES.API.USER_ADDRESSES);
       if (response.ok) {
@@ -136,7 +107,35 @@ export default function CheckoutPage() {
     } finally {
       setAddressesLoading(false);
     }
-  };
+  }, []);
+
+  const fetchCheckoutData = useCallback(async () => {
+    const promises = [];
+    
+    if (session) {
+      promises.push(fetchAddresses());
+    } else {
+      // If no session, addresses loading is complete
+      setAddressesLoading(false);
+    }
+    
+    // Execute all API calls in parallel
+    await Promise.allSettled(promises);
+    
+    // Set overall loading to false when both are done
+    setLoading(false);
+  }, [session, fetchAddresses]);
+
+  useEffect(() => {
+    fetchCheckoutData();
+  }, [fetchCheckoutData]);
+
+  // Redirect to cart if empty
+  useEffect(() => {
+    if (!isLoading && (!items || items.length === 0)) {
+      router.push("/cart");
+    }
+  }, [items, isLoading, router]);
 
   const populateFormFromAddress = (address: Address) => {
     setForm(prev => ({
