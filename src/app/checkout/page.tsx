@@ -11,7 +11,7 @@ import { LoadingPage } from "@/components/ui/LoadingSpinner";
 import { AlertModal } from "@/components/ui/Modal";
 import { CheckoutSkeleton } from "@/components/ui/CheckoutSkeleton";
 import { useCart } from "@/hooks/useCart";
-import { useCartSync } from "@/hooks/useCartSync";
+import { useCheckoutSync } from "@/hooks/useCheckoutSync";
 import { ROUTES } from "@/lib/constants";
 
 interface CartItem {
@@ -62,11 +62,9 @@ interface OrderForm {
 export default function CheckoutPage() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { clearCart } = useCart();
-  const { syncForCheckout } = useCartSync();
-  const [cart, setCart] = useState<Cart | null>(null);
+  const { items, total, itemCount, clearCart, isLoading } = useCart();
+  const { canProceedToCheckout } = useCheckoutSync();
   const [loading, setLoading] = useState(true);
-  const [cartLoading, setCartLoading] = useState(true);
   const [addressesLoading, setAddressesLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -92,10 +90,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     // Fetch data in parallel for better performance
     const fetchCheckoutData = async () => {
-      // Sync cart before checkout to ensure latest data
-      await syncForCheckout();
-      
-      const promises = [fetchCart()];
+      const promises = [];
       
       if (session) {
         promises.push(fetchAddresses());
@@ -112,51 +107,14 @@ export default function CheckoutPage() {
     };
     
     fetchCheckoutData();
-  }, [session, syncForCheckout]);
+  }, [session]);
 
-  const fetchCart = async () => {
-    try {
-      const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId) {
-        router.push("/cart");
-        return;
-      }
-
-      const response = await fetch('/api/cart/fetch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sessionId }),
-      });
-      
-      if (!response.ok && response.status === 401) {
-        const errorData = await response.json();
-        if (errorData.code === 'STALE_SESSION') {
-          // Session is stale, trigger logout
-          const { handleSessionExpiry } = await import('@/lib/sessionUtils');
-          await handleSessionExpiry();
-          return;
-        }
-      }
-      
-      const data = await response.json();
-      
-      if (!data.items || data.items.length === 0) {
-        router.push("/cart");
-        return;
-      }
-      
-      setCart(data);
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error("Error fetching cart:", error);
-      }
+  // Redirect to cart if empty
+  useEffect(() => {
+    if (!isLoading && (!items || items.length === 0)) {
       router.push("/cart");
-    } finally {
-      setCartLoading(false);
     }
-  };
+  }, [items, isLoading, router]);
 
   const fetchAddresses = async () => {
     try {
@@ -202,7 +160,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cart) return;
+    if (!items || items.length === 0) return;
 
     setSubmitting(true);
     try {
@@ -217,8 +175,8 @@ export default function CheckoutPage() {
         city: form.city,
         pincode: form.pincode,
         paymentMode: form.paymentMode,
-        items: cart.items.map(item => ({
-          variantId: item.variant.id,
+        items: items.map(item => ({
+          variantId: item.variantId,
           quantity: item.quantity,
         })),
       };
@@ -282,20 +240,18 @@ export default function CheckoutPage() {
   };
 
   const getTotalPrice = () => {
-    if (!cart) return 0;
-    return cart.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+    return total;
   };
 
   const getTotalItems = () => {
-    if (!cart) return 0;
-    return cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    return itemCount;
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     return <CheckoutSkeleton />;
   }
 
-  if (!cart) {
+  if (!items || items.length === 0) {
     return (
       <div className="container py-8">
         <Card className="p-8 text-center">
@@ -440,21 +396,21 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
               
               <div className="space-y-4">
-                {cart.items.map((item) => (
+                {items.map((item) => (
                   <div key={item.id} className="flex gap-3">
                     <div className="w-12 h-12 relative bg-gray-100 dark:bg-gray-800 rounded overflow-hidden flex-shrink-0">
-                      {item.variant.product.images.length > 0 ? (
-                        item.variant.product.images[0].includes('.s3.') || item.variant.product.images[0].includes('amazonaws.com') ? (
+                      {item.imageUrl ? (
+                        item.imageUrl.includes('.s3.') || item.imageUrl.includes('amazonaws.com') ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={item.variant.product.images[0]}
-                            alt={item.variant.product.name}
+                            src={item.imageUrl}
+                            alt={item.productName}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <Image
-                            src={item.variant.product.images[0]}
-                            alt={item.variant.product.name}
+                            src={item.imageUrl}
+                            alt={item.productName}
                             fill
                             className="object-cover"
                           />
@@ -468,16 +424,16 @@ export default function CheckoutPage() {
                     
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm line-clamp-2">
-                        {item.variant.product.name}
+                        {item.productName}
                       </h3>
                       <p className="text-xs text-gray-600 dark:text-gray-300">
-                        {formatUnit(item.variant.unit, item.variant.amount)} × {item.quantity}
+                        {formatUnit(item.variantUnit, item.variantAmount)} × {item.quantity}
                       </p>
                     </div>
                     
                     <div className="text-right">
                       <p className="font-medium">
-                        {formatPrice(item.unitPrice * item.quantity)}
+                        {formatPrice(item.price * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -509,7 +465,7 @@ export default function CheckoutPage() {
               <Button
                 type="submit"
                 className="w-full mt-6"
-                disabled={submitting || !selectedAddressId}
+                disabled={submitting || !selectedAddressId || !canProceedToCheckout}
               >
                 {submitting ? "Placing Order..." : !selectedAddressId ? "Select Address to Continue" : "Place Order"}
               </Button>

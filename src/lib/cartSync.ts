@@ -41,22 +41,17 @@ class CartSyncManager {
   }
 
   /**
-   * Schedule a debounced sync
+   * Schedule a debounced sync (disabled - only using force sync now)
    */
   scheduleSync(
     getCartState: () => CartState,
     updateCartState: (updater: (state: CartState) => CartState) => void,
     force = false
   ): void {
-    if (!force && this.syncTimeoutId) {
-      clearTimeout(this.syncTimeoutId);
+    // Disabled automatic debounced sync - only sync at checkout and login
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Debounced sync disabled - only using force sync');
     }
-
-    const delay = force ? 0 : this.SYNC_DELAY;
-
-    this.syncTimeoutId = setTimeout(async () => {
-      await this.performSync(getCartState, updateCartState);
-    }, delay);
   }
 
   /**
@@ -381,6 +376,13 @@ class CartSyncManager {
     getCartState: () => CartState,
     updateCartState: (updater: (state: CartState) => CartState) => void
   ): Promise<void> {
+    if (this.syncInProgress) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Force sync called but sync already in progress, skipping');
+      }
+      return;
+    }
+    
     this.cancelSync();
     await this.performSync(getCartState, updateCartState);
   }

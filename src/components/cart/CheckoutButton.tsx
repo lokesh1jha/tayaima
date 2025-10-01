@@ -26,8 +26,10 @@ export const CheckoutButton = ({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCheckout = async () => {
-    if (!canProceedToCheckout) {
-      toast.error('Cannot proceed to checkout at this time');
+    if (!canProceedToCheckout || isProcessing) {
+      if (!canProceedToCheckout) {
+        toast.error('Cannot proceed to checkout at this time');
+      }
       return;
     }
 

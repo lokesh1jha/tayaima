@@ -26,31 +26,22 @@ export const useCartSync = () => {
     }
 
     previousSession.current = session;
-  }, [session, status, forceSync]);
+  }, [session, status]);
 
-  // Force sync on page unload/reload
+  // Force sync on page unload (keep this for data safety)
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       // Note: This may not complete due to browser limitations
-      // but we attempt it anyway
+      // but we attempt it anyway for data safety
       forceSync();
     };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        // Page is being hidden, force sync
-        forceSync();
-      }
-    };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [forceSync]);
+  }, []);
 
   // Manual sync function for checkout
   const syncForCheckout = async () => {

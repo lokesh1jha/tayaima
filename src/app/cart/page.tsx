@@ -1,123 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { toast } from "sonner";
-
-interface CartItem {
-  id: string;
-  quantity: number;
-  unitPrice: number;
-  variant: {
-    id: string;
-    unit: string;
-    amount: number;
-    price: number;
-    stock: number;
-    product: {
-      id: string;
-      name: string;
-      slug: string;
-      images: string[];
-    };
-  };
-}
-
-interface Cart {
-  id: string;
-  items: CartItem[];
-}
+import { useCart } from "@/hooks/useCart";
+import { CartSyncIndicator } from "@/components/cart/CartSyncIndicator";
+import { CheckoutButton } from "@/components/cart/CheckoutButton";
 
 export default function CartPage() {
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { items, total, itemCount, isLoading, updateCartItem, removeFromCart } = useCart();
   const [updating, setUpdating] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  const fetchCart = async () => {
-    try {
-      const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId) {
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/cart/fetch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sessionId }),
-      });
-      
-      if (!response.ok && response.status === 401) {
-        const errorData = await response.json();
-        if (errorData.code === 'STALE_SESSION') {
-          // Session is stale, trigger logout
-          const { handleSessionExpiry } = await import('@/lib/sessionUtils');
-          await handleSessionExpiry();
-          return;
-        }
-      }
-      
-      const data = await response.json();
-      setCart(data);
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error("Error fetching cart:", error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
     
     setUpdating(itemId);
     try {
-      // For now, we'll remove and re-add the item with new quantity
-      // In a real app, you'd have a PATCH endpoint for this
-      const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId) {
-        toast.error("Session expired. Please refresh the page.");
-        return;
-      }
-
-      // Remove the item
-      await fetch("/api/cart", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, itemId }),
-      });
-
-      // Add it back with new quantity
-      if (newQuantity > 0) {
-        const item = cart?.items.find(i => i.id === itemId);
-        if (item) {
-          await fetch("/api/cart", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sessionId,
-              variantId: item.variant.id,
-              qty: newQuantity,
-            }),
-          });
-        }
-      }
-
-      await fetchCart();
-      toast.success("Quantity updated");
-    } catch (error) {
-      toast.error("Error updating quantity");
+      updateCartItem({ itemId, quantity: newQuantity });
     } finally {
       setUpdating(null);
     }
@@ -126,22 +28,7 @@ export default function CartPage() {
   const removeItem = async (itemId: string) => {
     setUpdating(itemId);
     try {
-      const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId) {
-        toast.error("Session expired. Please refresh the page.");
-        return;
-      }
-
-      await fetch("/api/cart", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, itemId }),
-      });
-
-      await fetchCart();
-      toast.success("Item removed from cart");
-    } catch (error) {
-      toast.error("Error removing item");
+      removeFromCart(itemId);
     } finally {
       setUpdating(null);
     }
@@ -166,17 +53,7 @@ export default function CartPage() {
     return `${amount}${unitMap[unit] || unit.toLowerCase()}`;
   };
 
-  const getTotalPrice = () => {
-    if (!cart) return 0;
-    return cart.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-  };
-
-  const getTotalItems = () => {
-    if (!cart) return 0;
-    return cart.items.reduce((sum, item) => sum + item.quantity, 0);
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container py-8">
         <div className="max-w-4xl mx-auto">
@@ -199,7 +76,7 @@ export default function CartPage() {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <div className="container py-8">
         <div className="max-w-2xl mx-auto text-center">
@@ -225,22 +102,22 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cart.items.map((item) => (
+            {items.map((item) => (
               <Card key={item.id} className="p-4">
                 <div className="flex gap-4">
                   <div className="w-20 h-20 relative bg-gray-100 dark:bg-gray-800 rounded overflow-hidden flex-shrink-0">
-                    {item.variant.product.images.length > 0 ? (
-                      item.variant.product.images[0].includes('.s3.') || item.variant.product.images[0].includes('amazonaws.com') ? (
+                    {item.imageUrl ? (
+                      item.imageUrl.includes('.s3.') || item.imageUrl.includes('amazonaws.com') ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={item.variant.product.images[0]}
-                          alt={item.variant.product.name}
+                          src={item.imageUrl}
+                          alt={item.productName}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <Image
-                          src={item.variant.product.images[0]}
-                          alt={item.variant.product.name}
+                          src={item.imageUrl}
+                          alt={item.productName}
                           fill
                           className="object-cover"
                         />
@@ -254,16 +131,16 @@ export default function CartPage() {
                   
                   <div className="flex-1 min-w-0">
                     <Link 
-                      href={`/products/${item.variant.product.slug}`}
+                      href={`/products/${item.productId}`}
                       className="font-semibold text-lg hover:text-blue-600 transition-colors"
                     >
-                      {item.variant.product.name}
+                      {item.productName}
                     </Link>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {formatUnit(item.variant.unit, item.variant.amount)}
+                      {formatUnit(item.variantUnit, item.variantAmount)}
                     </p>
                     <p className="text-lg font-semibold text-green-600">
-                      {formatPrice(item.unitPrice)}
+                      {formatPrice(item.price)}
                     </p>
                   </div>
                   
@@ -279,7 +156,7 @@ export default function CartPage() {
                       <Input
                         type="number"
                         min="1"
-                        max={item.variant.stock}
+                        max={item.maxStock || 999}
                         value={item.quantity}
                         onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
                         className="w-16 text-center"
@@ -288,7 +165,7 @@ export default function CartPage() {
                       <Button
                         variant="secondary"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        disabled={updating === item.id || item.quantity >= item.variant.stock}
+                        disabled={updating === item.id || item.quantity >= (item.maxStock || 999)}
                       >
                         +
                       </Button>
@@ -296,7 +173,7 @@ export default function CartPage() {
                     
                     <div className="text-right">
                       <p className="text-lg font-semibold">
-                        {formatPrice(item.unitPrice * item.quantity)}
+                        {formatPrice(item.price * item.quantity)}
                       </p>
                       <Button
                         variant="ghost"
@@ -320,8 +197,8 @@ export default function CartPage() {
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span>Items ({getTotalItems()})</span>
-                  <span>{formatPrice(getTotalPrice())}</span>
+                  <span>Items ({itemCount})</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -334,14 +211,13 @@ export default function CartPage() {
                 <hr />
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>{formatPrice(getTotalPrice())}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Link href="/checkout" className="block">
-                  <Button className="w-full">Proceed to Checkout</Button>
-                </Link>
+                <CartSyncIndicator />
+                <CheckoutButton className="w-full" />
                 <Link href="/products" className="block">
                   <Button variant="secondary" className="w-full">Continue Shopping</Button>
                 </Link>

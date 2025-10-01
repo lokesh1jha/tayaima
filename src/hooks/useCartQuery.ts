@@ -47,6 +47,7 @@ async function fetchCart(): Promise<Cart | null> {
 }
 
 /**
+ * @deprecated This hook is deprecated. Use the new cart system with useCart() from @/hooks/useCart instead.
  * React Query hook for cart data
  */
 export function useCartQuery() {
@@ -63,6 +64,7 @@ export function useCartQuery() {
 }
 
 /**
+ * @deprecated This hook is deprecated. Use the new cart system with useCart() from @/hooks/useCart instead.
  * Mutation for adding items to cart
  */
 export function useAddToCart() {
@@ -104,6 +106,7 @@ export function useAddToCart() {
 }
 
 /**
+ * @deprecated This hook is deprecated. Use the new cart system with useCart() from @/hooks/useCart instead.
  * Mutation for updating cart item quantity
  */
 export function useUpdateCartItem() {
@@ -141,6 +144,7 @@ export function useUpdateCartItem() {
 }
 
 /**
+ * @deprecated This hook is deprecated. Use the new cart system with useCart() from @/hooks/useCart instead.
  * Mutation for removing items from cart
  */
 export function useRemoveFromCart() {

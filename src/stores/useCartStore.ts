@@ -81,7 +81,8 @@ export const useCartStore = create<CartStore>()(
         timestamp: Date.now(),
         payload: { productId, variantId, quantity },
       });
-      get().syncCart();
+      // Disabled automatic sync - only sync at checkout and login
+      // get().syncCart();
     },
 
     removeItem: (itemId: string) => {
@@ -97,7 +98,8 @@ export const useCartStore = create<CartStore>()(
         timestamp: Date.now(),
         payload: { itemId },
       });
-      get().syncCart();
+      // Disabled automatic sync - only sync at checkout and login
+      // get().syncCart();
     },
 
     updateItem: ({ itemId, quantity }: UpdateCartItemParams) => {
@@ -122,7 +124,8 @@ export const useCartStore = create<CartStore>()(
         timestamp: Date.now(),
         payload: { itemId, quantity },
       });
-      get().syncCart();
+      // Disabled automatic sync - only sync at checkout and login
+      // get().syncCart();
     },
 
     clearCart: () => {
@@ -136,7 +139,8 @@ export const useCartStore = create<CartStore>()(
         type: 'clear',
         timestamp: Date.now(),
       });
-      get().syncCart();
+      // Disabled automatic sync - only sync at checkout and login
+      // get().syncCart();
     },
 
     syncCart: () => {
