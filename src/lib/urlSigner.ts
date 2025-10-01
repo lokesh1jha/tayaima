@@ -103,3 +103,63 @@ export async function signUrlsInArray<T extends Record<string, any>>(
   
   return signedArray;
 }
+
+// Utility to invalidate cache for specific URLs
+export function invalidateUrlCache(urls: string[]): void {
+  urls.forEach(url => {
+    if (url) {
+      signedUrlCache.delete(url);
+    }
+  });
+}
+
+// Utility to clear all cached URLs
+export function clearUrlCache(): void {
+  signedUrlCache.clear();
+}
+
+// Utility to invalidate cache for URLs that contain a specific pattern
+export function invalidateUrlCacheByPattern(pattern: string): void {
+  const keysToDelete: string[] = [];
+  
+  for (const [key] of signedUrlCache) {
+    if (key.includes(pattern)) {
+      keysToDelete.push(key);
+    }
+  }
+  
+  keysToDelete.forEach(key => signedUrlCache.delete(key));
+}
+
+// Utility to invalidate cache for a specific product's images
+export function invalidateProductImageCache(productId: string): void {
+  // This is a more targeted approach - we could store product-to-image mappings
+  // For now, we'll use a pattern-based approach
+  invalidateUrlCacheByPattern(`products/${productId}`);
+}
+
+// Utility to get cache statistics (useful for debugging)
+export function getCacheStats(): { size: number; keys: string[] } {
+  return {
+    size: signedUrlCache.size,
+    keys: Array.from(signedUrlCache.keys())
+  };
+}
+
+// Utility to add cache-busting parameter to URLs
+export function addCacheBuster(url: string, timestamp?: number): string {
+  if (!url) return url;
+  
+  const cacheBuster = timestamp || Date.now();
+  const separator = url.includes('?') ? '&' : '?';
+  
+  return `${url}${separator}v=${cacheBuster}`;
+}
+
+// Utility to add cache-busting to multiple URLs
+export function addCacheBusterToUrls(urls: string[], timestamp?: number): string[] {
+  if (!urls || urls.length === 0) return urls;
+  
+  const cacheBuster = timestamp || Date.now();
+  return urls.map(url => addCacheBuster(url, cacheBuster));
+}

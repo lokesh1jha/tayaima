@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { signUrlsInObject } from "@/lib/urlSigner";
+import { signUrlsInObject, invalidateUrlCache } from "@/lib/urlSigner";
 import { createStorageProvider } from "@/lib/storage";
 import { logger } from "@/lib/logger";
 import { generateSKU } from "@/lib/utils";
@@ -179,6 +179,16 @@ export async function PATCH(
       }
     }
 
+    // Invalidate cache for old and new images to ensure fresh URLs
+    if (Array.isArray(images)) {
+      const allImages = [...currentProduct.images, ...images];
+      invalidateUrlCache(allImages);
+      logger.info('Invalidated URL cache for product images', { 
+        productId: id, 
+        imageCount: allImages.length 
+      });
+    }
+
     // Sign URLs before returning
     if (!updated) {
       return NextResponse.json({ error: "Product not found after update" }, { status: 404 });
@@ -249,6 +259,13 @@ export async function DELETE(
 
     // Wait for all image deletions to complete (don't fail if some images fail to delete)
     await Promise.allSettled(imageDeletePromises);
+
+    // Invalidate cache for deleted product images
+    invalidateUrlCache(product.images);
+    logger.info('Invalidated URL cache for deleted product images', { 
+      productId, 
+      imageCount: product.images.length 
+    });
 
     // Delete the product (variants will be cascade deleted automatically)
     await prisma.product.delete({

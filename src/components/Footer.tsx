@@ -15,13 +15,13 @@ export default function Footer() {
               className="rounded-lg object-contain"
             />
             <span className="font-semibold text-lg text-blue-600 dark:text-blue-400">
-              TaYaima
+              Tayaima Store
             </span>
           </div>
           
           {/* Copyright */}
           <p className="text-gray-600 dark:text-gray-400">
-            © {new Date().getFullYear()} TaYaima. All rights reserved.
+            © {new Date().getFullYear()} Tayaima Store. All rights reserved.
           </p>
         </div>
       </div>

@@ -31,7 +31,7 @@ export default function ResponsiveAdminSidebar() {
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-16 left-4 z-50">
         <button
           onClick={toggleMobileMenu}
           className="p-2 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md"
@@ -116,9 +116,9 @@ export default function ResponsiveAdminSidebar() {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-2 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              TaYaima Admin
+              Tayaima Store Admin
             </div>
           </div>
         </div>

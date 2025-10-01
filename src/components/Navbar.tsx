@@ -51,7 +51,7 @@ export default function Navbar() {
             priority
           />
           <span className="font-bold text-xl text-blue-600 dark:text-blue-400">
-            TaYaima
+            Tayaima Store
           </span>
         </Link>
         <nav className="flex items-center gap-4">
