@@ -73,10 +73,13 @@ export default function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   aria-label="Profile Menu"
                 >
                   <IconUser className="w-5 h-5" />
+                  <span className="text-sm font-medium hidden sm:block">
+                    {session?.user?.name || session?.user?.email?.split('@')[0]}
+                  </span>
                 </button>
                 
                 {showProfileDropdown && (
@@ -166,10 +169,13 @@ export default function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   aria-label="Menu"
                 >
                   <IconUser className="w-5 h-5" />
+                  <span className="text-sm font-medium">
+                    Login
+                  </span>
                 </button>
                 
                 {showProfileDropdown && (

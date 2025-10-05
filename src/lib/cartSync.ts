@@ -78,6 +78,38 @@ class CartSyncManager {
 
     const cartState = getCartState();
 
+    // Check if cart has any items with invalid data
+    const hasInvalidItems = cartState.items.some(item => 
+      !item.id || !item.productId || !item.variantId || 
+      !item.productName || !item.variantUnit || 
+      typeof item.variantAmount !== 'number' || 
+      typeof item.price !== 'number' || 
+      typeof item.quantity !== 'number' || item.quantity <= 0
+    );
+
+    if (hasInvalidItems) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Cart contains invalid items, clearing cart before sync');
+      }
+      
+      // Clear invalid items and update state
+      const validItems = cartState.items.filter(item => 
+        item.id && item.productId && item.variantId && 
+        item.productName && item.variantUnit && 
+        typeof item.variantAmount === 'number' && 
+        typeof item.price === 'number' && 
+        typeof item.quantity === 'number' && item.quantity > 0
+      );
+
+      updateCartState(state => ({
+        ...state,
+        items: validItems,
+        total: validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        itemCount: validItems.reduce((sum, item) => sum + item.quantity, 0),
+        syncStatus: 'idle'
+      }));
+    }
+
     // Skip sync if no items or no changes in queue
     if (cartState.items.length === 0 && cartState.syncQueue.length === 0) {
       return;
@@ -186,12 +218,39 @@ class CartSyncManager {
     updateCartState?: (updater: (state: CartState) => CartState) => void
   ): Promise<boolean> {
     try {
+      // Validate cart items before sending
+      const validItems = cartState.items.filter(item => {
+        const isValid = item.id && item.productId && item.variantId && 
+                       item.productName && item.variantUnit && 
+                       typeof item.variantAmount === 'number' && 
+                       typeof item.price === 'number' && 
+                       typeof item.quantity === 'number' && item.quantity > 0;
+        
+        if (!isValid && process.env.NODE_ENV === 'development') {
+          console.warn('Invalid cart item filtered out:', item);
+        }
+        
+        return isValid;
+      });
+
+      if (validItems.length !== cartState.items.length) {
+        console.warn(`Filtered out ${cartState.items.length - validItems.length} invalid cart items`);
+      }
+
       const syncData: CartSyncRequest = {
-        items: cartState.items,
-        total: cartState.total,
-        itemCount: cartState.itemCount,
+        items: validItems,
+        total: validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        itemCount: validItems.reduce((sum, item) => sum + item.quantity, 0),
         lastUpdated: cartState.lastUpdated,
       };
+
+      // Don't sync if no valid items
+      if (validItems.length === 0) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('No valid items to sync, skipping sync');
+        }
+        return true; // Consider this a successful sync
+      }
 
       const response = await fetch('/api/cart/sync', {
         method: 'POST',
@@ -223,6 +282,27 @@ class CartSyncManager {
           }
           return false; // Don't throw error for auth issues
         }
+        
+        // Handle 400 errors (validation errors) by clearing invalid cart
+        if (response.status === 400) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Cart sync failed due to validation errors, clearing cart');
+          }
+          
+          // Clear the cart state if there are validation errors
+          if (updateCartState) {
+            updateCartState(state => ({
+              ...state,
+              items: [],
+              total: 0,
+              itemCount: 0,
+              syncStatus: 'error'
+            }));
+          }
+          
+          return false;
+        }
+        
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 

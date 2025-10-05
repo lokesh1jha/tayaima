@@ -35,7 +35,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   try {
     const { id } = await params;
-    const { name, slug: providedSlug, description } = await req.json();
+    const { 
+      name, 
+      slug: providedSlug, 
+      description, 
+      icon, 
+      parentId, 
+      sortOrder, 
+      isActive 
+    } = await req.json();
     
     if (!name?.trim()) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
@@ -63,12 +71,30 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     
     slug = generateUniqueSlug(slug, existingSlugs);
 
+    // Validate parent category if provided
+    if (parentId) {
+      const parentCategory = await prisma.category.findUnique({
+        where: { id: parentId }
+      });
+      if (!parentCategory) {
+        return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
+      }
+      // Prevent setting self as parent
+      if (parentId === id) {
+        return NextResponse.json({ error: "Category cannot be its own parent" }, { status: 400 });
+      }
+    }
+
     const updated = await prisma.category.update({
       where: { id },
       data: { 
         name: name.trim(), 
         slug, 
-        description: description?.trim() || null 
+        description: description?.trim() || null,
+        icon: icon?.trim() || null,
+        parentId: parentId || null,
+        sortOrder: sortOrder || 0,
+        isActive: isActive !== undefined ? isActive : true
       },
       include: {
         _count: {

@@ -29,12 +29,49 @@ export default async function HomePage() {
         }),
         600 // 10 minutes
       ),
-      // Cached categories (30 minute cache)
+      // Cached categories with parent-child relationships (30 minute cache)
       cachedQuery(
         'homepage:categories',
         () => prisma.category.findMany({
-          take: 10,
-          orderBy: { name: "asc" },
+          where: { isActive: true },
+          orderBy: [
+            { sortOrder: "asc" },
+            { name: "asc" }
+          ],
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            icon: true,
+            parentId: true,
+            sortOrder: true,
+            parent: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                icon: true
+              }
+            },
+            children: {
+              where: { isActive: true },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                icon: true,
+                sortOrder: true,
+                _count: {
+                  select: { products: true }
+                }
+              },
+              orderBy: { sortOrder: "asc" }
+            },
+            _count: {
+              select: { products: true }
+            }
+          }
         }),
         1800 // 30 minutes
       )

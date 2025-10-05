@@ -4,6 +4,19 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  icon?: string | null;
+  parentId?: string | null;
+  sortOrder?: number;
+  parent?: {
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string | null;
+  };
+  children?: Category[];
+  _count?: {
+    products: number;
+  };
 }
 
 interface CategoriesResponse {

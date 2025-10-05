@@ -39,6 +39,12 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
+    
+    // Log the request body in development for debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Cart sync request body:', JSON.stringify(body, null, 2));
+    }
+    
     const validatedData = CartSyncSchema.parse(body);
 
     const userId = session.user.id;
@@ -171,6 +177,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof z.ZodError) {
+      // Log detailed validation errors in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Cart sync validation errors:', error.errors);
+      }
+      
       return NextResponse.json(
         {
           success: false,

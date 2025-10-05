@@ -9,7 +9,7 @@ import { SkeletonProductCard, Skeleton } from "@/components/ui/Skeleton";
 import ProductCard from "@/components/ProductCard";
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
-import { IconMenu2, IconX } from "@tabler/icons-react";
+import { IconMenu2, IconX, IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 
 function ProductsPageContent() {
   const searchParams = useSearchParams();
@@ -18,6 +18,7 @@ function ProductsPageContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(categoryIdFromUrl);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set()); // State for expanded parent categories
   const categoryRef = useRef<HTMLDivElement>(null);
 
   // Fetch categories (cached)
@@ -59,6 +60,17 @@ function ProductsPageContent() {
     setSelectedCategoryId(categoryId);
     setSearchTerm(""); // Clear search when switching categories
     setIsCategoryOpen(false); // Close category sidebar on mobile after selection
+  };
+
+  // Handle parent category toggle
+  const toggleParentCategory = (categoryId: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
   };
 
   // Handle click outside to close category sidebar
@@ -171,19 +183,64 @@ function ProductsPageContent() {
               </div>
               <div className="p-4">
                 <div className="flex flex-col gap-1">
-                  {categories.map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => handleCategorySelect(category.id)}
-                      className={`text-left px-3 py-2 rounded text-sm transition ${
-                        selectedCategoryId === category.id 
-                          ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-medium" 
-                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                      }`}
-                    >
-                      {category.name}
-                    </button>
-                  ))}
+                  {categories
+                    .filter(cat => !cat.parentId) // Only show parent categories
+                    .map((parentCategory) => {
+                      const isExpanded = expandedCategories.has(parentCategory.id);
+                      const hasChildren = parentCategory.children && parentCategory.children.length > 0;
+                      
+                      return (
+                        <div key={parentCategory.id} className="space-y-1">
+                          {/* Parent Category */}
+                          <button
+                            onClick={() => hasChildren ? toggleParentCategory(parentCategory.id) : handleCategorySelect(parentCategory.id)}
+                            className={`w-full text-left px-3 py-2 rounded text-sm transition flex items-center justify-between ${
+                              selectedCategoryId === parentCategory.id 
+                                ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-medium" 
+                                : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{parentCategory.icon}</span>
+                              <span className="truncate">{parentCategory.name}</span>
+                            </div>
+                            {hasChildren && (
+                              <div className="text-gray-400">
+                                {isExpanded ? (
+                                  <IconChevronDown className="w-4 h-4" />
+                                ) : (
+                                  <IconChevronRight className="w-4 h-4" />
+                                )}
+                              </div>
+                            )}
+                          </button>
+
+                          {/* Sub-categories */}
+                          {hasChildren && isExpanded && (
+                            <div className="ml-4 space-y-1">
+                              {parentCategory.children!.map((child) => (
+                                <button
+                                  key={child.id}
+                                  onClick={() => handleCategorySelect(child.id)}
+                                  className={`w-full text-left px-2 py-1.5 rounded text-xs transition flex items-center justify-between ${
+                                    selectedCategoryId === child.id 
+                                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium" 
+                                      : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+                                  }`}
+                                >
+                                  <span className="truncate">{child.name}</span>
+                                  {child._count && child._count.products > 0 && (
+                                    <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded-full">
+                                      {child._count.products}
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </div>
@@ -198,20 +255,65 @@ function ProductsPageContent() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Categories
             </h3>
-            <div className="flex flex-col gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category.id)}
-                  className={`text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    selectedCategoryId === category.id 
-                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-sm" 
-                      : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
-                  }`}
-                >
-                  <span className="block truncate">{category.name}</span>
-                </button>
-              ))}
+            <div className="flex flex-col gap-1">
+              {categories
+                .filter(cat => !cat.parentId) // Only show parent categories
+                .map((parentCategory) => {
+                  const isExpanded = expandedCategories.has(parentCategory.id);
+                  const hasChildren = parentCategory.children && parentCategory.children.length > 0;
+                  
+                  return (
+                    <div key={parentCategory.id} className="space-y-1">
+                      {/* Parent Category */}
+                      <button
+                        onClick={() => hasChildren ? toggleParentCategory(parentCategory.id) : handleCategorySelect(parentCategory.id)}
+                        className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-between ${
+                          selectedCategoryId === parentCategory.id 
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-sm" 
+                            : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{parentCategory.icon}</span>
+                          <span className="truncate">{parentCategory.name}</span>
+                        </div>
+                        {hasChildren && (
+                          <div className="text-gray-400">
+                            {isExpanded ? (
+                              <IconChevronDown className="w-4 h-4" />
+                            ) : (
+                              <IconChevronRight className="w-4 h-4" />
+                            )}
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Sub-categories */}
+                      {hasChildren && isExpanded && (
+                        <div className="ml-4 space-y-1">
+                          {parentCategory.children!.map((child) => (
+                            <button
+                              key={child.id}
+                              onClick={() => handleCategorySelect(child.id)}
+                              className={`w-full text-left px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 flex items-center justify-between ${
+                                selectedCategoryId === child.id 
+                                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" 
+                                  : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+                              }`}
+                            >
+                              <span className="truncate">{child.name}</span>
+                              {child._count && child._count.products > 0 && (
+                                <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded-full">
+                                  {child._count.products}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
 

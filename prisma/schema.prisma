@@ -79,10 +79,24 @@ model Category {
   slug        String   @unique
   description String?
   products    Product[]
+  
+  // Parent category support
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryHierarchy")
+  
+  // Category metadata
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  icon        String?  // Icon name or URL for the category
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@unique([name])
+  @@index([parentId])
+  @@index([isActive])
+  @@index([sortOrder])
 }
 
 model Product {

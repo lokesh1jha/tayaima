@@ -7,8 +7,33 @@ import { slugify, generateUniqueSlug } from "@/lib/slugify";
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({ 
-      orderBy: { name: "asc" },
+      orderBy: [
+        { sortOrder: "asc" },
+        { name: "asc" }
+      ],
       include: {
+        parent: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            icon: true
+          }
+        },
+        children: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            icon: true,
+            sortOrder: true,
+            _count: {
+              select: { products: true }
+            }
+          },
+          orderBy: { sortOrder: "asc" }
+        },
         _count: {
           select: { products: true }
         }
@@ -28,7 +53,15 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { name, slug: providedSlug, description } = await req.json();
+    const { 
+      name, 
+      slug: providedSlug, 
+      description, 
+      icon, 
+      parentId, 
+      sortOrder, 
+      isActive 
+    } = await req.json();
     
     if (!name?.trim()) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
@@ -44,11 +77,25 @@ export async function POST(req: Request) {
     
     slug = generateUniqueSlug(slug, existingSlugs);
 
+    // Validate parent category if provided
+    if (parentId) {
+      const parentCategory = await prisma.category.findUnique({
+        where: { id: parentId }
+      });
+      if (!parentCategory) {
+        return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
+      }
+    }
+
     const created = await prisma.category.create({ 
       data: { 
         name: name.trim(), 
         slug, 
-        description: description?.trim() || null 
+        description: description?.trim() || null,
+        icon: icon?.trim() || null,
+        parentId: parentId || null,
+        sortOrder: sortOrder || 0,
+        isActive: isActive !== undefined ? isActive : true
       },
       include: {
         _count: {

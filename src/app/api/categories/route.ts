@@ -15,14 +15,43 @@ export async function GET() {
       });
     }
 
-    // Fetch from database
+    // Fetch from database with parent-child relationships
     const categories = await prisma.category.findMany({ 
-      orderBy: { name: "asc" },
+      where: { isActive: true },
+      orderBy: [
+        { sortOrder: "asc" },
+        { name: "asc" }
+      ],
       select: {
         id: true,
         name: true,
         slug: true,
         description: true,
+        icon: true,
+        parentId: true,
+        sortOrder: true,
+        parent: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            icon: true
+          }
+        },
+        children: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            icon: true,
+            sortOrder: true,
+            _count: {
+              select: { products: true }
+            }
+          },
+          orderBy: { sortOrder: "asc" }
+        },
         _count: {
           select: { products: true }
         }
