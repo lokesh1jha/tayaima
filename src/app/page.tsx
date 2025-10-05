@@ -155,22 +155,8 @@ export default async function HomePage() {
         </section>
       ))}
 
-      {/* Compact CTA */}
-      <section className="container max-w-[1400px] py-12 text-center">
-        <Card className="p-8">
-          <h3 className="text-2xl font-semibold">Ready to start shopping?</h3>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Browse our wide selection and get everything you need delivered.
-          </p>
-          <div className="mt-6 flex items-center justify-center gap-4">
-            <Link href="/products"><Button>Start Shopping</Button></Link>
-            {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
-          </div>
-        </Card>
-      </section>
-
       {/* CTA */}
-      <section className="container py-20 text-center">
+      <section className="container max-w-[1400px] py-20 text-center">
         <Card className="p-10">
           <h3 className="text-2xl font-semibold">Ready to start shopping?</h3>
           <p className="mt-2 text-gray-600 dark:text-gray-300">
@@ -178,7 +164,7 @@ export default async function HomePage() {
           </p>
           <div className="mt-6 flex items-center justify-center gap-4">
             <Link href="/products"><Button>Start Shopping</Button></Link>
-            <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>
+            {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
           </div>
         </Card>
       </section>

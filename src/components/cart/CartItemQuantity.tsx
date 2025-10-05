@@ -37,7 +37,7 @@ export const CartItemQuantity = ({
       updateCartItem({ itemId, quantity: newQuantity });
     } catch (error) {
       console.error('Failed to update quantity:', error);
-      toast.error('Failed to update quantity');
+      // toast.error('Failed to update quantity'); // Commented out - UI button changes are sufficient feedback
     } finally {
       setIsUpdating(false);
     }
@@ -48,10 +48,10 @@ export const CartItemQuantity = ({
 
     try {
       removeFromCart(itemId);
-      toast.success(`Removed ${productName} from cart`);
+      // toast.success(`Removed ${productName} from cart`); // Commented out - UI button changes are sufficient feedback
     } catch (error) {
       console.error('Failed to remove item:', error);
-      toast.error('Failed to remove item');
+      // toast.error('Failed to remove item'); // Commented out - UI button changes are sufficient feedback
     } finally {
       setIsUpdating(false);
     }

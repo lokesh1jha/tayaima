@@ -69,20 +69,44 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
   );
 }
 
-export function SkeletonProductCard({ className }: { className?: string }) {
+export function SkeletonProductCard({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <div className={cn("rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden", className)}>
+    <div className={cn(
+      "rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow",
+      compact ? 'p-2 sm:p-2' : 'p-2 sm:p-3 md:p-4',
+      className
+    )}>
       {/* Image */}
-      <Skeleton className="aspect-square w-full" />
+      <div className={cn("aspect-square relative mb-2 sm:mb-3 md:mb-4", compact && 'mb-2')}>
+        <Skeleton className="w-full h-full rounded-lg" />
+      </div>
       
-      {/* Content */}
-      <div className="p-3 space-y-2">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-        <div className="flex items-center justify-between pt-2">
-          <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-8 w-20" />
-        </div>
+      {/* Product Name */}
+      <Skeleton className={cn(
+        "h-4 w-full mb-2",
+        compact ? 'h-3 sm:h-4' : 'h-3 sm:h-4 md:h-5'
+      )} />
+      
+      {/* Price and Variant Row */}
+      <div className={cn("flex items-center justify-between gap-2", compact ? 'mt-2' : 'mt-2 sm:mt-3')}>
+        <Skeleton className={cn(
+          "h-4 w-16",
+          compact ? 'h-3 sm:h-4' : 'h-3 sm:h-4 xl:h-5'
+        )} />
+        
+        {/* Variant Dropdown Skeleton */}
+        <Skeleton className={cn(
+          "h-6 w-16 rounded-md",
+          compact ? 'h-5 w-12' : 'h-5 sm:h-6 w-12 sm:w-16'
+        )} />
+      </div>
+
+      {/* Cart Button Row */}
+      <div className={cn("flex justify-center", compact ? 'mt-2' : 'mt-2')}>
+        <Skeleton className={cn(
+          "h-8 w-full rounded-md",
+          compact ? 'h-6' : 'h-6 sm:h-7'
+        )} />
       </div>
     </div>
   );

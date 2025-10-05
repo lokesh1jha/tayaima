@@ -9,6 +9,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useCart } from "@/hooks/useCart";
 import { useCartDrawer } from "@/components/cart/CartDrawerProvider";
 import { ROUTES } from "@/lib/constants";
+import { IconShoppingCart, IconUser, IconSun, IconMoon, IconLogout, IconPackage, IconSettings } from "@tabler/icons-react";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -50,22 +51,17 @@ export default function Navbar() {
             className="rounded-lg object-contain"
             priority
           />
-          <span className="font-bold text-xl text-blue-600 dark:text-blue-400">
-            Tayaima Store
-          </span>
         </Link>
-        <nav className="flex items-center gap-4">
-          {/* Desktop Navigation - Products and Cart */}
-          <Link href={ROUTES.PRODUCTS} className="hidden md:block text-sm font-medium transition-colors hover:opacity-80 text-gray-700 dark:text-gray-300">
-            Products
-          </Link>
-
-          {/* Desktop Cart button */}
-          <button onClick={openCart} className="hidden md:flex relative text-sm font-medium transition-colors hover:opacity-80 items-center gap-1 text-gray-700 dark:text-gray-300">
-            <span>🛒</span>
-            Cart
+        <nav className="flex items-center gap-2">
+          {/* Cart Icon */}
+          <button 
+            onClick={openCart} 
+            className="relative p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            aria-label="Shopping Cart"
+          >
+            <IconShoppingCart className="w-5 h-5" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold bg-red-500">
+              <span className="absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold bg-red-500">
                 {cartCount}
               </span>
             )}
@@ -73,56 +69,54 @@ export default function Navbar() {
           
           {status === "authenticated" ? (
             <>
-              {/* Profile Dropdown */}
+              {/* Profile Icon */}
               <div className="relative" ref={dropdownRef}>
-                <Button
-                  variant="ghost"
+                <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center gap-2"
+                  className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  aria-label="Profile Menu"
                 >
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || "U"}
-                  </div>
-                  <span className="hidden sm:block">{session?.user?.name || session?.user?.email}</span>
-                </Button>
+                  <IconUser className="w-5 h-5" />
+                </button>
                 
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
-                    {/* Mobile Navigation Links */}
-                    <div className="md:hidden">
-                      <Link
-                        href={ROUTES.PRODUCTS}
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        🛍️ Products
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setShowProfileDropdown(false);
-                          openCart();
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        🛒 Cart {cartCount > 0 && `(${cartCount})`}
-                      </button>
-                      <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    {/* User Info */}
+                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {session?.user?.name || session?.user?.email}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {session?.user?.email}
+                      </p>
                     </div>
+
+                    {/* Navigation Links */}
+                    <Link
+                      href={ROUTES.PRODUCTS}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setShowProfileDropdown(false)}
+                    >
+                      <IconPackage className="w-4 h-4" />
+                      Products
+                    </Link>
                     
                     {!isAdmin && (
                       <>
                         <Link
                           href={ROUTES.PROFILE_ORDERS}
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setShowProfileDropdown(false)}
                         >
+                          <IconPackage className="w-4 h-4" />
                           My Orders
                         </Link>
                         <Link
                           href={ROUTES.PROFILE}
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setShowProfileDropdown(false)}
                         >
+                          <IconSettings className="w-4 h-4" />
                           Profile
                         </Link>
                       </>
@@ -130,20 +124,36 @@ export default function Navbar() {
                     {isAdmin && (
                       <Link
                         href={ROUTES.ADMIN}
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => setShowProfileDropdown(false)}
                       >
+                        <IconSettings className="w-4 h-4" />
                         Admin Panel
                       </Link>
                     )}
+
+                    {/* Dark/Light Mode Toggle */}
+                    <button
+                      onClick={() => {
+                        setTheme(theme === "dark" ? "light" : "dark");
+                        setShowProfileDropdown(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {theme === "dark" ? <IconSun className="w-4 h-4" /> : <IconMoon className="w-4 h-4" />}
+                      {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                    </button>
+
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    
                     <button
                       onClick={() => {
                         setShowProfileDropdown(false);
                         signOut({ callbackUrl: "/" });
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
+                      <IconLogout className="w-4 h-4" />
                       Logout
                     </button>
                   </div>
@@ -152,64 +162,55 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {/* Mobile Menu for Non-authenticated Users */}
-              <div className="md:hidden relative" ref={dropdownRef}>
-                <Button
-                  variant="ghost"
+              {/* Profile Icon for Non-authenticated Users */}
+              <div className="relative" ref={dropdownRef}>
+                <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center gap-2"
+                  className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  aria-label="Menu"
                 >
-                  <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    ☰
-                  </div>
-                </Button>
+                  <IconUser className="w-5 h-5" />
+                </button>
                 
                 {showProfileDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
                     <Link
                       href={ROUTES.PRODUCTS}
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                       onClick={() => setShowProfileDropdown(false)}
                     >
-                      🛍️ Products
+                      <IconPackage className="w-4 h-4" />
+                      Products
                     </Link>
+                    
+                    {/* Dark/Light Mode Toggle */}
                     <button
                       onClick={() => {
+                        setTheme(theme === "dark" ? "light" : "dark");
                         setShowProfileDropdown(false);
-                        openCart();
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      🛒 Cart {cartCount > 0 && `(${cartCount})`}
+                      {theme === "dark" ? <IconSun className="w-4 h-4" /> : <IconMoon className="w-4 h-4" />}
+                      {theme === "dark" ? "Light Mode" : "Dark Mode"}
                     </button>
+
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    
                     <button
                       onClick={() => {
                         setShowProfileDropdown(false);
                         signIn();
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="flex items-center gap-3 w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      Login
+                      <IconUser className="w-4 h-4" />
+                      Login / Signup
                     </button>
                   </div>
                 )}
               </div>
-              
-              {/* Desktop Login Button */}
-              <Button onClick={() => signIn()} variant="secondary" className="hidden md:block">Login</Button>
             </>
-          )}
-
-          {mounted && (
-            <Button
-              variant="ghost"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle theme"
-              title="Toggle theme"
-            >
-              {theme === "dark" ? "🌙" : "☀️"}
-            </Button>
           )}
         </nav>
       </div>

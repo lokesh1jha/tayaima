@@ -55,7 +55,7 @@ export const AddToCartButton = ({
 
       addToCart(params);
       
-      toast.success(`Added ${productName} to cart`);
+      // toast.success(`Added ${productName} to cart`); // Commented out - UI button changes are sufficient feedback
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to add to cart:', error);
@@ -83,7 +83,7 @@ export const AddToCartButton = ({
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to update quantity:', error);
       }
-      toast.error('Failed to update quantity');
+      // toast.error('Failed to update quantity'); // Commented out - UI button changes are sufficient feedback
     } finally {
       setIsUpdating(false);
     }
@@ -95,12 +95,12 @@ export const AddToCartButton = ({
     try {
       const itemId = `${productId}-${variantId}`;
       removeFromCart(itemId);
-      toast.success(`Removed ${productName} from cart`);
+      // toast.success(`Removed ${productName} from cart`); // Commented out - UI button changes are sufficient feedback
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to remove item:', error);
       }
-      toast.error('Failed to remove item');
+      // toast.error('Failed to remove item'); // Commented out - UI button changes are sufficient feedback
     } finally {
       setIsUpdating(false);
     }

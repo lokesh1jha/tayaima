@@ -323,36 +323,38 @@ class CartSyncManager {
    * Notify user about item updates
    */
   private notifyItemUpdated(localItem: any, serverItem: any): void {
-    if (localItem.quantity !== serverItem.quantity) {
-      // Dynamic import to avoid SSR issues
-      import('sonner').then(({ toast }) => {
-        toast.info(
-          `${localItem.productName} quantity updated to ${serverItem.quantity}`,
-          { duration: 3000 }
-        );
-      });
-    }
+    // Commented out - UI button changes are sufficient feedback
+    // if (localItem.quantity !== serverItem.quantity) {
+    //   // Dynamic import to avoid SSR issues
+    //   import('sonner').then(({ toast }) => {
+    //     toast.info(
+    //       `${localItem.productName} quantity updated to ${serverItem.quantity}`,
+    //       { duration: 3000 }
+    //     );
+    //   });
+    // }
     
-    if (localItem.price !== serverItem.price) {
-      import('sonner').then(({ toast }) => {
-        toast.info(
-          `${localItem.productName} price updated`,
-          { duration: 3000 }
-        );
-      });
-    }
+    // if (localItem.price !== serverItem.price) {
+    //   import('sonner').then(({ toast }) => {
+    //     toast.info(
+    //       `${localItem.productName} price updated`,
+    //       { duration: 3000 }
+    //     );
+    //   });
+    // }
   }
 
   /**
    * Notify user about removed items
    */
   private notifyItemRemoved(item: any): void {
-    import('sonner').then(({ toast }) => {
-      toast.warning(
-        `${item.productName} is no longer available and was removed from your cart`,
-        { duration: 4000 }
-      );
-    });
+    // Commented out - UI button changes are sufficient feedback
+    // import('sonner').then(({ toast }) => {
+    //   toast.warning(
+    //     `${item.productName} is no longer available and was removed from your cart`,
+    //     { duration: 4000 }
+    //   );
+    // });
   }
 
   /**
