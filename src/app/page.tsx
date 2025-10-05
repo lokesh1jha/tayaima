@@ -67,19 +67,52 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero / Top CTA */}
-      <section className="container max-w-[1400px] py-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Groceries delivered fast</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">Fresh veggies, daily essentials, and more.</p>
-            <div className="mt-4 flex gap-3">
-              <Link href="/products"><Button variant="primary">Shop Now</Button></Link>
-              {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
+      <section 
+        className="relative min-h-[500px] flex items-center justify-center bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('/tayaima-landing-page-bg_page.jpg')"
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/30"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 container max-w-[1400px] py-12 h-full flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-8">
+            <div className="text-white">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4 drop-shadow-lg">
+                Groceries delivered fast
+              </h1>
+              <p className="text-xl sm:text-2xl text-white mb-8 drop-shadow-md bg-black/20 px-4 py-2 rounded-lg backdrop-blur-sm">
+                Fresh veggies, daily essentials, and more.
+              </p>
+              <div className="flex gap-4">
+                <Link href="/products">
+                  <Button variant="primary" className="text-lg px-8 py-3">
+                    Shop Now
+                  </Button>
+                </Link>
+                {!session && (
+                  <Link href="/signup">
+                    <Button className="text-lg px-8 py-3 bg-black text-white border-black hover:bg-gray-800 hover:border-gray-800">
+                      Create Account
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-sm">
-            <div className="px-3 py-2 rounded-md bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300">Fast delivery</div>
-            <div className="px-3 py-2 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">Quality assured</div>
+          
+          {/* Badges positioned on the right side */}
+          <div className="flex justify-end mt-8">
+            <div className="flex items-center gap-4 text-sm">
+              <div className="px-4 py-3 rounded-lg bg-green-500/90 text-white backdrop-blur-sm">
+                Fast delivery
+              </div>
+              <div className="px-4 py-3 rounded-lg bg-blue-500/90 text-white backdrop-blur-sm">
+                Quality assured
+              </div>
+            </div>
           </div>
         </div>
       </section>
