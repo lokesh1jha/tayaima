@@ -14,6 +14,7 @@ import ProductVariantManager, { ProductVariant } from "@/components/admin/Produc
 import MetadataManager from "@/components/admin/MetadataManager";
 import AdminProductImagesField from "@/components/admin/AdminProductImagesField";
 import { slugify } from "@/lib/slugify";
+import ProductSearchBar from "@/components/ui/ProductSearchBar";
 
 interface Product {
   id: string;
@@ -303,13 +304,14 @@ export default function AdminProductsPage() {
         {/* Search */}
         <div className="flex-1 max-w-md">
           <label className="block text-sm font-medium mb-1">Search Products</label>
-          <Input
-            type="text"
+          <ProductSearchBar
             placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1); // Reset to first page when searching
+            isAdmin={true}
+            limit={50}
+            onProductSelect={(product) => {
+              // Navigate to product edit page or show product details
+              setSearchTerm(product.name);
+              setCurrentPage(1);
             }}
           />
         </div>

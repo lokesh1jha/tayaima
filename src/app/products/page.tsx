@@ -28,10 +28,17 @@ function ProductsPageContent() {
     error: categoriesError 
   } = useCategories();
 
-  // Set first category as default if no category is selected and categories are loaded
+  // Set first parent category (super category) as default if no category is selected and categories are loaded
   useEffect(() => {
     if (!selectedCategoryId && categories.length > 0 && !categoryIdFromUrl) {
-      setSelectedCategoryId(categories[0].id);
+      // Find the first parent category (super category) to show all its sub-category products
+      const firstParentCategory = categories.find(cat => !cat.parentId);
+      if (firstParentCategory) {
+        setSelectedCategoryId(firstParentCategory.id);
+      } else {
+        // Fallback to first category if no parent categories exist
+        setSelectedCategoryId(categories[0].id);
+      }
     }
   }, [categories, selectedCategoryId, categoryIdFromUrl]);
 
@@ -335,15 +342,6 @@ function ProductsPageContent() {
                 )}
               </div>
 
-              <div className="max-w-lg">
-                <Input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="text-base"
-                />
-              </div>
             </div>
 
             {/* Desktop Products Grid */}
@@ -394,15 +392,6 @@ function ProductsPageContent() {
               )}
             </div>
 
-            <div className="max-w-sm">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="text-sm"
-              />
-            </div>
           </div>
 
           {/* Mobile Products Grid */}

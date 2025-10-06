@@ -22,6 +22,11 @@ interface Product {
   description: string | null;
   images: string[];
   variants?: ProductVariant[]; // Optional since API might not include variants
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
 }
 
 interface ProductCardProps {
@@ -90,6 +95,21 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         </div>
         <h3 className={`font-semibold ${compact ? 'text-xs sm:text-sm' : 'text-xs sm:text-sm md:text-lg'} line-clamp-2`}>{product.name}</h3>
       </Link>
+
+      {/* Category */}
+      {product.category && (
+        <div className={`${compact ? 'mt-1' : 'mt-1 sm:mt-2'}`}>
+          <Link 
+            href={`/products?categoryId=${product.category.id}`}
+            className="inline-block"
+            onClick={(e) => e.stopPropagation()} // Prevent triggering the product link
+          >
+            <span className={`${compact ? 'text-xs' : 'text-xs sm:text-sm'} text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors`}>
+              {product.category.name}
+            </span>
+          </Link>
+        </div>
+      )}
 
       {/* Price and Variant Row */}
       <div className={`${compact ? 'mt-2' : 'mt-2 sm:mt-3'} flex items-center justify-between gap-2`}>

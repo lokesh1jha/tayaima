@@ -28,6 +28,11 @@ interface Product {
   images: string[];
   variants: ProductVariant[];
   createdAt: string;
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
 }
 
 export default function ProductDetailPage() {
@@ -194,6 +199,20 @@ export default function ProductDetailPage() {
         {/* Product Details */}
         <div className="space-y-6">
           <div>
+            {/* Category */}
+            {product.category && (
+              <div className="mb-3">
+                <Link 
+                  href={`/products?categoryId=${product.category.id}`}
+                  className="inline-block"
+                >
+                  <span className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors text-sm font-medium">
+                    {product.category.name}
+                  </span>
+                </Link>
+              </div>
+            )}
+            
             <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
             {product.description && (
               <p className="text-gray-600 dark:text-gray-300 text-lg">
@@ -246,7 +265,6 @@ export default function ProductDetailPage() {
                     id="quantity"
                     type="number"
                     min="1"
-                    max={selectedVariant.stock}
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                     className="w-20"
@@ -254,10 +272,10 @@ export default function ProductDetailPage() {
                 </div>
                 <Button
                   onClick={handleAddToCart}
-                  disabled={addingToCart || selectedVariant.stock === 0}
+                  disabled={addingToCart}
                   className="flex-1"
                 >
-                  {addingToCart ? "Adding..." : selectedVariant.stock === 0 ? "Unavailable" : "Add to Cart"}
+                  {addingToCart ? "Adding..." : "Add to Cart"}
                 </Button>
               </div>
             </div>

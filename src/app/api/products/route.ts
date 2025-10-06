@@ -82,16 +82,51 @@ export async function GET(req: Request) {
     }
     // Filter by category if provided
     else if (categoryId) {
-      products = await prisma.product.findMany({
-        where: { categoryId: categoryId },
-        include: { 
-          variants: includeVariants,
-          category: true
-        },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
+      // First, check if this is a parent category (super category)
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId }
       });
+
+      if (!category) {
+        return new NextResponse("Category not found", { status: 404 });
+      }
+
+      // Check if this category has children (is a parent category)
+      const childCategories = await prisma.category.findMany({
+        where: { 
+          parentId: categoryId
+        },
+        select: { id: true }
+      });
+
+      // If it's a parent category with children, get products from all sub-categories
+      if (childCategories.length > 0) {
+        const childCategoryIds = childCategories.map(child => child.id);
+        products = await prisma.product.findMany({
+          where: { 
+            categoryId: { in: childCategoryIds }
+          },
+          include: { 
+            variants: includeVariants,
+            category: true
+          },
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip: offset,
+        });
+      } else {
+        // If it's a leaf category (no children), get products directly assigned to it
+        products = await prisma.product.findMany({
+          where: { categoryId: categoryId },
+          include: { 
+            variants: includeVariants,
+            category: true
+          },
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip: offset,
+        });
+      }
     }
     // Otherwise return paginated products
     else {

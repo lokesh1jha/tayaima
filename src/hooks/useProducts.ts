@@ -68,7 +68,7 @@ export function useProducts({
   return useQuery({
     queryKey: ['products', { categoryId, limit, page }],
     queryFn: () => fetchProducts({ categoryId, limit, page }),
-    enabled: enabled && !!categoryId, // Only fetch if categoryId is provided and enabled
+    enabled: enabled, // Always enabled, categoryId can be null to show all products
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes cache time
   });

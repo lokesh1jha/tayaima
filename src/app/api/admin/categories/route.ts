@@ -21,13 +21,13 @@ export async function GET() {
           }
         },
         children: {
-          where: { isActive: true },
           select: {
             id: true,
             name: true,
             slug: true,
             icon: true,
             sortOrder: true,
+            isActive: true,
             _count: {
               select: { products: true }
             }

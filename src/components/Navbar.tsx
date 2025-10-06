@@ -9,12 +9,14 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useCart } from "@/hooks/useCart";
 import { useCartDrawer } from "@/components/cart/CartDrawerProvider";
 import { ROUTES } from "@/lib/constants";
-import { IconShoppingCart, IconUser, IconSun, IconMoon, IconLogout, IconPackage, IconSettings } from "@tabler/icons-react";
+import { IconShoppingCart, IconUser, IconSun, IconMoon, IconLogout, IconPackage, IconSettings, IconSearch } from "@tabler/icons-react";
+import ProductSearchBar from "./ui/ProductSearchBar";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const { data: session, status } = useSession();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { itemCount } = useCart();
@@ -41,8 +43,8 @@ export default function Navbar() {
 
   return (
     <header className="border-b backdrop-blur sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
-      <div className="container flex h-16 items-center justify-between">
-        <Link href={ROUTES.HOME} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+      <div className="container flex h-16 items-center justify-between gap-4">
+        <Link href={ROUTES.HOME} className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-shrink-0">
           <Image
             src="/tayaima-logo.jpeg"
             alt="TaYaima Logo"
@@ -52,7 +54,27 @@ export default function Navbar() {
             priority
           />
         </Link>
-        <nav className="flex items-center gap-2">
+        
+        {/* Search Bar - Hidden on mobile, visible on tablet and up */}
+        <div className="hidden md:block flex-1 max-w-md mx-4">
+          <ProductSearchBar
+            placeholder="Search products..."
+            isAdmin={false}
+            limit={10}
+            className="w-full"
+          />
+        </div>
+        
+        <nav className="flex items-center gap-2 flex-shrink-0">
+          {/* Mobile Search Icon */}
+          <button 
+            onClick={() => setShowMobileSearch(!showMobileSearch)}
+            className="md:hidden p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            aria-label="Search Products"
+          >
+            <IconSearch className="w-5 h-5" />
+          </button>
+          
           {/* Cart Icon */}
           <button 
             onClick={openCart} 
@@ -220,6 +242,18 @@ export default function Navbar() {
           )}
         </nav>
       </div>
+      
+      {/* Mobile Search Bar */}
+      {showMobileSearch && (
+        <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <ProductSearchBar
+            placeholder="Search products..."
+            isAdmin={false}
+            limit={10}
+            className="w-full"
+          />
+        </div>
+      )}
     </header>
   );
 }
