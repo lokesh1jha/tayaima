@@ -14,7 +14,7 @@ import ProductVariantManager, { ProductVariant } from "@/components/admin/Produc
 import MetadataManager from "@/components/admin/MetadataManager";
 import AdminProductImagesField from "@/components/admin/AdminProductImagesField";
 import { slugify } from "@/lib/slugify";
-import ProductSearchBar from "@/components/ui/ProductSearchBar";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface Product {
   id: string;
@@ -33,16 +33,17 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [categorySearch, setCategorySearch] = useState<string>("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const productsPerPage = 12;
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const productsPerPage = 20;
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [metadata, setMetadata] = useState<Record<string, any>>({});
@@ -61,12 +62,25 @@ export default function AdminProductsPage() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategorySlug, setNewCategorySlug] = useState("");
   const [creatingCategory, setCreatingCategory] = useState(false);
+
+  // Debounced search term
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [formCategoryId, setFormCategoryId] = useState<string>("");
 
   useEffect(() => {
-    fetchProducts();
     fetchCategories();
+    fetchProducts();
   }, []);
+
+  // Fetch products when search term, category, or page changes
+  useEffect(() => {
+    fetchProducts();
+  }, [debouncedSearchTerm, selectedCategory, currentPage]);
+
+  // Reset to page 1 when search or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm, selectedCategory]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -82,42 +96,39 @@ export default function AdminProductsPage() {
     };
   }, []);
 
-  useEffect(() => {
-    let filtered = products;
-    
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(product => product.categoryId === selectedCategory);
-    }
-    
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    // Calculate pagination
-    const totalFiltered = filtered.length;
-    setTotalProducts(totalFiltered);
-    setTotalPages(Math.ceil(totalFiltered / productsPerPage));
-    
-    // Apply pagination
-    const startIndex = (currentPage - 1) * productsPerPage;
-    const paginatedProducts = filtered.slice(startIndex, startIndex + productsPerPage);
-    
-    setFilteredProducts(paginatedProducts);
-  }, [searchTerm, products, selectedCategory, currentPage, productsPerPage]);
-
   const fetchProducts = async () => {
     try {
-      // Admin page needs variants for display and management
-      const response = await fetch("/api/products?includeVariants=true");
+      setLoading(true);
+      
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: productsPerPage.toString(),
+      });
+
+      if (debouncedSearchTerm && debouncedSearchTerm.trim().length >= 3) {
+        params.append('search', debouncedSearchTerm.trim());
+      }
+
+      if (selectedCategory) {
+        params.append('categoryId', selectedCategory);
+      }
+
+      const response = await fetch(`/api/admin/products/search?${params}`);
       const data = await response.json();
-      setProducts(data.data || []);
+
+      if (response.ok) {
+        setProducts(data.products || []);
+        setTotalProducts(data.pagination?.totalCount || 0);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setHasNext(data.pagination?.hasNext || false);
+        setHasPrev(data.pagination?.hasPrev || false);
+      } else {
+        console.error("Error fetching products:", data.error);
+        toast.error("Failed to fetch products");
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
+      toast.error("Failed to fetch products");
     } finally {
       setLoading(false);
     }
@@ -304,21 +315,46 @@ export default function AdminProductsPage() {
         {/* Search */}
         <div className="flex-1 max-w-md">
           <label className="block text-sm font-medium mb-1">Search Products</label>
-          <ProductSearchBar
-            placeholder="Search products..."
-            isAdmin={true}
-            limit={50}
-            onProductSelect={(product) => {
-              // Navigate to product edit page or show product details
-              setSearchTerm(product.name);
-              setCurrentPage(1);
-            }}
+          <Input
+            type="text"
+            placeholder="Search products (min 3 characters)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
           />
+          {searchTerm && (
+            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Searching for: "{searchTerm}"
+              <button
+                onClick={() => setSearchTerm("")}
+                className="ml-2 text-red-600 hover:text-red-700"
+              >
+                Clear
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Clear Filters Button */}
+        {(searchTerm || selectedCategory) && (
+          <div className="flex items-end">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory("");
+                setCategorySearch("");
+              }}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              Clear All Filters
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Products Grid */}
-      {filteredProducts.length === 0 ? (
+      {products.length === 0 ? (
         <Card className="p-8 text-center">
           <h3 className="text-lg font-semibold mb-2">No products found</h3>
           <p className="text-gray-600 dark:text-gray-300 mb-4">
@@ -332,7 +368,7 @@ export default function AdminProductsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <div 
               key={product.id} 
               className="cursor-pointer" 
@@ -443,6 +479,7 @@ export default function AdminProductsPage() {
         <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
           Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} products
           {selectedCategory && ` in ${categories.find(c => c.id === selectedCategory)?.name}`}
+          {searchTerm && ` matching "${searchTerm}"`}
         </div>
       )}
 
@@ -504,6 +541,7 @@ export default function AdminProductsPage() {
                     setShowAddForm(false);
                     setVariants([]);
                     setMetadata({});
+                    setCurrentPage(1);
                     fetchProducts();
                     toast.success("Product added successfully!");
                   } else {

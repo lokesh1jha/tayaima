@@ -16,17 +16,78 @@ async function main() {
     },
   });
 
-  // Create categories
+  // Create categories with proper metadata
   const categories = [
-    { name: 'Vegetables', slug: 'vegetables', description: 'Fresh vegetables and greens' },
-    { name: 'Fruits', slug: 'fruits', description: 'Fresh seasonal fruits' },
-    { name: 'Dairy', slug: 'dairy', description: 'Milk, cheese, and dairy products' },
-    { name: 'Bakery', slug: 'bakery', description: 'Fresh bread and baked goods' },
-    { name: 'Grains & Rice', slug: 'grains-rice', description: 'Rice, wheat, and other grains' },
-    { name: 'Edible Oils', slug: 'edible-oils', description: 'Cooking oils and ghee' },
-    { name: 'Staples & Sugar', slug: 'staples-sugar', description: 'Sugar, salt, and basic staples' },
-    { name: 'Meat & Eggs', slug: 'meat-eggs', description: 'Fresh meat, chicken, and eggs' },
-    { name: 'Other', slug: 'other', description: 'Other grocery items' },
+    { 
+      name: 'Vegetables', 
+      slug: 'vegetables', 
+      description: 'Fresh vegetables and greens',
+      icon: '🥬',
+      sortOrder: 1
+    },
+    { 
+      name: 'Fruits', 
+      slug: 'fruits', 
+      description: 'Fresh seasonal fruits',
+      icon: '🍎',
+      sortOrder: 2
+    },
+    { 
+      name: 'Dairy', 
+      slug: 'dairy', 
+      description: 'Milk, cheese, and dairy products',
+      icon: '🥛',
+      sortOrder: 3
+    },
+    { 
+      name: 'Bakery', 
+      slug: 'bakery', 
+      description: 'Fresh bread and baked goods',
+      icon: '🍞',
+      sortOrder: 4
+    },
+    { 
+      name: 'Grains & Rice', 
+      slug: 'grains-rice', 
+      description: 'Rice, wheat, and other grains',
+      icon: '🌾',
+      sortOrder: 5
+    },
+    { 
+      name: 'Edible Oils', 
+      slug: 'edible-oils', 
+      description: 'Cooking oils and ghee',
+      icon: '🫒',
+      sortOrder: 6
+    },
+    { 
+      name: 'Staples & Sugar', 
+      slug: 'staples-sugar', 
+      description: 'Sugar, salt, and basic staples',
+      icon: '🧂',
+      sortOrder: 7
+    },
+    { 
+      name: 'Meat & Eggs', 
+      slug: 'meat-eggs', 
+      description: 'Fresh meat, chicken, and eggs',
+      icon: '🥚',
+      sortOrder: 8
+    },
+    { 
+      name: 'Home & Garden', 
+      slug: 'home-garden', 
+      description: 'Home improvement and garden supplies',
+      icon: '🏠',
+      sortOrder: 9
+    },
+    { 
+      name: 'Other', 
+      slug: 'other', 
+      description: 'Other miscellaneous items',
+      icon: '📦',
+      sortOrder: 10
+    },
   ];
 
   const createdCategories: Record<string, string> = {};
@@ -34,10 +95,17 @@ async function main() {
     const created = await prisma.category.upsert({
       where: { slug: category.slug },
       update: {},
-      create: category,
+      create: {
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        icon: category.icon,
+        sortOrder: category.sortOrder,
+        isActive: true,
+      },
     });
     createdCategories[category.name] = created.id;
-    console.log(`Created category: ${category.name}`);
+    console.log(`Created category: ${category.name} (${category.icon})`);
   }
 
   // Create sample products with categories
@@ -279,6 +347,135 @@ async function main() {
         { unit: 'PIECE', amount: 30, price: 20000, stock: 15, sku: 'EGG-30PC' },
       ],
     },
+
+    // Home & Garden - Products with new units (CM, M, INCH)
+    {
+      name: 'Measuring Tape',
+      slug: 'measuring-tape',
+      description: 'Flexible measuring tape for accurate measurements',
+      category: 'Home & Garden',
+      images: [
+        'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=500&h=500&fit=crop'
+      ],
+      meta: {
+        brand: 'Stanley',
+        material: 'Steel',
+        color: 'Yellow',
+        warranty: '1 year'
+      },
+      variants: [
+        { unit: 'M', amount: 3, price: 15000, stock: 20, sku: 'TAPE-3M' },
+        { unit: 'M', amount: 5, price: 22000, stock: 15, sku: 'TAPE-5M' },
+        { unit: 'M', amount: 10, price: 40000, stock: 10, sku: 'TAPE-10M' },
+      ],
+    },
+    {
+      name: 'Ruler Set',
+      slug: 'ruler-set',
+      description: 'Set of plastic rulers for school and office use',
+      category: 'Home & Garden',
+      images: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=500&fit=crop'
+      ],
+      meta: {
+        brand: 'Faber-Castell',
+        material: 'Plastic',
+        color: 'Transparent',
+        graduation: 'mm and cm'
+      },
+      variants: [
+        { unit: 'CM', amount: 15, price: 5000, stock: 50, sku: 'RULER-15CM' },
+        { unit: 'CM', amount: 30, price: 8000, stock: 30, sku: 'RULER-30CM' },
+        { unit: 'CM', amount: 50, price: 12000, stock: 20, sku: 'RULER-50CM' },
+      ],
+    },
+    {
+      name: 'Extension Cord',
+      slug: 'extension-cord',
+      description: 'Heavy duty extension cord for electrical appliances',
+      category: 'Home & Garden',
+      images: [
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop'
+      ],
+      meta: {
+        brand: 'Anchor',
+        voltage: '250V',
+        current: '16A',
+        material: 'PVC',
+        safety: 'ISI Certified'
+      },
+      variants: [
+        { unit: 'M', amount: 2, price: 12000, stock: 25, sku: 'CORD-2M' },
+        { unit: 'M', amount: 5, price: 25000, stock: 15, sku: 'CORD-5M' },
+        { unit: 'M', amount: 10, price: 45000, stock: 8, sku: 'CORD-10M' },
+      ],
+    },
+    {
+      name: 'Curtain Rod',
+      slug: 'curtain-rod',
+      description: 'Adjustable curtain rod for windows',
+      category: 'Home & Garden',
+      images: [
+        'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=500&fit=crop'
+      ],
+      meta: {
+        brand: 'IKEA',
+        material: 'Steel',
+        finish: 'Chrome',
+        adjustable: 'Yes',
+        weight_capacity: '15kg'
+      },
+      variants: [
+        { unit: 'INCH', amount: 36, price: 18000, stock: 20, sku: 'ROD-36IN' },
+        { unit: 'INCH', amount: 48, price: 22000, stock: 15, sku: 'ROD-48IN' },
+        { unit: 'INCH', amount: 60, price: 28000, stock: 10, sku: 'ROD-60IN' },
+        { unit: 'INCH', amount: 72, price: 35000, stock: 8, sku: 'ROD-72IN' },
+      ],
+    },
+    {
+      name: 'PVC Pipe',
+      slug: 'pvc-pipe',
+      description: 'PVC pipe for plumbing and construction',
+      category: 'Home & Garden',
+      images: [
+        'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500&h=500&fit=crop'
+      ],
+      meta: {
+        brand: 'Astral',
+        diameter: '1 inch',
+        material: 'PVC',
+        pressure_rating: '10 bar',
+        color: 'White'
+      },
+      variants: [
+        { unit: 'M', amount: 1, price: 8000, stock: 40, sku: 'PIPE-1M' },
+        { unit: 'M', amount: 2, price: 15000, stock: 25, sku: 'PIPE-2M' },
+        { unit: 'M', amount: 3, price: 22000, stock: 15, sku: 'PIPE-3M' },
+        { unit: 'M', amount: 6, price: 40000, stock: 10, sku: 'PIPE-6M' },
+      ],
+    },
+    {
+      name: 'Fabric by Length',
+      slug: 'fabric-by-length',
+      description: 'Cotton fabric sold by length',
+      category: 'Home & Garden',
+      images: [
+        'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500&h=500&fit=crop'
+      ],
+      meta: {
+        brand: 'Cotton King',
+        material: '100% Cotton',
+        width: '44 inches',
+        weight: '140 GSM',
+        care: 'Machine washable'
+      },
+      variants: [
+        { unit: 'M', amount: 1, price: 12000, stock: 30, sku: 'FAB-1M' },
+        { unit: 'M', amount: 2, price: 22000, stock: 20, sku: 'FAB-2M' },
+        { unit: 'M', amount: 5, price: 50000, stock: 10, sku: 'FAB-5M' },
+        { unit: 'M', amount: 10, price: 95000, stock: 5, sku: 'FAB-10M' },
+      ],
+    },
   ];
 
   // Create products with category assignment
@@ -309,10 +506,114 @@ async function main() {
     console.log(`Created product: ${product.name} in category: ${category}`);
   }
 
+  // Create a sample customer user
+  const customerUser = await prisma.user.upsert({
+    where: { email: 'customer@example.com' },
+    update: {},
+    create: {
+      email: 'customer@example.com',
+      name: 'John Doe',
+      passwordHash: await hash('customer123', 12),
+      role: 'USER',
+    },
+  });
+
+  // Create sample addresses for the customer
+  const addresses = [
+    {
+      userId: customerUser.id,
+      name: 'Home',
+      phone: '+91 9876543210',
+      line1: '123 Main Street',
+      line2: 'Apartment 4B',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400001',
+      isDefault: true,
+    },
+    {
+      userId: customerUser.id,
+      name: 'Office',
+      phone: '+91 9876543210',
+      line1: '456 Business Park',
+      line2: 'Floor 2, Suite 201',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400002',
+      isDefault: false,
+    },
+  ];
+
+  for (const addressData of addresses) {
+    await prisma.address.create({
+      data: addressData,
+    });
+  }
+
+  // Create a sample order
+  const sampleProducts = await prisma.product.findMany({
+    take: 3,
+    include: { variants: { take: 1 } }
+  });
+
+  if (sampleProducts.length >= 3) {
+    const order = await prisma.order.create({
+      data: {
+        userId: customerUser.id,
+        customerName: 'John Doe',
+        phone: '+91 9876543210',
+        address: '123 Main Street, Apartment 4B, Mumbai, Maharashtra 400001',
+        city: 'Mumbai',
+        pincode: '400001',
+        totalAmount: 0, // Will be calculated
+        status: 'PLACED',
+        paymentMode: 'COD',
+        items: {
+          create: [
+            {
+              variantId: sampleProducts[0].variants[0].id,
+              quantity: 2,
+              unitPrice: sampleProducts[0].variants[0].price,
+              total: sampleProducts[0].variants[0].price * 2,
+            },
+            {
+              variantId: sampleProducts[1].variants[0].id,
+              quantity: 1,
+              unitPrice: sampleProducts[1].variants[0].price,
+              total: sampleProducts[1].variants[0].price * 1,
+            },
+            {
+              variantId: sampleProducts[2].variants[0].id,
+              quantity: 3,
+              unitPrice: sampleProducts[2].variants[0].price,
+              total: sampleProducts[2].variants[0].price * 3,
+            },
+          ],
+        },
+      },
+    });
+
+    // Update the total amount
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId: order.id }
+    });
+    const totalAmount = orderItems.reduce((sum, item) => sum + item.total, 0);
+    
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { totalAmount }
+    });
+
+    console.log(`Created sample order: ${order.id} with total ₹${totalAmount/100}`);
+  }
+
   console.log('Seeding completed successfully!');
   console.log(`Admin user created: admin@tayaima.com / admin123`);
+  console.log(`Customer user created: customer@example.com / customer123`);
   console.log(`Created ${categories.length} categories`);
   console.log(`Created ${products.length} products`);
+  console.log(`Created ${addresses.length} addresses`);
+  console.log(`Created 1 sample order`);
 }
 
 main()

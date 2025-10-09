@@ -140,17 +140,6 @@ export default async function HomePage() {
             </div>
           </div>
           
-          {/* Badges positioned on the right side */}
-          <div className="flex justify-end mt-8">
-            <div className="flex items-center gap-4 text-sm">
-              <div className="px-4 py-3 rounded-lg bg-green-500/90 text-white backdrop-blur-sm">
-                Fast delivery
-              </div>
-              <div className="px-4 py-3 rounded-lg bg-blue-500/90 text-white backdrop-blur-sm">
-                Quality assured
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 

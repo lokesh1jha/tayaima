@@ -1,40 +1,48 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { signUrlsInArray } from "@/lib/urlSigner";
 
 export async function GET(req: Request) {
-  const session = (await getServerSession(authOptions)) as any;
-  if (!session || !session.user || session.user.role !== "ADMIN") {
-    return new NextResponse("Unauthorized", { status: 403 });
-  }
-
   try {
     const url = new URL(req.url);
-    const query = url.searchParams.get("q");
-    const limit = Number(url.searchParams.get("limit") || 10);
+    const search = url.searchParams.get("search") || "";
+    const categoryId = url.searchParams.get("categoryId") || "";
+    const page = Number(url.searchParams.get("page") || 1);
+    const limit = Number(url.searchParams.get("limit") || 20);
+    const offset = (page - 1) * limit;
 
-    if (!query || query.trim().length < 3) {
-      return NextResponse.json({ 
-        products: [],
-        meta: { 
-          query: query || "",
-          total: 0,
-          message: "Query must be at least 3 characters long"
+    // Build where clause
+    const where: any = {};
+
+    // Add search filter if provided (minimum 3 characters)
+    if (search && search.trim().length >= 3) {
+      where.OR = [
+        {
+          name: {
+            contains: search.trim(),
+            mode: "insensitive"
+          }
+        },
+        {
+          description: {
+            contains: search.trim(),
+            mode: "insensitive"
+          }
         }
-      });
+      ];
     }
 
-    const searchTerm = query.trim();
+    // Add category filter if provided
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
 
-    // Search products by name with case-insensitive matching
+    // Get total count for pagination
+    const totalCount = await prisma.product.count({ where });
+
+    // Fetch products with pagination
     const products = await prisma.product.findMany({
-      where: {
-        name: {
-          contains: searchTerm,
-          mode: "insensitive"
-        }
-      },
+      where,
       include: {
         category: {
           select: {
@@ -49,26 +57,36 @@ export async function GET(req: Request) {
             unit: true,
             amount: true,
             price: true,
-            stock: true
+            stock: true,
+            sku: true
           }
-        },
-        _count: {
-          select: { variants: true }
         }
       },
       orderBy: [
-        // Prioritize exact matches first
-        { name: "asc" }
+        { createdAt: "desc" }
       ],
+      skip: offset,
       take: limit
     });
 
+    // Sign URLs for images
+    const signedProducts = await signUrlsInArray(products, ['images']);
+
+    const totalPages = Math.ceil(totalCount / limit);
+
     return NextResponse.json({
-      products,
-      meta: {
-        query: searchTerm,
-        total: products.length,
-        limit
+      products: signedProducts,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      },
+      filters: {
+        search,
+        categoryId
       }
     });
 

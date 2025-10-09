@@ -70,6 +70,9 @@ enum Unit {
   G
   LITER
   ML
+  CM
+  M
+  INCH
   OTHER
 }
 
