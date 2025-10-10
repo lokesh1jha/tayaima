@@ -52,7 +52,8 @@ async function fetchProducts({
   const response = await fetch(`/api/products?${params.toString()}`);
   
   if (!response.ok) {
-    throw new Error(`Failed to fetch products: ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch products: ${response.status} ${response.statusText} - ${errorText}`);
   }
   
   const data: ProductsResponse = await response.json();
@@ -71,6 +72,15 @@ export function useProducts({
     enabled: enabled, // Always enabled, categoryId can be null to show all products
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes cache time
+    retry: (failureCount, error) => {
+      // Don't retry on 404 errors
+      if (error instanceof Error && error.message.includes('404')) {
+        return false;
+      }
+      // Retry up to 3 times for other errors
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
 

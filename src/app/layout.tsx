@@ -12,9 +12,9 @@ import StructuredData from "@/components/StructuredData";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TaYaima - Your Daily Needs Delivered",
-  description: "Fresh groceries, household items, and daily essentials delivered to your doorstep. Shop online with ease and convenience.",
-  keywords: "grocery delivery, fresh vegetables, online grocery store, daily essentials, home delivery, TaYaima",
+  title: "TaYaima - Fresh Groceries & Daily Essentials Delivered Across India | North East India Online Grocery Store",
+  description: "Shop fresh vegetables, fruits, dairy products, and daily essentials online at TaYaima. Fast delivery across India including North East India. Best prices, quality guaranteed. Order now for home delivery!",
+  keywords: "online grocery store India, fresh vegetables online, fruits delivery, dairy products, daily essentials, home delivery India, North East India grocery, TaYaima, grocery delivery India, fresh produce online, online shopping India, best grocery prices, fast delivery India, Assam grocery delivery, Meghalaya online shopping, Nagaland grocery store, Manipur fresh vegetables, Mizoram dairy products, Tripura fruits delivery, Arunachal Pradesh grocery, Sikkim online store",
   authors: [{ name: "TaYaima" }],
   creator: "TaYaima",
   publisher: "TaYaima",
@@ -44,18 +44,18 @@ export const metadata: Metadata = {
     canonical: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   },
   openGraph: {
-    title: "TaYaima - Your Daily Needs Delivered",
-    description: "Fresh groceries, household items, and daily essentials delivered to your doorstep. Shop online with ease and convenience.",
+    title: "TaYaima - Fresh Groceries & Daily Essentials Delivered Across India",
+    description: "Shop fresh vegetables, fruits, dairy products, and daily essentials online at TaYaima. Fast delivery across India including North East India. Best prices, quality guaranteed.",
     url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
     siteName: "TaYaima",
-    images: [{ url: "/tayaima-logo.jpeg", width: 1200, height: 630, alt: "TaYaima - Fresh Grocery Delivery Service" }],
-    locale: "en_US",
+    images: [{ url: "/tayaima-logo.jpeg", width: 1200, height: 630, alt: "TaYaima - Fresh Grocery Delivery Service Across India" }],
+    locale: "en_IN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TaYaima - Your Daily Needs Delivered",
-    description: "Fresh groceries, household items, and daily essentials delivered to your doorstep. Shop online with ease and convenience.",
+    title: "TaYaima - Fresh Groceries Delivered Across India",
+    description: "Shop fresh vegetables, fruits, dairy products, and daily essentials online at TaYaima. Fast delivery across India including North East India.",
     images: ["/tayaima-logo.jpeg"],
     creator: "@tayaima",
   },

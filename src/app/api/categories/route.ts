@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-// Cache for categories (they change infrequently)
-let categoriesCache: { data: any; timestamp: number } | null = null;
-const CATEGORIES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+import { getCategoriesCache, setCategoriesCache, isCategoriesCacheValid } from "@/lib/categoryCache";
 
 export async function GET() {
   try {
     // Check cache first
-    if (categoriesCache && Date.now() - categoriesCache.timestamp < CATEGORIES_CACHE_TTL) {
+    if (isCategoriesCacheValid()) {
+      const cache = getCategoriesCache();
       return NextResponse.json({ 
-        ...categoriesCache.data, 
-        meta: { cached: true, cachedAt: new Date(categoriesCache.timestamp).toISOString() }
+        ...cache!.data, 
+        meta: { cached: true, cachedAt: new Date(cache!.timestamp).toISOString() }
       });
     }
 
-    // Fetch from database with parent-child relationships
+    // Fetch only parent categories with their children
     const categories = await prisma.category.findMany({ 
-      where: { isActive: true },
+      where: { 
+        isActive: true,
+        parentId: null // Only fetch parent categories
+      },
       orderBy: [
         { sortOrder: "asc" },
         { name: "asc" }
@@ -30,14 +31,6 @@ export async function GET() {
         icon: true,
         parentId: true,
         sortOrder: true,
-        parent: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            icon: true
-          }
-        },
         children: {
           where: { isActive: true },
           select: {
@@ -68,7 +61,7 @@ export async function GET() {
     };
 
     // Update cache
-    categoriesCache = { data: result, timestamp: Date.now() };
+    setCategoriesCache(result);
 
     return NextResponse.json(result);
   } catch (error) {

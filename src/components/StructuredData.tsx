@@ -5,39 +5,68 @@ export default function StructuredData() {
     "@id": "https://tayaima.com",
     "name": "TaYaima",
     "alternateName": "TaYaima Grocery Store",
-    "description": "Your neighborhood's trusted grocery store. Fresh vegetables, daily essentials, and quality products delivered to your doorstep with care.",
-    "url": "https://tayaima.com",
-    "logo": "https://tayaima.com/logo.png",
-    "image": "https://tayaima.com/og.png",
+    "description": "India's trusted online grocery store. Fresh vegetables, fruits, dairy products, and daily essentials delivered across India including North East India. Best prices, quality guaranteed.",
+    "url": process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com",
+    "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
+    "image": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
     "telephone": "+91-XXXXXXXXXX", // Add your phone number
     "email": "support@tayaima.com",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Your Street Address", // Add your address
-      "addressLocality": "Your City",
-      "addressRegion": "Your State",
-      "postalCode": "Your PIN",
+      "addressLocality": "Guwahati",
+      "addressRegion": "Assam",
+      "postalCode": "781001",
       "addressCountry": "IN"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "0.0000", // Add your coordinates
-      "longitude": "0.0000"
+      "latitude": "26.1445", // Guwahati coordinates
+      "longitude": "91.7362"
     },
     "openingHours": [
       "Mo-Su 06:00-23:00"
     ],
     "priceRange": "₹",
     "servesCuisine": "Grocery",
-    "serviceArea": {
-      "@type": "GeoCircle",
-      "geoMidpoint": {
-        "@type": "GeoCoordinates",
-        "latitude": "0.0000",
-        "longitude": "0.0000"
+    "serviceArea": [
+      {
+        "@type": "State",
+        "name": "Assam"
       },
-      "geoRadius": "10000" // 10km radius
-    },
+      {
+        "@type": "State", 
+        "name": "Meghalaya"
+      },
+      {
+        "@type": "State",
+        "name": "Nagaland"
+      },
+      {
+        "@type": "State",
+        "name": "Manipur"
+      },
+      {
+        "@type": "State",
+        "name": "Mizoram"
+      },
+      {
+        "@type": "State",
+        "name": "Tripura"
+      },
+      {
+        "@type": "State",
+        "name": "Arunachal Pradesh"
+      },
+      {
+        "@type": "State",
+        "name": "Sikkim"
+      },
+      {
+        "@type": "Country",
+        "name": "India"
+      }
+    ],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "TaYaima Products",

@@ -1,9 +1,5 @@
 import { Metadata } from 'next';
-import ProductsPageClient from './page-new';
-import ErrorBoundary from '@/components/ErrorBoundary';
-
-// Force dynamic rendering to avoid build-time issues
-export const dynamic = 'force-dynamic';
+import ProductsPageClient from './ProductsPageClient';
 
 export const metadata: Metadata = {
   title: 'Fresh Groceries & Daily Essentials Online | Buy Vegetables, Fruits, Dairy Products | TaYaima',
@@ -52,9 +48,5 @@ export const metadata: Metadata = {
 };
 
 export default function ProductsPage() {
-  return (
-    <ErrorBoundary>
-      <ProductsPageClient />
-    </ErrorBoundary>
-  );
+  return <ProductsPageClient />;
 }
