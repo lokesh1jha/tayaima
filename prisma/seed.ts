@@ -121,8 +121,8 @@ async function main() {
         'https://images.unsplash.com/photo-1546470427-e9143da7973b?w=500&h=500&fit=crop'
       ],
       variants: [
-        { unit: 'KG', amount: 1, price: 8000, stock: 50, sku: 'TOM-1KG' },
-        { unit: 'KG', amount: 0.5, price: 4500, stock: 30, sku: 'TOM-500G' },
+        { unit: 'KG', amount: 1, price: 8000, originalPrice: 10000, stock: 50, sku: 'TOM-1KG' },
+        { unit: 'KG', amount: 0.5, price: 4500, originalPrice: 6000, stock: 30, sku: 'TOM-500G' },
       ],
     },
     {
@@ -300,8 +300,8 @@ async function main() {
         'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&h=500&fit=crop'
       ],
       variants: [
-        { unit: 'LITER', amount: 1, price: 15000, stock: 40, sku: 'OIL-SUN-1L' },
-        { unit: 'LITER', amount: 5, price: 70000, stock: 15, sku: 'OIL-SUN-5L' },
+        { unit: 'LITER', amount: 1, price: 15000, originalPrice: 18000, stock: 40, sku: 'OIL-SUN-1L' },
+        { unit: 'LITER', amount: 5, price: 70000, originalPrice: 85000, stock: 15, sku: 'OIL-SUN-5L' },
       ],
     },
 
@@ -342,8 +342,8 @@ async function main() {
         'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=500&h=500&fit=crop'
       ],
       variants: [
-        { unit: 'PIECE', amount: 6, price: 4500, stock: 60, sku: 'EGG-6PC' },
-        { unit: 'PIECE', amount: 12, price: 8500, stock: 40, sku: 'EGG-12PC' },
+        { unit: 'PIECE', amount: 6, price: 4500, originalPrice: 5500, stock: 60, sku: 'EGG-6PC' },
+        { unit: 'PIECE', amount: 12, price: 8500, originalPrice: 10000, stock: 40, sku: 'EGG-12PC' },
         { unit: 'PIECE', amount: 30, price: 20000, stock: 15, sku: 'EGG-30PC' },
       ],
     },

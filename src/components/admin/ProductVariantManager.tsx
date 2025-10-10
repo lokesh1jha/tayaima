@@ -7,9 +7,10 @@ import { toast } from "sonner";
 
 export interface ProductVariant {
   id?: string;
-  unit: "PIECE" | "KG" | "G" | "LITER" | "ML" | "OTHER";
+  unit: "PIECE" | "KG" | "G" | "LITER" | "ML" | "CM" | "M" | "INCH" | "OTHER";
   amount: number;
   price: number; // in paise
+  originalPrice?: number; // in paise - for slashed pricing
   stock: number;
   sku?: string;
 }
@@ -26,6 +27,9 @@ const UNIT_OPTIONS = [
   { value: "G", label: "Gram (g)" },
   { value: "LITER", label: "Liter (L)" },
   { value: "ML", label: "Milliliter (ml)" },
+  { value: "CM", label: "Centimeter (cm)" },
+  { value: "M", label: "Meter (m)" },
+  { value: "INCH", label: "Inch" },
   { value: "OTHER", label: "Other" },
 ];
 
@@ -71,6 +75,7 @@ export default function ProductVariantManager({
       unit: "PIECE",
       amount: 1,
       price: 0,
+      originalPrice: undefined,
       stock: 0,
     };
     setVariants([...variants, newVariant]);
@@ -166,7 +171,7 @@ export default function ProductVariantManager({
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Unit */}
               <div>
                 <label className="block text-xs font-medium mb-1">Unit *</label>
@@ -226,6 +231,30 @@ export default function ProductVariantManager({
                 />
               </div>
 
+              {/* Original Price (for slashed pricing) */}
+              <div>
+                <label className="block text-xs font-medium mb-1">Original Price (₹)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={variant.originalPrice ? formatPrice(variant.originalPrice) : ''}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    const currentFormatted = variant.originalPrice ? formatPrice(variant.originalPrice) : '';
+                    if (newValue !== currentFormatted) {
+                      const parsedValue = newValue === '' ? undefined : parsePrice(newValue);
+                      updateVariant(index, 'originalPrice', parsedValue);
+                    }
+                  }}
+                  className="text-sm"
+                  placeholder="0.00 (optional)"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Leave empty if no discount
+                </p>
+              </div>
+
               {/* Stock */}
               <div>
                 <label className="block text-xs font-medium mb-1">Stock *</label>
@@ -260,7 +289,16 @@ export default function ProductVariantManager({
               <div className="flex items-end">
                 <div className="text-xs text-gray-600 dark:text-gray-400">
                   <div>Display: {variant.amount}{variant.unit.toLowerCase()}</div>
-                  <div>Price: ₹{formatPrice(variant.price)}</div>
+                  <div className="flex items-center gap-1">
+                    {variant.originalPrice && variant.originalPrice > variant.price ? (
+                      <>
+                        <span className="line-through text-gray-400">₹{formatPrice(variant.originalPrice)}</span>
+                        <span className="text-green-600 font-medium">₹{formatPrice(variant.price)}</span>
+                      </>
+                    ) : (
+                      <span>Price: ₹{formatPrice(variant.price)}</span>
+                    )}
+                  </div>
                   <div>Stock: {variant.stock} units</div>
                 </div>
               </div>

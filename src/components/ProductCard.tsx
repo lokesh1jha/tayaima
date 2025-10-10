@@ -12,6 +12,7 @@ interface ProductVariant {
   unit: string;
   amount: number;
   price: number;
+  originalPrice?: number | null;
   stock: number;
 }
 
@@ -72,7 +73,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
   };
 
   return (
-    <Card className={`${compact ? 'p-2 sm:p-2' : 'p-2 sm:p-3 md:p-4'} hover:shadow-lg transition-shadow`}>
+    <Card className={`${compact ? 'p-1.5 sm:p-2' : 'p-2 sm:p-3 md:p-4'} hover:shadow-lg transition-shadow`}>
       <Link href={`/products/${product.slug}`} className="block">
         <div className={`${compact ? 'mb-2' : 'mb-2 sm:mb-3 md:mb-4'} aspect-square relative`}>
           {imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') ? (
@@ -93,7 +94,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
             />
           )}
         </div>
-        <h3 className={`font-semibold ${compact ? 'text-xs sm:text-sm' : 'text-xs sm:text-sm md:text-lg'} line-clamp-2`}>{product.name}</h3>
+        <h3 className={`font-semibold ${compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-base md:text-lg'} line-clamp-2`}>{product.name}</h3>
       </Link>
 
       {/* Category */}
@@ -113,11 +114,24 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
 
       {/* Price and Variant Row */}
       <div className={`${compact ? 'mt-2' : 'mt-2 sm:mt-3'} flex items-center justify-between gap-2`}>
-        <div className={`${compact ? 'text-sm' : 'text-sm sm:text-base xl:text-lg'} font-bold text-green-600 flex-shrink min-w-0`}>
+        <div className={`${compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-base md:text-lg'} font-bold text-green-600 flex-shrink min-w-0`}>
           {!hasVariants ? (
             <span className="text-gray-500">Price not available</span>
           ) : selectedVariant ? (
-            formatPrice(selectedVariant.price)
+            <div className="flex items-center gap-1">
+              {selectedVariant.originalPrice && selectedVariant.originalPrice > selectedVariant.price ? (
+                <>
+                  <span className="line-through text-gray-400 text-xs">
+                    {formatPrice(selectedVariant.originalPrice)}
+                  </span>
+                  <span className="text-green-600 font-bold">
+                    {formatPrice(selectedVariant.price)}
+                  </span>
+                </>
+              ) : (
+                <span>{formatPrice(selectedVariant.price)}</span>
+              )}
+            </div>
           ) : minPrice === maxPrice ? (
             formatPrice(minPrice)
           ) : (
@@ -131,7 +145,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
             <select
               value={selectedVariantId || ''}
               onChange={(e) => setSelectedVariantId(e.target.value)}
-              className={`${compact ? 'text-xs px-2 py-1' : 'text-xs sm:text-sm px-2 py-1'} border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600`}
+              className={`${compact ? 'text-xs px-1.5 py-1' : 'text-xs sm:text-sm px-2 py-1'} border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600`}
             >
               {variants.map((variant) => (
                 <option key={variant.id} value={variant.id}>
@@ -154,7 +168,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
             variantAmount={selectedVariant.amount}
             price={selectedVariant.price}
             imageUrl={product.images[0]}
-            className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'} w-full`}
+            className={`${compact ? 'h-7 sm:h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'} w-full`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 1.5M7 13l1.5 1.5m4.5-1.5h6" />
@@ -163,7 +177,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         )}
         {!hasVariants && (
           <Link href={`/products/${product.slug}`} className="w-full">
-            <Button className={`${compact ? 'h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'} w-full`}>
+            <Button className={`${compact ? 'h-7 sm:h-8 text-xs' : 'h-8 sm:h-9 text-xs sm:text-sm'} w-full`}>
               View Details
             </Button>
           </Link>

@@ -15,6 +15,7 @@ interface ProductVariant {
   unit: string;
   amount: number;
   price: number;
+  originalPrice?: number | null;
   stock: number;
   sku: string | null;
 }
@@ -123,8 +124,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   return (
     <>
       <ProductStructuredData product={product} />
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
         {/* Product Images */}
         <div className="space-y-4">
           {product.images && product.images.length > 0 ? (
@@ -140,7 +141,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
               
               {product.images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                   {product.images.map((image, index) => (
                     <button
                       key={index}
@@ -172,7 +173,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         </div>
 
         {/* Product Details */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div>
             {/* Category */}
             {product.category && (
@@ -188,9 +189,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
             
-            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
             {product.description && (
-              <p className="text-gray-600 dark:text-gray-300 text-lg">
+              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">
                 {product.description}
               </p>
             )}
@@ -213,7 +214,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   >
                     <div className="font-medium">{formatUnit(variant.unit, variant.amount)}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-300">
-                      {formatPrice(variant.price)}
+                      {variant.originalPrice && variant.originalPrice > variant.price ? (
+                        <div className="flex items-center gap-1">
+                          <span className="line-through text-gray-400 text-xs">
+                            {formatPrice(variant.originalPrice)}
+                          </span>
+                          <span className="text-green-600 font-medium">
+                            {formatPrice(variant.price)}
+                          </span>
+                        </div>
+                      ) : (
+                        formatPrice(variant.price)
+                      )}
                     </div>
                   </button>
                 ))}
@@ -223,29 +235,42 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
           {/* Price and Stock */}
           {selectedVariant && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center gap-4">
-                <span className="text-3xl font-bold text-green-600">
-                  {formatPrice(selectedVariant.price)}
-                </span>
+                <div className="flex items-center gap-2">
+                  {selectedVariant.originalPrice && selectedVariant.originalPrice > selectedVariant.price ? (
+                    <>
+                      <span className="text-lg sm:text-xl line-through text-gray-400">
+                        {formatPrice(selectedVariant.originalPrice)}
+                      </span>
+                      <span className="text-2xl sm:text-3xl font-bold text-green-600">
+                        {formatPrice(selectedVariant.price)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-2xl sm:text-3xl font-bold text-green-600">
+                      {formatPrice(selectedVariant.price)}
+                    </span>
+                  )}
+                </div>
                 <span className="text-sm text-gray-600 dark:text-gray-300">
                   per {formatUnit(selectedVariant.unit, selectedVariant.amount)}
                 </span>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <span className="text-sm text-gray-600 dark:text-gray-300">Quantity:</span>
                 <div className="flex items-center border rounded-lg">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-lg font-medium"
                   >
                     -
                   </button>
-                  <span className="px-4 py-2 border-x">{quantity}</span>
+                  <span className="px-4 py-2 border-x min-w-[3rem] text-center">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-lg font-medium"
                   >
                     +
                   </button>
@@ -268,7 +293,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               <Button
                 onClick={handleAddToCart}
                 disabled={!selectedVariant || selectedVariant.stock === 0 || addingToCart}
-                className="w-full"
+                className="w-full h-12 text-base font-medium"
               >
                 {addingToCart ? 'Adding...' : 'Add to Cart'}
               </Button>
@@ -276,8 +301,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           )}
 
           {/* Product Features */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Why Choose TaYaima?</h3>
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Why Choose TaYaima?</h3>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
               <li className="flex items-center gap-2">
                 <span className="text-green-600">✓</span>
