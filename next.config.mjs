@@ -3,6 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
   images: {
+    // Disable Vercel Image Optimization to prevent high usage costs
+    // Images are served directly from S3 which has its own CDN
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

@@ -277,16 +277,6 @@ function ProductsPageContent() {
                 )}
               </div>
             </div>
-
-            <div className="w-full max-w-md">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
-            </div>
             </div>
 
             {/* Breadcrumb Navigation */}

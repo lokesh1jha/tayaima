@@ -214,10 +214,6 @@ export default function AdminProductsPage() {
             <Skeleton className="h-4 w-32 mb-2" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="flex-1 max-w-md">
-            <Skeleton className="h-4 w-28 mb-2" />
-            <Skeleton className="h-10 w-full" />
-          </div>
         </div>
 
         {/* Products Grid Skeleton */}
@@ -312,36 +308,13 @@ export default function AdminProductsPage() {
           )}
         </div>
 
-        {/* Search */}
-        <div className="flex-1 max-w-md">
-          <label className="block text-sm font-medium mb-1">Search Products</label>
-          <Input
-            type="text"
-            placeholder="Search products (min 3 characters)..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
-          />
-          {searchTerm && (
-            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Searching for: "{searchTerm}"
-              <button
-                onClick={() => setSearchTerm("")}
-                className="ml-2 text-red-600 hover:text-red-700"
-              >
-                Clear
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* Clear Filters Button */}
-        {(searchTerm || selectedCategory) && (
+        {selectedCategory && (
           <div className="flex items-end">
             <Button
               variant="ghost"
               onClick={() => {
-                setSearchTerm("");
                 setSelectedCategory("");
                 setCategorySearch("");
               }}
