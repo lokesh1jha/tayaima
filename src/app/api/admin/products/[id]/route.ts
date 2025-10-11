@@ -154,7 +154,26 @@ export async function PATCH(
 
     // Clean up removed images after successful database update
     if (Array.isArray(images)) {
-      const removedImages = currentProduct.images.filter(img => !images.includes(img));
+      // Helper function to normalize URLs (remove query parameters for comparison)
+      const normalizeUrl = (url: string): string => {
+        try {
+          const urlObj = new URL(url);
+          return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
+        } catch {
+          return url; // Return as-is if not a valid URL
+        }
+      };
+      
+      // Normalize both current and new image URLs for comparison
+      const normalizedCurrentImages = currentProduct.images.map(normalizeUrl);
+      const normalizedNewImages = images.map(normalizeUrl);
+      
+      // Find truly removed images by comparing normalized URLs
+      const removedImages = currentProduct.images.filter((img, index) => {
+        const normalizedImg = normalizedCurrentImages[index];
+        return !normalizedNewImages.includes(normalizedImg);
+      });
+      
       if (removedImages.length > 0) {
         logger.info('Cleaning up removed images from product update', { 
           productId: id, 
