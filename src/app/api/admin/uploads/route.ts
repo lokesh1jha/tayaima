@@ -16,6 +16,8 @@ export async function POST(req: Request) {
 
     const form = await req.formData();
     const files = form.getAll("file");
+    const prefix = form.get("prefix")?.toString() || 'products'; // Allow custom prefix (e.g., 'ad-banner')
+    
     if (!files || files.length === 0) {
       return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
     }
@@ -36,8 +38,8 @@ export async function POST(req: Request) {
       const arrayBuffer = await f.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       
-      // Generate storage key
-      const storageKey = generateStorageKey(f.name, 'products');
+      // Generate storage key with custom prefix
+      const storageKey = generateStorageKey(f.name, prefix);
       
       // Upload using storage provider
       const url = await storage.upload(buffer, storageKey, f.type);

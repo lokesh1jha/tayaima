@@ -4,6 +4,7 @@ import Card from "@/components/ui/Card";
 import ProductCard from "@/components/ProductCard";
 import CategoryChips from "@/components/CategoryChips";
 import ProductsPrefetch from "@/components/ProductsPrefetch";
+import BannerCarousel from "@/components/BannerCarousel";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -33,7 +34,6 @@ export default async function HomePage() {
       cachedQuery(
         'homepage:categories',
         () => prisma.category.findMany({
-          where: { isActive: true },
           orderBy: [
             { sortOrder: "asc" },
             { name: "asc" }
@@ -141,6 +141,11 @@ export default async function HomePage() {
           </div>
           
         </div>
+      </section>
+
+      {/* Banner Carousel - Full Width */}
+      <section className="w-full pt-4">
+        <BannerCarousel />
       </section>
 
       {/* Category chips */}

@@ -10,15 +10,23 @@ const links = [
   { href: "/admin/products", label: "Products", icon: "📦" },
   { href: "/admin/categories", label: "Categories", icon: "🏷️" },
   { href: "/admin/orders", label: "Orders", icon: "📋" },
-  { href: "/admin/customers", label: "Customers", icon: "👥" },
-  { href: "/admin/admins", label: "Admins", icon: "👨‍💼" },
-  { href: "/admin/analytics", label: "Analytics", icon: "📈" },
-  { href: "/admin/settings", label: "Settings", icon: "⚙️" },
+  { 
+    href: "/admin/settings", 
+    label: "Settings", 
+    icon: "⚙️",
+    children: [
+      { href: "/admin/customers", label: "Customers", icon: "👥" },
+      { href: "/admin/admins", label: "Admins", icon: "👨‍💼" },
+      { href: "/admin/analytics", label: "Analytics", icon: "📈" },
+      { href: "/admin/banners", label: "Banners", icon: "🎨" },
+    ]
+  },
 ];
 
 export default function ResponsiveAdminSidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
   const pathname = usePathname();
 
   // Load collapsed state from localStorage on mount
@@ -166,31 +174,99 @@ export default function ResponsiveAdminSidebar() {
             isCollapsed ? "px-2 py-4" : "px-4 py-4"
           )}>
             <div className="space-y-1">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href as any}
-                  onClick={closeMobileMenu}
-                  className={clsx(
-                    "flex items-center rounded-lg text-sm font-medium transition-colors w-full group relative",
-                    isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-3 py-3",
-                    pathname === link.href
-                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                  )}
-                  title={isCollapsed ? link.label : undefined}
-                >
-                  <span className="text-lg flex-shrink-0">{link.icon}</span>
-                  {!isCollapsed && <span className="truncate">{link.label}</span>}
-                  
-                  {/* Tooltip for collapsed state */}
-                  {isCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                      {link.label}
-                    </div>
-                  )}
-                </Link>
-              ))}
+              {links.map((link) => {
+                const hasChildren = link.children && link.children.length > 0;
+                const isExpanded = expandedMenu === link.href;
+                const isActive = pathname === link.href || (hasChildren && link.children?.some(child => pathname === child.href));
+
+                return (
+                  <div key={link.href}>
+                    {hasChildren ? (
+                      <button
+                        onClick={() => setExpandedMenu(isExpanded ? null : link.href)}
+                        className={clsx(
+                          "flex items-center rounded-lg text-sm font-medium transition-colors w-full group relative",
+                          isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-3 py-3",
+                          isActive
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                        )}
+                        title={isCollapsed ? link.label : undefined}
+                      >
+                        <span className="text-lg flex-shrink-0">{link.icon}</span>
+                        {!isCollapsed && (
+                          <>
+                            <span className="truncate flex-1 text-left">{link.label}</span>
+                            <svg
+                              className={clsx(
+                                "w-4 h-4 transition-transform",
+                                isExpanded && "rotate-180"
+                              )}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </>
+                        )}
+                        
+                        {/* Tooltip for collapsed state */}
+                        {isCollapsed && (
+                          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            {link.label}
+                          </div>
+                        )}
+                      </button>
+                    ) : (
+                      <Link
+                        href={link.href as any}
+                        onClick={closeMobileMenu}
+                        className={clsx(
+                          "flex items-center rounded-lg text-sm font-medium transition-colors w-full group relative",
+                          isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-3 py-3",
+                          pathname === link.href
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                        )}
+                        title={isCollapsed ? link.label : undefined}
+                      >
+                        <span className="text-lg flex-shrink-0">{link.icon}</span>
+                        {!isCollapsed && <span className="truncate">{link.label}</span>}
+                        
+                        {/* Tooltip for collapsed state */}
+                        {isCollapsed && (
+                          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            {link.label}
+                          </div>
+                        )}
+                      </Link>
+                    )}
+
+                    {/* Sub-menu items */}
+                    {hasChildren && isExpanded && !isCollapsed && (
+                      <div className="ml-8 mt-1 space-y-1">
+                        {link.children?.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href as any}
+                            onClick={closeMobileMenu}
+                            className={clsx(
+                              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                              pathname === child.href
+                                ? "bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                                : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700/50"
+                            )}
+                          >
+                            <span className="text-base">{child.icon}</span>
+                            <span className="truncate">{child.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </nav>
 
