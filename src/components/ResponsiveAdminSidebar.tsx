@@ -42,6 +42,17 @@ export default function ResponsiveAdminSidebar() {
     localStorage.setItem('admin-sidebar-collapsed', JSON.stringify(isCollapsed));
   }, [isCollapsed]);
 
+  // Auto-expand Settings menu if on a child page
+  useEffect(() => {
+    const settingsLink = links.find(link => link.label === "Settings");
+    if (settingsLink?.children) {
+      const isOnChildPage = settingsLink.children.some(child => pathname === child.href);
+      if (isOnChildPage && !isCollapsed) {
+        setExpandedMenu(settingsLink.href);
+      }
+    }
+  }, [pathname, isCollapsed]);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -183,7 +194,16 @@ export default function ResponsiveAdminSidebar() {
                   <div key={link.href}>
                     {hasChildren ? (
                       <button
-                        onClick={() => setExpandedMenu(isExpanded ? null : link.href)}
+                        onClick={() => {
+                          if (isCollapsed) {
+                            // If collapsed, expand the sidebar first
+                            setIsCollapsed(false);
+                            setExpandedMenu(link.href);
+                          } else {
+                            // If expanded, toggle the submenu
+                            setExpandedMenu(isExpanded ? null : link.href);
+                          }
+                        }}
                         className={clsx(
                           "flex items-center rounded-lg text-sm font-medium transition-colors w-full group relative",
                           isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-3 py-3",
@@ -214,7 +234,7 @@ export default function ResponsiveAdminSidebar() {
                         {/* Tooltip for collapsed state */}
                         {isCollapsed && (
                           <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                            {link.label}
+                            {link.label} (Click to expand)
                           </div>
                         )}
                       </button>

@@ -279,20 +279,22 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Orders</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Orders</h1>
         
         {selectedOrders.size > 0 && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Button 
               onClick={() => bulkUpdateStatus("SHIPPED")} 
               variant="warning"
+              className="text-xs sm:text-sm px-2 sm:px-4"
               disabled={!Array.from(selectedOrders).some(id => {
                 const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED";
               })}
             >
-              Mark Shipped ({Array.from(selectedOrders).filter(id => {
+              <span className="hidden sm:inline">Mark Shipped</span>
+              <span className="sm:hidden">Ship</span> ({Array.from(selectedOrders).filter(id => {
                 const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED";
               }).length})
@@ -300,12 +302,14 @@ export default function AdminOrdersPage() {
             <Button 
               onClick={() => bulkUpdateStatus("DELIVERED")} 
               variant="success"
+              className="text-xs sm:text-sm px-2 sm:px-4"
               disabled={!Array.from(selectedOrders).some(id => {
                 const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "SHIPPED";
               })}
             >
-              Mark Delivered ({Array.from(selectedOrders).filter(id => {
+              <span className="hidden sm:inline">Mark Delivered</span>
+              <span className="sm:hidden">Deliver</span> ({Array.from(selectedOrders).filter(id => {
                 const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "SHIPPED";
               }).length})
@@ -313,46 +317,51 @@ export default function AdminOrdersPage() {
             <Button 
               onClick={() => bulkUpdateStatus("CANCELLED")} 
               variant="error"
+              className="text-xs sm:text-sm px-2 sm:px-4"
               disabled={!Array.from(selectedOrders).some(id => {
                 const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED" || order?.status === "SHIPPED";
               })}
             >
-              Cancel Orders ({Array.from(selectedOrders).filter(id => {
+              <span className="hidden sm:inline">Cancel Orders</span>
+              <span className="sm:hidden">Cancel</span> ({Array.from(selectedOrders).filter(id => {
                 const order = filteredOrders.find(o => o.id === id);
                 return order?.status === "PLACED" || order?.status === "SHIPPED";
               }).length})
             </Button>
-            <Button onClick={printOrders} variant="accent">
-              Print Selected ({selectedOrders.size})
+            <Button onClick={printOrders} variant="accent" className="text-xs sm:text-sm px-2 sm:px-4">
+              <span className="hidden sm:inline">Print Selected</span>
+              <span className="sm:hidden">Print</span> ({selectedOrders.size})
             </Button>
           </div>
         )}
       </div>
 
       {/* Status Filter */}
-      <div className="flex gap-4 items-center">
-        <label className="text-sm font-medium">Filter by Status:</label>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setSelectedOrders(new Set()); // Clear selections when filtering
-          }}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700"
-        >
-          <option value="ALL">All Orders ({orders.length})</option>
-          <option value="PLACED">Placed ({orders.filter(o => o.status === "PLACED").length})</option>
-          <option value="SHIPPED">Shipped ({orders.filter(o => o.status === "SHIPPED").length})</option>
-          <option value="DELIVERED">Delivered ({orders.filter(o => o.status === "DELIVERED").length})</option>
-          <option value="CANCELLED">Cancelled ({orders.filter(o => o.status === "CANCELLED").length})</option>
-        </select>
-        
-        {statusFilter !== "ALL" && (
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {filteredOrders.length} {statusFilter.toLowerCase()} orders
-          </span>
-        )}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
+        <label className="text-sm font-medium whitespace-nowrap">Filter by Status:</label>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center w-full sm:w-auto">
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setSelectedOrders(new Set()); // Clear selections when filtering
+            }}
+            className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700 text-sm"
+          >
+            <option value="ALL">All Orders ({orders.length})</option>
+            <option value="PLACED">Placed ({orders.filter(o => o.status === "PLACED").length})</option>
+            <option value="SHIPPED">Shipped ({orders.filter(o => o.status === "SHIPPED").length})</option>
+            <option value="DELIVERED">Delivered ({orders.filter(o => o.status === "DELIVERED").length})</option>
+            <option value="CANCELLED">Cancelled ({orders.filter(o => o.status === "CANCELLED").length})</option>
+          </select>
+          
+          {statusFilter !== "ALL" && (
+            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              Showing {filteredOrders.length} {statusFilter.toLowerCase()} orders
+            </span>
+          )}
+        </div>
       </div>
 
       {filteredOrders.length === 0 ? (
@@ -360,7 +369,7 @@ export default function AdminOrdersPage() {
           <p className="text-gray-600 dark:text-gray-300">No orders found.</p>
         </Card>
       ) : (
-        <Card className="p-6">
+        <Card className="p-3 sm:p-6">
           <div className="mb-4 flex items-center gap-2">
             <input
               type="checkbox"
@@ -368,34 +377,35 @@ export default function AdminOrdersPage() {
               onChange={selectAllOrders}
               className="rounded"
             />
-            <label className="text-sm font-medium">
+            <label className="text-xs sm:text-sm font-medium">
               Select All ({filteredOrders.length} orders)
             </label>
           </div>
 
           <div className="space-y-4">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
+              <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4">
+                <div className="flex flex-col gap-3">
+                  {/* Order Header with Checkbox */}
+                  <div className="flex items-start gap-2 sm:gap-3">
                     <input
                       type="checkbox"
                       checked={selectedOrders.has(order.id)}
                       onChange={() => toggleOrderSelection(order.id)}
-                      className="mt-1 rounded"
+                      className="mt-1 rounded flex-shrink-0"
                     />
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-semibold">Order #{order.id.slice(-6)}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="font-semibold text-sm sm:text-base">Order #{order.id.slice(-6)}</span>
                         <span className={getStatusColor(order.status)}>
                           {order.status}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                      <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 space-y-1">
                         <div><strong>Customer:</strong> {order.customerName}</div>
                         <div><strong>Phone:</strong> {order.phone}</div>
                         <div><strong>Total:</strong> {formatPrice(order.totalAmount)}</div>
-                        <div><strong>Date:</strong> {new Date(order.createdAt).toLocaleString()}</div>
+                        <div className="truncate sm:whitespace-normal"><strong>Date:</strong> {new Date(order.createdAt).toLocaleString()}</div>
                         {order.cancellationReason && (
                           <div><strong>Cancellation Reason:</strong> {order.cancellationReason}</div>
                         )}
@@ -403,10 +413,12 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="secondary"
                       onClick={() => setSelectedOrderDetails(selectedOrderDetails === order.id ? null : order.id)}
+                      className="text-xs sm:text-sm px-2 sm:px-4"
                     >
                       {selectedOrderDetails === order.id ? "Hide" : "Details"}
                     </Button>
@@ -417,6 +429,7 @@ export default function AdminOrdersPage() {
                           variant="warning"
                           onClick={() => handleStatusChange(order.id, "SHIPPED")}
                           disabled={statusUpdateLoading === order.id}
+                          className="text-xs sm:text-sm px-2 sm:px-4"
                         >
                           Ship
                         </Button>
@@ -424,6 +437,7 @@ export default function AdminOrdersPage() {
                           variant="error"
                           onClick={() => handleStatusChange(order.id, "CANCELLED")}
                           disabled={statusUpdateLoading === order.id}
+                          className="text-xs sm:text-sm px-2 sm:px-4"
                         >
                           Cancel
                         </Button>
@@ -436,6 +450,7 @@ export default function AdminOrdersPage() {
                           variant="success"
                           onClick={() => handleStatusChange(order.id, "DELIVERED")}
                           disabled={statusUpdateLoading === order.id}
+                          className="text-xs sm:text-sm px-2 sm:px-4"
                         >
                           Deliver
                         </Button>
@@ -443,6 +458,7 @@ export default function AdminOrdersPage() {
                           variant="error"
                           onClick={() => handleStatusChange(order.id, "CANCELLED")}
                           disabled={statusUpdateLoading === order.id}
+                          className="text-xs sm:text-sm px-2 sm:px-4"
                         >
                           Cancel
                         </Button>
@@ -450,7 +466,7 @@ export default function AdminOrdersPage() {
                     )}
 
                     {(order.status === "DELIVERED" || order.status === "CANCELLED") && (
-                      <span className="text-sm text-gray-500 dark:text-gray-400 px-3 py-2">
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 px-2 sm:px-3 py-2">
                         No actions available
                       </span>
                     )}
@@ -459,37 +475,37 @@ export default function AdminOrdersPage() {
 
                 {selectedOrderDetails === order.id && (
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                       <div>
-                        <h4 className="font-semibold mb-2">Delivery Address</h4>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                        <h4 className="font-semibold mb-2 text-sm sm:text-base">Delivery Address</h4>
+                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                           {order.address}
                           {order.city && <><br />{order.city}</>}
                           {order.pincode && <> {order.pincode}</>}
                         </div>
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-2">Payment</h4>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                        <h4 className="font-semibold mb-2 text-sm sm:text-base">Payment</h4>
+                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                           Method: {order.paymentMode}
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-4">
-                      <h4 className="font-semibold mb-2">Items</h4>
+                      <h4 className="font-semibold mb-2 text-sm sm:text-base">Items</h4>
                       <div className="space-y-2">
                         {order.items.map((item) => (
-                          <div key={item.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                            <div>
-                              <div className="font-medium">{item.variant.product.name}</div>
-                              <div className="text-sm text-gray-600 dark:text-gray-300">
+                          <div key={item.id} className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-xs sm:text-sm truncate">{item.variant.product.name}</div>
+                              <div className="text-xs text-gray-600 dark:text-gray-300">
                                 {item.variant.amount}{item.variant.unit} × {item.quantity}
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="font-medium">{formatPrice(item.total)}</div>
-                              <div className="text-sm text-gray-600 dark:text-gray-300">
+                            <div className="text-left sm:text-right flex-shrink-0">
+                              <div className="font-medium text-xs sm:text-sm">{formatPrice(item.total)}</div>
+                              <div className="text-xs text-gray-600 dark:text-gray-300">
                                 {formatPrice(item.unitPrice)} each
                               </div>
                             </div>
