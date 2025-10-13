@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { signUrlsInObject } from '@/lib/urlSigner';
 import ProductDetailClient from './ProductDetailClient';
 
 interface ProductPageProps {
@@ -134,7 +135,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
       notFound();
     }
 
-    return <ProductDetailClient product={product} />;
+    // Sign image URLs before passing to client
+    const signedProduct = await signUrlsInObject(product, ['images']);
+
+    return <ProductDetailClient product={signedProduct} />;
   } catch (error) {
     console.error('Error fetching product:', error);
     notFound();

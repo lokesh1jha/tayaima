@@ -243,9 +243,24 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 items-end">
+      <div className="flex gap-4 items-end flex-wrap">
+        {/* Search Products */}
+        <div className="flex-1 min-w-[250px] max-w-md">
+          <label className="block text-sm font-medium mb-1">Search Products</label>
+          <Input
+            type="text"
+            placeholder="Search by name or description..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset to first page when searching
+            }}
+            className="w-full"
+          />
+        </div>
+
         {/* Category Filter */}
-        <div className="flex-1 max-w-xs" ref={categoryDropdownRef}>
+        <div className="flex-1 min-w-[250px] max-w-xs" ref={categoryDropdownRef}>
           <label className="block text-sm font-medium mb-1">Filter by Category</label>
           <div className="relative">
             <input
@@ -291,32 +306,18 @@ export default function AdminProductsPage() {
               </div>
             )}
           </div>
-          {selectedCategory && (
-            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Filtered by: {categories.find(c => c.id === selectedCategory)?.name}
-              <button
-                onClick={() => {
-                  setSelectedCategory("");
-                  setCategorySearch("");
-                  setCurrentPage(1);
-                }}
-                className="ml-2 text-red-600 hover:text-red-700"
-              >
-                Clear
-              </button>
-            </div>
-          )}
         </div>
 
-
         {/* Clear Filters Button */}
-        {selectedCategory && (
+        {(selectedCategory || searchTerm) && (
           <div className="flex items-end">
             <Button
               variant="ghost"
               onClick={() => {
                 setSelectedCategory("");
                 setCategorySearch("");
+                setSearchTerm("");
+                setCurrentPage(1);
               }}
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
