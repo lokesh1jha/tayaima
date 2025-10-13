@@ -61,7 +61,7 @@ export default function BannerCarousel() {
 
   if (loading) {
     return (
-      <div className="w-full aspect-[21/4] bg-gray-200 dark:bg-gray-800 animate-pulse" />
+      <div className="w-full aspect-[21/8] sm:aspect-[21/4] bg-gray-200 dark:bg-gray-800 animate-pulse" />
     );
   }
 
@@ -72,7 +72,7 @@ export default function BannerCarousel() {
   const currentBanner = banners[currentIndex];
 
   return (
-    <div className="relative w-full aspect-[21/4] bg-gray-200 dark:bg-gray-800 overflow-hidden group">
+    <div className="relative w-full aspect-[21/8] sm:aspect-[21/4] bg-gray-200 dark:bg-gray-800 overflow-hidden group">
       {/* Banner Images with Sliding Effect */}
       <div className="relative w-full h-full">
         {banners.map((banner, index) => {
