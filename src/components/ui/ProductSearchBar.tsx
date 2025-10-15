@@ -196,7 +196,7 @@ export default function ProductSearchBar({
                       </p>
                       {product.variants && product.variants.length > 0 && (
                         <p className="text-xs text-gray-600 dark:text-gray-300">
-                          From ₹{Math.min(...product.variants.map(v => v.price))}
+                          From ₹{(Math.min(...product.variants.map(v => v.price)) / 100).toFixed(2)}
                         </p>
                       )}
                     </div>
