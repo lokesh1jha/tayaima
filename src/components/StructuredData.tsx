@@ -1,4 +1,36 @@
 export default function StructuredData() {
+  const organizationData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://tayaima.com/#organization",
+    "name": "TaYaima",
+    "alternateName": "TaYaima Grocery Store",
+    "description": "India's trusted online grocery store. Fresh vegetables, fruits, dairy products, and daily essentials delivered across India including North East India. Best prices, quality guaranteed.",
+    "url": process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com",
+    "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
+    "image": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-8837284911",
+      "contactType": "customer service",
+      "email": "tayaima.com@gmail.com",
+      "availableLanguage": "English"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Thangmeiband Polem Leikai",
+      "addressLocality": "Imphal",
+      "addressRegion": "Manipur",
+      "postalCode": "795001",
+      "addressCountry": "IN"
+    },
+    "sameAs": [
+      "https://www.facebook.com/people/TaYaima-store/61581025515343/",
+      "https://www.instagram.com/tayaima_store/",
+      "https://tayaima.com"
+    ]
+  };
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -9,7 +41,7 @@ export default function StructuredData() {
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com",
     "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
     "image": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
-    "telephone": "+91-XXXXXXXXXX", // Add your phone number
+    "telephone": "+91-8837284911",
     "email": "tayaima.com@gmail.com",
     "address": {
       "@type": "PostalAddress",
@@ -123,9 +155,15 @@ export default function StructuredData() {
   };
 
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+    </>
   );
 }

@@ -18,26 +18,22 @@
       "purpose": "any"
     },
     {
-      "src": "/icon-192x192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/icon-256x256.svg", 
+      "src": "/tayaima-logo.jpeg",
       "sizes": "256x256",
-      "type": "image/svg+xml"
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
-      "src": "/icon-384x384.svg",
+      "src": "/tayaima-logo.jpeg",
       "sizes": "384x384", 
-      "type": "image/svg+xml"
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
-      "src": "/icon-512x512.svg",
+      "src": "/tayaima-logo.jpeg",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable any"
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -48,8 +44,9 @@
       "url": "/products",
       "icons": [
         {
-          "src": "/icon-192x192.png",
-          "sizes": "192x192"
+          "src": "/tayaima-logo.jpeg",
+          "sizes": "192x192",
+          "type": "image/jpeg"
         }
       ]
     },
@@ -60,8 +57,9 @@
       "url": "/cart",
       "icons": [
         {
-          "src": "/icon-192x192.png",
-          "sizes": "192x192"
+          "src": "/tayaima-logo.jpeg",
+          "sizes": "192x192",
+          "type": "image/jpeg"
         }
       ]
     }

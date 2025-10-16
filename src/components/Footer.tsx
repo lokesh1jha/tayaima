@@ -81,6 +81,9 @@ export default function Footer() {
               <Link href={ROUTES.CONTACT} className="block text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
                 Contact Us
               </Link>
+              <Link href="/sell" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                Sell here
+              </Link>
               <Link href="/return-policy" className="block text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
                 Return Policy
               </Link>

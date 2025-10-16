@@ -21,15 +21,27 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
     },
 
     async getUser(id) {
-      return await prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id },
       });
+      
+      if (!user || !user.email) {
+        return null;
+      }
+      
+      return user as AdapterUser;
     },
 
     async getUserByEmail(email) {
-      return await prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { email },
       });
+      
+      if (!user || !user.email) {
+        return null;
+      }
+      
+      return user as AdapterUser;
     },
 
     async getUserByAccount({ providerAccountId, provider }) {
@@ -42,18 +54,29 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         },
         select: { user: true },
       });
-      return account?.user ?? null;
+      
+      if (!account?.user || !account.user.email) {
+        return null;
+      }
+      
+      return account.user as AdapterUser;
     },
 
     async updateUser({ id, ...data }) {
-      return await prisma.user.update({
+      const user = await prisma.user.update({
         where: { id },
         data,
       });
+      
+      if (!user.email) {
+        throw new Error('User email cannot be null for NextAuth compatibility');
+      }
+      
+      return user as AdapterUser;
     },
 
     async deleteUser(userId) {
-      return await prisma.user.delete({
+      await prisma.user.delete({
         where: { id: userId },
       });
     },

@@ -33,12 +33,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/icon-192x192.svg", sizes: "192x192", type: "image/svg+xml" },
+      { url: "/tayaima-logo.jpeg", type: "image/jpeg" },
+      { url: "/tayaima-logo.jpeg", sizes: "192x192", type: "image/jpeg" },
+      { url: "/tayaima-logo.jpeg", sizes: "512x512", type: "image/jpeg" },
     ],
     apple: [
-      { url: "/apple-touch-icon.svg", sizes: "180x180", type: "image/svg+xml" },
+      { url: "/tayaima-logo.jpeg", sizes: "180x180", type: "image/jpeg" },
     ],
+    shortcut: "/tayaima-logo.jpeg",
   },
   manifest: "/manifest.json",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
@@ -69,9 +71,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <StructuredData />
         {/* Favicon */}
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.svg" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.svg" />
+        <link rel="icon" type="image/jpeg" href="/tayaima-logo.jpeg" />
+        <link rel="icon" type="image/jpeg" sizes="192x192" href="/tayaima-logo.jpeg" />
+        <link rel="icon" type="image/jpeg" sizes="512x512" href="/tayaima-logo.jpeg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/tayaima-logo.jpeg" />
+        <link rel="shortcut icon" href="/tayaima-logo.jpeg" />
         {/* Preload critical resources */}
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />

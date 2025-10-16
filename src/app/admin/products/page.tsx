@@ -186,6 +186,8 @@ export default function AdminProductsPage() {
       if (response.ok) {
         setProducts(products.filter(p => p.id !== deleteModal.productId));
         toast.success(`Product "${deleteModal.productName}" deleted successfully`);
+        // Close the modal after successful deletion
+        setDeleteModal({ isOpen: false, productId: "", productName: "" });
       } else {
         const error = await response.text();
         toast.error(`Failed to delete product: ${error}`);

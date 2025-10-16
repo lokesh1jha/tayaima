@@ -9,7 +9,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useCart } from "@/hooks/useCart";
 import { useCartDrawer } from "@/components/cart/CartDrawerProvider";
 import { ROUTES } from "@/lib/constants";
-import { IconShoppingCart, IconUser, IconSun, IconMoon, IconLogout, IconPackage, IconSettings, IconSearch } from "@tabler/icons-react";
+import { IconShoppingCart, IconUser, IconSun, IconMoon, IconLogout, IconPackage, IconSettings, IconSearch, IconBuildingStore } from "@tabler/icons-react";
 import ProductSearchBar from "./ui/ProductSearchBar";
 
 export default function Navbar() {
@@ -167,6 +167,15 @@ export default function Navbar() {
                       Products
                     </Link>
                     
+                    <Link
+                      href="/sell"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setShowProfileDropdown(false)}
+                    >
+                      <IconBuildingStore className="w-4 h-4" />
+                      Sell here
+                    </Link>
+                    
                     {!isAdmin && (
                       <>
                         <Link
@@ -250,6 +259,15 @@ export default function Navbar() {
                     >
                       <IconPackage className="w-4 h-4" />
                       Products
+                    </Link>
+                    
+                    <Link
+                      href="/sell"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setShowProfileDropdown(false)}
+                    >
+                      <IconBuildingStore className="w-4 h-4" />
+                      Sell here
                     </Link>
                     
                     {/* Dark/Light Mode Toggle */}
