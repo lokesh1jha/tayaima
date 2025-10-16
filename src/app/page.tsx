@@ -132,7 +132,7 @@ export default async function HomePage() {
                 Fresh Groceries Delivered Fast Across India
               </h1>
               <p className="text-xl sm:text-2xl text-white mb-8 drop-shadow-md bg-black/20 px-4 py-2 rounded-lg backdrop-blur-sm">
-                Shop fresh vegetables, fruits, dairy products, and daily essentials online. Fast delivery to your doorstep including North East India.
+                KHURUMJARI Welcome to Tayaima Store, Your trusted family store from Manipur — now online.
               </p>
               <div className="flex gap-4">
                 <Link href="/products">
@@ -201,14 +201,19 @@ export default async function HomePage() {
 
       {/* About Section */}
       <section className="container max-w-[1400px] py-12 sm:py-16">
-        <div className="max-w-4xl mx-auto text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6">Your Trusted Online Grocery Store</h2>
-          <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-            TaYaima is India's premier online grocery delivery service, bringing fresh vegetables, fruits, dairy products, and daily essentials right to your doorstep. We understand the importance of quality groceries for you and your family, which is why we source only the freshest produce from trusted suppliers across India.
-          </p>
-          <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-            Whether you're in metropolitan cities or remote areas of North East India including Assam, Meghalaya, Nagaland, Manipur, Mizoram, Tripura, Arunachal Pradesh, or Sikkim, we ensure fast and reliable delivery. Our wide range of products includes fresh vegetables, seasonal fruits, dairy items, packaged foods, beverages, snacks, personal care products, and household essentials. Shop with confidence knowing you're getting the best prices and quality guaranteed products delivered safely to your home.
-          </p>
+        <div className="max-w-4xl mx-auto mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Your Trusted Online Grocery Store</h2>
+          <div className="space-y-4 text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p>
+              Tayaima Store was started by my grandfather, and we've been proudly serving customers offline in Manipur for over 50 years. Now, for the first time, we're launching our online store so everyone can shop easily from home. With just a click, you can order your daily needs and favorite Northeast items, and we'll deliver them straight to your doorstep — whether you live in Delhi, Bangalore, Mumbai, Hyderabad, or beyond.
+            </p>
+            <p>
+              We aim to provide authentic Northeast products at reasonable prices and connect our customers to the taste and traditions of home. In the future, we also plan to expand our services abroad.
+            </p>
+            <p className="font-medium text-blue-600 dark:text-blue-400">
+              We also accept function and bulk orders at special prices (T&C apply). For more details, contact us on WhatsApp for function or bulk order inquiries.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -290,10 +295,10 @@ export default async function HomePage() {
           <Card className="p-6">
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                RS
+                AK
               </div>
               <div className="ml-3">
-                <h4 className="font-semibold">Rajesh Sharma</h4>
+                <h4 className="font-semibold">Anita Khuraijam</h4>
                 <div className="text-yellow-500 text-sm">★★★★★</div>
               </div>
             </div>
@@ -304,10 +309,10 @@ export default async function HomePage() {
           <Card className="p-6">
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                PD
+                TT
               </div>
               <div className="ml-3">
-                <h4 className="font-semibold">Priya Devi</h4>
+                <h4 className="font-semibold">Tony Thokchom</h4>
                 <div className="text-yellow-500 text-sm">★★★★★</div>
               </div>
             </div>
@@ -321,7 +326,7 @@ export default async function HomePage() {
                 AK
               </div>
               <div className="ml-3">
-                <h4 className="font-semibold">Amit Kumar</h4>
+                <h4 className="font-semibold">Annie Kamei</h4>
                 <div className="text-yellow-500 text-sm">★★★★★</div>
               </div>
             </div>

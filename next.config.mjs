@@ -3,9 +3,10 @@ const nextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
   images: {
-    // Disable Vercel Image Optimization to prevent high usage costs
-    // Images are served directly from S3 which has its own CDN
+    // Keep unoptimized true since we're now pre-optimizing images to WebP on upload
+    // This prevents double optimization and reduces Vercel costs
     unoptimized: true,
+    formats: ['image/webp', 'image/avif'], // Support modern image formats
     remotePatterns: [
       {
         protocol: 'https',
@@ -22,6 +23,12 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.cloudfront.net',
         port: '',
         pathname: '/**',
       },
