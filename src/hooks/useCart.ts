@@ -11,6 +11,9 @@ export const useCart = () => {
 
   useEffect(() => {
     setMounted(true);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('useCart: Mounted, items:', store.items.length);
+    }
   }, []);
 
   const addToCart = useCallback((params: AddToCartParams) => {

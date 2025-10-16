@@ -64,7 +64,7 @@ interface OrderForm {
 export default function CheckoutPage() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { items, total, itemCount, clearCart, isLoading } = useCart();
+  const { items, total, itemCount, clearCart, isLoading, mounted: cartMounted } = useCart();
   const { canProceedToCheckout } = useCheckoutSync();
   const [loading, setLoading] = useState(true);
   const [addressesLoading, setAddressesLoading] = useState(true);
@@ -134,13 +134,22 @@ export default function CheckoutPage() {
 
   // Redirect to cart if empty or not logged in
   useEffect(() => {
-    if (!isLoading && (!items || items.length === 0)) {
-      router.push("/cart");
+    // Only redirect after cart is mounted and loaded
+    if (!cartMounted || isLoading) {
+      return;
     }
-    if (!isLoading && !session) {
+
+    if (!items || items.length === 0) {
+      console.log('Checkout: Redirecting to cart - no items found');
+      router.push("/cart");
+      return;
+    }
+
+    if (!session) {
+      console.log('Checkout: Redirecting to login - not authenticated');
       router.push("/login");
     }
-  }, [items, isLoading, router, session]);
+  }, [items, isLoading, router, session, cartMounted]);
 
   const populateFormFromAddress = (address: Address) => {
     setForm(prev => ({
@@ -261,7 +270,7 @@ export default function CheckoutPage() {
     return itemCount;
   };
 
-  if (loading || isLoading) {
+  if (loading || isLoading || !cartMounted) {
     return <CheckoutSkeleton />;
   }
 
