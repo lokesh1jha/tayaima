@@ -21,15 +21,29 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
     },
 
     async getUser(id) {
-      return await prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id },
       });
+      
+      // Return null if user doesn't have email (required by AdapterUser)
+      if (!user || !user.email) {
+        return null;
+      }
+      
+      return user as AdapterUser;
     },
 
     async getUserByEmail(email) {
-      return await prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { email },
       });
+      
+      // Return null if user doesn't have email (required by AdapterUser)
+      if (!user || !user.email) {
+        return null;
+      }
+      
+      return user as AdapterUser;
     },
 
     async getUserByAccount({ providerAccountId, provider }) {
@@ -42,18 +56,31 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         },
         select: { user: true },
       });
-      return account?.user ?? null;
+      
+      const user = account?.user;
+      if (!user || !user.email) {
+        return null;
+      }
+      
+      return user as AdapterUser;
     },
 
     async updateUser({ id, ...data }) {
-      return await prisma.user.update({
+      const user = await prisma.user.update({
         where: { id },
         data,
       });
+      
+      // Ensure email is not null for AdapterUser compatibility
+      if (!user.email) {
+        throw new Error('User must have an email address');
+      }
+      
+      return user as AdapterUser;
     },
 
     async deleteUser(userId) {
-      return await prisma.user.delete({
+      await prisma.user.delete({
         where: { id: userId },
       });
     },
