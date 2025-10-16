@@ -40,7 +40,7 @@ export default function CartDrawer({ isOpen, closeCart }: CartDrawerProps) {
       />
       <aside
         className={
-          "absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-xl " +
+          "absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-black shadow-xl " +
           "transition-transform " +
           (isOpen ? "translate-x-0" : "translate-x-full")
         }

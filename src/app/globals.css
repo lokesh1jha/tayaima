@@ -26,6 +26,52 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
   }
+  
+  /* Modern Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out forwards;
+  }
+  
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 /* TaYaima Theme - CSS Variables */
@@ -57,13 +103,13 @@
 }
 
 .dark {
-  /* Dark mode adaptations */
-  --color-background: #0F172A; /* slate-900 */
-  --color-surface: #1E293B;    /* slate-800 */
-  --color-border: #334155;     /* slate-700 */
-  --color-text-primary: #E5E7EB;  /* gray-200 */
-  --color-text-secondary: #CBD5E1; /* slate-300 */
-  --color-text-muted: #94A3B8;     /* slate-400 */
+  /* Dark mode adaptations - Pure black background */
+  --color-background: #000000; /* Pure black */
+  --color-surface: #0A0A0A;    /* Near black */
+  --color-border: #FFFFFF;     /* White border for cards */
+  --color-text-primary: #FFFFFF;  /* Pure white text */
+  --color-text-secondary: #E5E7EB; /* Light gray */
+  --color-text-muted: #9CA3AF;     /* Medium gray */
 
   /* Legacy variables for compatibility */
   --background: var(--color-background);

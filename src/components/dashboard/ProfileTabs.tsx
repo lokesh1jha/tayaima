@@ -376,14 +376,14 @@ export default function ProfileTabs({ user }: Props) {
                         className="mt-3 grid gap-2"
                         onSubmit={async (e) => { e.preventDefault(); await saveAddress(e.currentTarget as HTMLFormElement, a.id); }}
                       >
-                        <input name="name" defaultValue={a.name ?? ""} placeholder="Name" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                        <input name="phone" defaultValue={a.phone ?? ""} placeholder="Phone" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                        <input name="line1" defaultValue={a.line1 ?? ""} placeholder="Address Line 1 *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                        <input name="line2" defaultValue={a.line2 ?? ""} placeholder="Address Line 2" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                        <input name="name" defaultValue={a.name ?? ""} placeholder="Name" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                        <input name="phone" defaultValue={a.phone ?? ""} placeholder="Phone" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                        <input name="line1" defaultValue={a.line1 ?? ""} placeholder="Address Line 1 *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                        <input name="line2" defaultValue={a.line2 ?? ""} placeholder="Address Line 2" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <input name="city" defaultValue={a.city ?? ""} placeholder="City *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                          <input name="state" defaultValue={a.state ?? ""} placeholder="State" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                          <input name="pincode" defaultValue={a.pincode ?? ""} placeholder="Pincode" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                          <input name="city" defaultValue={a.city ?? ""} placeholder="City *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                          <input name="state" defaultValue={a.state ?? ""} placeholder="State" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                          <input name="pincode" defaultValue={a.pincode ?? ""} placeholder="Pincode" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
                         </div>
                         <div className="flex gap-2">
                           <Button type="submit">Save</Button>
@@ -407,14 +407,14 @@ export default function ProfileTabs({ user }: Props) {
                   e.currentTarget.reset();
                 }}
               >
-                <input name="name" placeholder="Name" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                <input name="phone" placeholder="Phone" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                <input name="line1" placeholder="Address Line 1 *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                <input name="line2" placeholder="Address Line 2" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                <input name="name" placeholder="Name" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                <input name="phone" placeholder="Phone" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                <input name="line1" placeholder="Address Line 1 *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                <input name="line2" placeholder="Address Line 2" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <input name="city" placeholder="City *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                  <input name="state" placeholder="State" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
-                  <input name="pincode" placeholder="Pincode" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                  <input name="city" placeholder="City *" required className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                  <input name="state" placeholder="State" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
+                  <input name="pincode" placeholder="Pincode" className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
                 </div>
                 <div className="flex gap-2">
                   <Button type="submit">Save</Button>
@@ -437,7 +437,7 @@ export default function ProfileTabs({ user }: Props) {
               <span className="font-medium">Name:</span>
               {editingName ? (
                 <>
-                  <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} className="px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                  <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} className="px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-black" />
                   <Button variant="secondary" onClick={saveName}>Save</Button>
                   <Button variant="ghost" onClick={() => { setEditingName(false); setNameInput(user.name ?? ""); }}>Cancel</Button>
                 </>

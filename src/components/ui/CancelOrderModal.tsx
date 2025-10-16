@@ -54,7 +54,7 @@ export default function CancelOrderModal({
       />
       
       {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
+      <div className="relative bg-white dark:bg-black rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">

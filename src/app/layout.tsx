@@ -9,6 +9,7 @@ import { CartDrawerWrapper } from "@/components/cart/CartDrawerWrapper";
 import StructuredData from "@/components/StructuredData";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -77,12 +78,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.className} antialiased`}>
         <Providers>
-          <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100">
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
           <CartDrawerWrapper />
+          <WhatsAppButton />
           <Toast />
         </Providers>
         <Analytics />

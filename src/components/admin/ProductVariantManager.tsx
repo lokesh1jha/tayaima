@@ -178,7 +178,7 @@ export default function ProductVariantManager({
                 <select
                   value={variant.unit}
                   onChange={(e) => updateVariant(index, 'unit', e.target.value)}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 dark:border-gray-600"
+                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-black dark:border-gray-600"
                   required
                 >
                   {UNIT_OPTIONS.map((option) => (

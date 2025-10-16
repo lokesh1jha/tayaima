@@ -3,6 +3,8 @@ export const ROUTES = {
   // Public routes
   HOME: '/',
   PRODUCTS: '/products',
+  CONTACT: '/contact',
+  RETURN_POLICY: '/return-policy',
   LOGIN: '/login',
   SIGNUP: '/signup',
   CHECKOUT: '/checkout',
