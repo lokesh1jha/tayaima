@@ -115,7 +115,7 @@ export default function ReturnPolicyPage() {
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-white">Report Immediately</h4>
-                        <p className="text-gray-700 dark:text-gray-300 text-sm">Contact us within 2 hours of delivery via WhatsApp (+91 9768523325) or email (support@tayaima.com)</p>
+                        <p className="text-gray-700 dark:text-gray-300 text-sm">Contact us within 2 hours of delivery via WhatsApp (+91 8837284911) or email (tayaima.com@gmail.com)</p>
                       </div>
                     </div>
                     
@@ -157,9 +157,9 @@ export default function ReturnPolicyPage() {
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Contact Information</h3>
                       <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                        <p><strong>WhatsApp:</strong> +91 9768523325</p>
-                        <p><strong>Email:</strong> support@tayaima.com</p>
-                        <p><strong>Business Hours:</strong> 9:00 AM - 8:00 PM (Mon-Sat)</p>
+                        <p><strong>WhatsApp:</strong> +91 8837284911</p>
+                        <p><strong>Email:</strong> tayaima.com@gmail.com</p>
+                        <p><strong>Business Hours:</strong> 6:00 AM - 10:00 PM (Daily)</p>
                       </div>
                     </div>
                     <div>

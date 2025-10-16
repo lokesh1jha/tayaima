@@ -122,7 +122,7 @@ export default async function HomePage() {
         }}
       >
         {/* Enhanced Overlay with gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/60 to-black/30"></div>
         
         {/* Decorative Elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>

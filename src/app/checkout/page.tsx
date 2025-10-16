@@ -13,6 +13,8 @@ import { CheckoutSkeleton } from "@/components/ui/CheckoutSkeleton";
 import { useCart } from "@/hooks/useCart";
 import { useCheckoutSync } from "@/hooks/useCheckoutSync";
 import { ROUTES } from "@/lib/constants";
+import { getOrCreateSessionId } from "@/lib/sessionId";
+import { toast } from "sonner";
 
 interface CartItem {
   id: string;
@@ -130,12 +132,15 @@ export default function CheckoutPage() {
     fetchCheckoutData();
   }, [fetchCheckoutData]);
 
-  // Redirect to cart if empty
+  // Redirect to cart if empty or not logged in
   useEffect(() => {
     if (!isLoading && (!items || items.length === 0)) {
       router.push("/cart");
     }
-  }, [items, isLoading, router]);
+    if (!isLoading && !session) {
+      router.push("/login");
+    }
+  }, [items, isLoading, router, session]);
 
   const populateFormFromAddress = (address: Address) => {
     setForm(prev => ({
@@ -160,11 +165,14 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!items || items.length === 0) return;
+    if (!session?.user?.id) {
+      router.push("/login");
+      return;
+    }
 
     setSubmitting(true);
     try {
-      const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId) return;
+      const sessionId = `user_${session.user.id}`;
 
       const orderData = {
         sessionId,
@@ -197,8 +205,15 @@ export default function CheckoutPage() {
           }
         }
         
+        // Show success notification
+        toast.success(`Order placed successfully! Order ID: ${order.id}`, {
+          duration: 5000,
+        });
+        
         clearCart();
-        router.push(ROUTES.ORDER_DETAIL(order.id) as any);
+        
+        // Redirect to orders page instead of order detail
+        router.push(ROUTES.PROFILE_ORDERS);
       } else {
         const error = await response.text();
         setErrorModal({
@@ -248,6 +263,27 @@ export default function CheckoutPage() {
 
   if (loading || isLoading) {
     return <CheckoutSkeleton />;
+  }
+
+  if (!session) {
+    return (
+      <div className="container py-8">
+        <Card className="p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Login Required</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
+            You need to be logged in to place an order. Please log in to continue with checkout.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button onClick={() => router.push("/login")}>
+              Login
+            </Button>
+            <Button variant="secondary" onClick={() => router.push("/signup")}>
+              Sign Up
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   if (!items || items.length === 0) {

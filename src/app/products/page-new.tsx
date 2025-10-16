@@ -5,10 +5,11 @@ import { useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
-import LoadingSpinner, { LoadingPage } from "@/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ProductCard from "@/components/ProductCard";
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
+import { ProductsPageSkeleton, ProductsLoadingSkeleton } from "@/components/skeletons/ProductsPageSkeleton";
 
 function ProductsPageContent() {
   const searchParams = useSearchParams();
@@ -102,7 +103,7 @@ function ProductsPageContent() {
 
   // Loading state for initial load
   if (categoriesLoading) {
-    return <LoadingPage message="Loading categories..." />;
+    return <ProductsPageSkeleton />;
   }
 
   // Error states
@@ -156,7 +157,6 @@ function ProductsPageContent() {
               <div className="h-full w-full bg-neutral-100 dark:bg-neutral-800 p-4 border-r border-gray-200 dark:border-gray-800">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
                   Categories
-                  {categoriesLoading && <LoadingSpinner className="inline ml-2 w-4 h-4" />}
                 </h3>
                 <div className="flex flex-col gap-1">
                   {categories.map((category) => {
@@ -239,7 +239,7 @@ function ProductsPageContent() {
               <h1 className="text-2xl sm:text-3xl font-bold">Our Products</h1>
               {productsFetching && (
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <LoadingSpinner className="w-4 h-4" />
+                  <div className="w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse"></div>
                   <span className="hidden sm:inline">Loading products...</span>
                   <span className="sm:hidden">Loading...</span>
                 </div>
@@ -309,7 +309,7 @@ function ProductsPageContent() {
 
             {/* Products Grid */}
           {productsLoading ? (
-            <LoadingPage message="Loading products..." />
+            <ProductsLoadingSkeleton />
           ) : filteredProducts.length === 0 ? (
             <Card className="p-8 text-center">
               <h3 className="text-lg font-semibold mb-2">No products found</h3>
@@ -459,7 +459,7 @@ function ProductsPageContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<LoadingPage message="Loading..." />}>
+    <Suspense fallback={<ProductsPageSkeleton />}>
       <ProductsPageContent />
     </Suspense>
   );

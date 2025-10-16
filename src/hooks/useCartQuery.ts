@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
+import { getOrCreateSessionId } from '@/lib/sessionId';
 
 interface CartItem {
   id: string;
@@ -29,7 +30,8 @@ interface Cart {
  * Fetch cart data using secure POST endpoint
  */
 async function fetchCart(): Promise<Cart | null> {
-  const sessionId = localStorage.getItem("sessionId");
+  // Only fetch cart for logged-in users
+  const sessionId = `user_${Date.now()}`; // Placeholder, will be replaced by user ID
   
   const response = await fetch('/api/cart/fetch', {
     method: 'POST',
@@ -77,7 +79,10 @@ export function useAddToCart() {
       variantId: string;
       quantity: number;
     }) => {
-      const sessionId = localStorage.getItem("sessionId");
+      if (!auth?.user?.id) {
+        throw new Error('You must be logged in to add items to cart');
+      }
+      const sessionId = `user_${auth.user.id}`;
       
       const response = await fetch('/api/cart', {
         method: 'POST',
@@ -115,7 +120,10 @@ export function useUpdateCartItem() {
   
   return useMutation({
     mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
-      const sessionId = localStorage.getItem("sessionId");
+      if (!auth?.user?.id) {
+        throw new Error('You must be logged in to update cart items');
+      }
+      const sessionId = `user_${auth.user.id}`;
       
       const response = await fetch('/api/cart', {
         method: 'PUT',
@@ -153,7 +161,10 @@ export function useRemoveFromCart() {
   
   return useMutation({
     mutationFn: async (itemId: string) => {
-      const sessionId = localStorage.getItem("sessionId");
+      if (!auth?.user?.id) {
+        throw new Error('You must be logged in to remove cart items');
+      }
+      const sessionId = `user_${auth.user.id}`;
       
       const response = await fetch('/api/cart', {
         method: 'DELETE',

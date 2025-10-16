@@ -176,8 +176,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Phone / WhatsApp</h3>
-                    <a href="tel:+919768523325" className="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors">
-                      +91 9768523325
+                    <a href="tel:+918837284911" className="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                      +91 8837284911
                     </a>
                   </div>
                 </div>
@@ -190,8 +190,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email</h3>
-                    <a href="mailto:support@tayaima.com" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      support@tayaima.com
+                    <a href="mailto:tayaima.com@gmail.com" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                      tayaima.com@gmail.com
                     </a>
                   </div>
                 </div>
@@ -206,7 +206,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Location</h3>
                     <p className="text-gray-600 dark:text-gray-300">
-                      Manipur, India
+                      Thangmeiband Polem Leikai, Manipur, India
                     </p>
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export default function ContactPage() {
                 For function and bulk orders, we offer special prices. Contact us on WhatsApp for more details.
               </p>
               <a
-                href="https://wa.me/919768523325?text=Hi,%20I%20need%20information%20about%20bulk%20orders"
+                href="https://wa.me/918837284911?text=Hi,%20I%20need%20information%20about%20bulk%20orders"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium transition-colors"

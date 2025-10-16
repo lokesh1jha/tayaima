@@ -19,6 +19,8 @@ interface CartDrawerProps {
 
 export default function CartDrawer({ isOpen, closeCart }: CartDrawerProps) {
   const { items, total, itemCount, isLoading } = useCart();
+  const { data: session } = useSession();
+  const router = useRouter();
 
   const formatPrice = (p: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(p / 100);
@@ -99,7 +101,31 @@ export default function CartDrawer({ isOpen, closeCart }: CartDrawerProps) {
             <span className="font-semibold">{formatPrice(total)}</span>
           </div>
           <CartSyncIndicator />
-          <CheckoutButton className="w-full" />
+          {session ? (
+            <CheckoutButton className="w-full" />
+          ) : (
+            <div className="space-y-2">
+              <Button 
+                className="w-full" 
+                onClick={() => {
+                  closeCart();
+                  router.push("/login");
+                }}
+              >
+                Login to Checkout
+              </Button>
+              <Button 
+                variant="secondary" 
+                className="w-full" 
+                onClick={() => {
+                  closeCart();
+                  router.push("/signup");
+                }}
+              >
+                Sign Up
+              </Button>
+            </div>
+          )}
         </div>
       </aside>
     </div>

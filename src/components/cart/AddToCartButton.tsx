@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
 import { AddToCartParams } from '@/types/cart';
 import Button from '@/components/ui/Button';
@@ -31,6 +33,8 @@ export const AddToCartButton = ({
   disabled,
   children = 'Add to Cart',
 }: AddToCartButtonProps) => {
+  const { data: session } = useSession();
+  const router = useRouter();
   const { addToCart, updateCartItem, removeFromCart, getItemQuantity, isLoading } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -39,6 +43,12 @@ export const AddToCartButton = ({
   const isInCart = currentQuantity > 0;
 
   const handleAddToCart = async () => {
+    if (!session) {
+      toast.error('Please log in to add items to cart');
+      router.push('/login');
+      return;
+    }
+
     setIsAdding(true);
 
     try {
@@ -67,6 +77,12 @@ export const AddToCartButton = ({
   };
 
   const handleQuantityChange = async (newQuantity: number) => {
+    if (!session) {
+      toast.error('Please log in to update cart items');
+      router.push('/login');
+      return;
+    }
+
     if (newQuantity === currentQuantity) return;
     
     if (newQuantity <= 0) {
@@ -90,6 +106,12 @@ export const AddToCartButton = ({
   };
 
   const handleRemove = async () => {
+    if (!session) {
+      toast.error('Please log in to remove cart items');
+      router.push('/login');
+      return;
+    }
+
     setIsUpdating(true);
 
     try {

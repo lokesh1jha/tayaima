@@ -61,7 +61,11 @@ export default function BannerCarousel() {
 
   if (loading) {
     return (
-      <div className="w-full aspect-[21/8] sm:aspect-[21/4] bg-gray-200 dark:bg-gray-800 animate-pulse" />
+      <div className="w-full aspect-[21/8] sm:aspect-[21/4] bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 animate-pulse">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse"></div>
+        </div>
+      </div>
     );
   }
 
@@ -83,8 +87,11 @@ export default function BannerCarousel() {
                 src={banner.imageUrl}
                 alt={banner.title || "Banner"}
                 fill
-                className="object-cover"
+                className={`object-cover transition-all duration-300 ${
+                  index === 0 ? 'blur-[0.5px]' : ''
+                }`}
                 priority={index === 0}
+                loading={index === 0 ? 'eager' : 'lazy'}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1400px"
               />
               

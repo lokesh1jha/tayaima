@@ -19,7 +19,7 @@ export default function Navbar() {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const { data: session, status } = useSession();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { itemCount } = useCart();
+  const { itemCount, mounted: cartMounted } = useCart();
   const { openCart } = useCartDrawer();
 
   useEffect(() => setMounted(true), []);
@@ -91,21 +91,46 @@ export default function Navbar() {
             <IconSearch className="w-5 h-5" />
           </button>
           
-          {/* Cart Icon */}
+          {/* Cart Icon - Always visible */}
           <button 
             onClick={openCart} 
             className="relative p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             aria-label="Shopping Cart"
           >
             <IconShoppingCart className="w-5 h-5" />
-            {cartCount > 0 && (
+            {cartMounted && cartCount > 0 && (
               <span className="absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold bg-red-500">
                 {cartCount}
               </span>
             )}
           </button>
           
-          {status === "authenticated" ? (
+          {status === "loading" ? (
+            <>
+              {/* Loading state - show interactive buttons */}
+              <Link
+                href={ROUTES.LOGIN}
+                className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                aria-label="Login"
+              >
+                <IconUser className="w-5 h-5" />
+                <span className="text-sm font-medium hidden sm:block">
+                  Login
+                </span>
+              </Link>
+              
+              {/* Theme Toggle */}
+              {mounted && (
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  aria-label="Toggle Theme"
+                >
+                  {theme === "dark" ? <IconSun className="w-5 h-5" /> : <IconMoon className="w-5 h-5" />}
+                </button>
+              )}
+            </>
+          ) : status === "authenticated" ? (
             <>
               {/* Profile Icon */}
               <div className="relative" ref={dropdownRef}>

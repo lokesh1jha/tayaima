@@ -26,8 +26,8 @@ export async function POST(req: Request) {
 
     // Email to admin
     const adminMailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_SERVER_USER,
-      to: process.env.ADMIN_EMAIL || process.env.EMAIL_SERVER_USER,
+      from: "tayaima.com@gmail.com",
+      to: "tayaima.com@gmail.com",
       subject: `Contact Form: ${subject || 'New Inquiry'}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
     // Confirmation email to user
     const userMailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_SERVER_USER,
+      from: "tayaima.com@gmail.com",
       to: email,
       subject: 'Thank you for contacting TaYaima Store',
       html: `
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
           </div>
           
           <p style="line-height: 1.6; color: #555;">
-            For urgent inquiries, you can also reach us on WhatsApp at <strong>+91 9768523325</strong>.
+            For urgent inquiries, you can also reach us on WhatsApp at <strong>+91 8837284911</strong>.
           </p>
           
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">

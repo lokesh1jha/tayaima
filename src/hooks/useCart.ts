@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useCartStore } from '@/stores/useCartStore';
 import { AddToCartParams, UpdateCartItemParams } from '@/types/cart';
 
@@ -6,7 +6,12 @@ import { AddToCartParams, UpdateCartItemParams } from '@/types/cart';
  * Main cart hook that provides all cart operations
  */
 export const useCart = () => {
+  const [mounted, setMounted] = useState(false);
   const store = useCartStore();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const addToCart = useCallback((params: AddToCartParams) => {
     store.addItem(params);
@@ -49,13 +54,14 @@ export const useCart = () => {
 
   return {
     // State
-    items: store.items,
-    total: store.total,
-    itemCount: store.itemCount,
+    items: mounted ? store.items : [],
+    total: mounted ? store.total : 0,
+    itemCount: mounted ? store.itemCount : 0,
     syncStatus: store.syncStatus,
     isLoading: store.syncStatus === 'syncing',
     hasError: store.syncStatus === 'error',
     isRetrying: store.syncStatus === 'retrying',
+    mounted,
     
     // Actions
     addToCart,
