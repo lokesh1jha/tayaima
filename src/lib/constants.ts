@@ -55,7 +55,7 @@ export const ROUTES = {
 // External links
 export const EXTERNAL_LINKS = {
   GITHUB: 'https://github.com',
-  SUPPORT: 'mailto:support@tayaima.com',
+  SUPPORT: 'mailto:tayaima.com@gmail.com',
 } as const;
 
 // Navigation items

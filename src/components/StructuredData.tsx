@@ -10,19 +10,19 @@ export default function StructuredData() {
     "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
     "image": `${process.env.NEXT_PUBLIC_APP_URL || "https://tayaima.com"}/tayaima-logo.jpeg`,
     "telephone": "+91-XXXXXXXXXX", // Add your phone number
-    "email": "support@tayaima.com",
+    "email": "tayaima.com@gmail.com",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Your Street Address", // Add your address
-      "addressLocality": "Guwahati",
-      "addressRegion": "Assam",
-      "postalCode": "781001",
+      "streetAddress": "Thangmeiband Polem Leikai",
+      "addressLocality": "Imphal",
+      "addressRegion": "Manipur",
+      "postalCode": "795001",
       "addressCountry": "IN"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "26.1445", // Guwahati coordinates
-      "longitude": "91.7362"
+      "latitude": "24.8170", // Imphal coordinates
+      "longitude": "93.9368"
     },
     "openingHours": [
       "Mo-Su 06:00-23:00"
@@ -32,7 +32,7 @@ export default function StructuredData() {
     "serviceArea": [
       {
         "@type": "State",
-        "name": "Assam"
+        "name": "Manipur"
       },
       {
         "@type": "State", 
