@@ -12,8 +12,8 @@ import StructuredData from "@/components/StructuredData";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TaYaima - Fresh Groceries & Daily Essentials Delivered Across India | North East India Online Grocery Store",
-  description: "Shop fresh vegetables, fruits, dairy products, and daily essentials online at TaYaima. Fast delivery across India including North East India. Best prices, quality guaranteed. Order now for home delivery!",
+  title: "TaYaima - Fresh Groceries Delivered Across India | Online Grocery Store",
+  description: "Shop fresh groceries online at TaYaima. Fast delivery across India including North East. Fresh vegetables, fruits, dairy & daily essentials. Best prices guaranteed!",
   keywords: "online grocery store India, fresh vegetables online, fruits delivery, dairy products, daily essentials, home delivery India, North East India grocery, TaYaima, grocery delivery India, fresh produce online, online shopping India, best grocery prices, fast delivery India, Assam grocery delivery, Meghalaya online shopping, Nagaland grocery store, Manipur fresh vegetables, Mizoram dairy products, Tripura fruits delivery, Arunachal Pradesh grocery, Sikkim online store",
   authors: [{ name: "TaYaima" }],
   creator: "TaYaima",

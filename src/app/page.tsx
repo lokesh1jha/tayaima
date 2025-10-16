@@ -81,13 +81,24 @@ export default async function HomePage() {
     const featuredProducts = await signUrlsInArray(rawFeaturedProducts, ['images']);
 
     // Prepare category sections with cached products (limited for performance)
+    // Only use parent categories (those without a parentId)
+    const parentCategories = categories.filter(cat => !cat.parentId).slice(0, 3);
+    
     const categorySections = await Promise.all(
-      categories.slice(0, 3).map(async (category) => {
+      parentCategories.map(async (category) => {
+        // Get child category IDs for this parent
+        const childCategoryIds = category.children?.map(child => child.id) || [];
+        
         // Cache products per category (15 minute cache)
         const rawProducts = await cachedQuery(
           `homepage:category-products:${category.id}`,
           () => prisma.product.findMany({
-            where: { categoryId: category.id },
+            where: {
+              OR: [
+                { categoryId: category.id }, // Products directly in parent
+                { categoryId: { in: childCategoryIds } } // Products in child categories
+              ]
+            },
             include: { variants: true },
             take: 6, // Reduced from 10 to 6 for better performance
             orderBy: { createdAt: "desc" },
@@ -118,10 +129,10 @@ export default async function HomePage() {
           <div className="flex items-center justify-between gap-8">
             <div className="text-white">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4 drop-shadow-lg">
-                Groceries delivered fast
+                Fresh Groceries Delivered Fast Across India
               </h1>
               <p className="text-xl sm:text-2xl text-white mb-8 drop-shadow-md bg-black/20 px-4 py-2 rounded-lg backdrop-blur-sm">
-                Fresh veggies, daily essentials, and more.
+                Shop fresh vegetables, fruits, dairy products, and daily essentials online. Fast delivery to your doorstep including North East India.
               </p>
               <div className="flex gap-4">
                 <Link href="/products">
@@ -170,35 +181,157 @@ export default async function HomePage() {
       </section>
 
       {/* Category rows */}
-      {categorySections.map(({ category, products }) => (
-        <section key={category.id} className="container max-w-[1400px] py-6">
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-xl font-semibold">Popular in {category.name}</h2>
-            <Link href="/products" className="text-sm text-blue-600">See all</Link>
-          </div>
-          <div className="overflow-x-auto">
-            <div className="grid grid-flow-col auto-cols-[minmax(180px,1fr)] gap-3">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} compact />
-              ))}
+      {categorySections
+        .filter(({ products }) => products.length > 0) // Only show categories with products
+        .map(({ category, products }) => (
+          <section key={category.id} className="container max-w-[1400px] py-6">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <h2 className="text-xl font-semibold">Popular in {category.name}</h2>
+              <Link href="/products" className="text-sm text-blue-600">See all</Link>
+            </div>
+            <div className="overflow-x-auto">
+              <div className="grid grid-flow-col auto-cols-[minmax(180px,1fr)] gap-3">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} compact />
+                ))}
+              </div>
+            </div>
+          </section>
+        ))}
+
+      {/* About Section */}
+      <section className="container max-w-[1400px] py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6">Your Trusted Online Grocery Store</h2>
+          <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+            TaYaima is India's premier online grocery delivery service, bringing fresh vegetables, fruits, dairy products, and daily essentials right to your doorstep. We understand the importance of quality groceries for you and your family, which is why we source only the freshest produce from trusted suppliers across India.
+          </p>
+          <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+            Whether you're in metropolitan cities or remote areas of North East India including Assam, Meghalaya, Nagaland, Manipur, Mizoram, Tripura, Arunachal Pradesh, or Sikkim, we ensure fast and reliable delivery. Our wide range of products includes fresh vegetables, seasonal fruits, dairy items, packaged foods, beverages, snacks, personal care products, and household essentials. Shop with confidence knowing you're getting the best prices and quality guaranteed products delivered safely to your home.
+          </p>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="container max-w-[1400px] py-12 sm:py-16">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose TaYaima?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">🚚</div>
+            <h3 className="text-lg font-semibold mb-2">Fast Delivery</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Quick delivery across India, including North East India
+            </p>
+          </Card>
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">🌿</div>
+            <h3 className="text-lg font-semibold mb-2">Fresh Products</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Quality guaranteed fresh groceries and daily essentials
+            </p>
+          </Card>
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">💰</div>
+            <h3 className="text-lg font-semibold mb-2">Best Prices</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Competitive pricing on all products with great deals
+            </p>
+          </Card>
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">🔒</div>
+            <h3 className="text-lg font-semibold mb-2">Secure Payment</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Safe and secure payment options for your convenience
+            </p>
+          </Card>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="bg-gray-50 dark:bg-gray-900 py-12 sm:py-16">
+        <div className="container max-w-[1400px]">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                1
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Browse & Select</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Choose from our wide range of fresh products and groceries
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                2
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Add to Cart</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Add items to your cart and proceed to secure checkout
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                3
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Get Delivered</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Receive your order fresh at your doorstep
+              </p>
             </div>
           </div>
-        </section>
-      ))}
-
-      {/* CTA */}
-      <section className="container max-w-[1400px] py-20 text-center">
-        <Card className="p-10">
-          <h3 className="text-2xl font-semibold">Ready to start shopping?</h3>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Browse our wide selection of products and get everything you need delivered to your doorstep.
-          </p>
-          <div className="mt-6 flex items-center justify-center gap-4">
-            <Link href="/products"><Button>Start Shopping</Button></Link>
-            {!session && <Link href="/signup"><Button variant="secondary">Create Account</Button></Link>}
-          </div>
-        </Card>
+        </div>
       </section>
+
+      {/* Testimonials Section */}
+      <section className="container max-w-[1400px] py-12 sm:py-16">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">What Our Customers Say</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                RS
+              </div>
+              <div className="ml-3">
+                <h4 className="font-semibold">Rajesh Sharma</h4>
+                <div className="text-yellow-500 text-sm">★★★★★</div>
+              </div>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              "Great service! Fresh vegetables delivered right to my door. The quality is excellent and prices are reasonable."
+            </p>
+          </Card>
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                PD
+              </div>
+              <div className="ml-3">
+                <h4 className="font-semibold">Priya Devi</h4>
+                <div className="text-yellow-500 text-sm">★★★★★</div>
+              </div>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              "Love shopping from TaYaima! Fast delivery and the products are always fresh. Highly recommended!"
+            </p>
+          </Card>
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                AK
+              </div>
+              <div className="ml-3">
+                <h4 className="font-semibold">Amit Kumar</h4>
+                <div className="text-yellow-500 text-sm">★★★★★</div>
+              </div>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              "Best online grocery store in North East India! Reliable service and quality products every time."
+            </p>
+          </Card>
+        </div>
+      </section>
+
     </>
   );
   

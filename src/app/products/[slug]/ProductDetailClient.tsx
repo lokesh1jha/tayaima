@@ -334,10 +334,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <span className="text-green-600">✓</span>
                 Best prices guaranteed
               </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span>
-                Easy returns and customer support
-              </li>
             </ul>
           </Card>
         </div>
