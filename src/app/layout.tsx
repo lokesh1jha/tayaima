@@ -5,7 +5,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
 import { Toast } from "@/components/ui/toast";
-import CartDrawer from "@/components/CartDrawer";
 import { CartDrawerWrapper } from "@/components/cart/CartDrawerWrapper";
 import StructuredData from "@/components/StructuredData";
 import { Analytics } from "@vercel/analytics/next";
@@ -68,6 +67,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         <StructuredData />
+        {/* Favicon */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.svg" />
         {/* Preload critical resources */}
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
