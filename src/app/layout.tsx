@@ -8,6 +8,8 @@ import { Toast } from "@/components/ui/toast";
 import CartDrawer from "@/components/CartDrawer";
 import { CartDrawerWrapper } from "@/components/cart/CartDrawerWrapper";
 import StructuredData from "@/components/StructuredData";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -80,6 +82,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CartDrawerWrapper />
           <Toast />
         </Providers>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
