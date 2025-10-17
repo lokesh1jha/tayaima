@@ -43,36 +43,39 @@ export default function Navbar() {
 
   return (
     <header className="border-b backdrop-blur sticky top-0 z-40 bg-white/90 dark:bg-black/90 border-gray-200 dark:border-gray-800">
-      <div className="container flex h-16 items-center justify-between gap-4">
-        <Link href={ROUTES.HOME} className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-shrink-0">
-          <Image
-            src="/tayaima-logo.jpeg"
-            alt="TaYaima Logo"
-            width={48}
-            height={48}
-            className="rounded-lg object-contain"
-            priority
-          />
-        </Link>
-        
-        {/* Desktop Navigation Links - Hidden on mobile */}
-        <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
-          <Link 
-            href={ROUTES.PRODUCTS} 
-            className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-          >
-            Products
+      <div className="container flex h-16 items-center justify-between">
+        {/* Left side - Logo and Navigation Links */}
+        <div className="flex items-center gap-6 flex-shrink-0">
+          <Link href={ROUTES.HOME} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Image
+              src="/tayaima-logo.jpeg"
+              alt="TaYaima Logo"
+              width={48}
+              height={48}
+              className="rounded-lg object-contain"
+              priority
+            />
           </Link>
-          <Link 
-            href={ROUTES.CONTACT} 
-            className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-          >
-            Contact
-          </Link>
-        </nav>
+          
+          {/* Desktop Navigation Links - Hidden on mobile */}
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
+            <Link 
+              href={ROUTES.PRODUCTS} 
+              className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+            >
+              Products
+            </Link>
+            <Link 
+              href={ROUTES.CONTACT} 
+              className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+            >
+              Contact
+            </Link>
+          </nav>
+        </div>
         
-        {/* Search Bar - Hidden on mobile, visible on tablet and up */}
-        <div className="hidden md:block flex-1 max-w-md mx-4">
+        {/* Center - Search Bar - Hidden on mobile, visible on tablet and up */}
+        <div className="hidden md:flex flex-1 justify-center max-w-md mx-4">
           <ProductSearchBar
             placeholder="Search products..."
             isAdmin={false}
@@ -81,7 +84,7 @@ export default function Navbar() {
           />
         </div>
         
-        <nav className="flex items-center gap-2 flex-shrink-0">
+        <nav className="flex items-center gap-2 justify-end">
           {/* Mobile Search Icon */}
           <button 
             onClick={() => setShowMobileSearch(!showMobileSearch)}

@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
       // Send reset email
       const emailSent = await emailService.sendPasswordResetEmail(
-        user.email,
+        user.email!,
         resetToken,
         user.name || undefined
       );

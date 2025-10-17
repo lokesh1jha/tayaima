@@ -7,9 +7,10 @@ import { LoadingSection } from "@/components/ui/LoadingSpinner";
 import { toast } from "sonner";
 import { ROUTES, NAV_ITEMS, UTILS } from "@/lib/constants";
 import CancelOrderModal from "@/components/ui/CancelOrderModal";
+import PhoneUpdateForm from "@/components/auth/PhoneUpdateForm";
 
 type Props = {
-  user: { id?: string; name?: string | null; email?: string | null };
+  user: { id?: string; name?: string | null; email?: string | null; phone?: string | null };
 };
 
 const tabs = NAV_ITEMS.PROFILE;
@@ -24,6 +25,7 @@ export default function ProfileTabs({ user }: Props) {
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user.name ?? "");
+  const [editingPhone, setEditingPhone] = useState(false);
   const [editAddressId, setEditAddressId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [cancelModal, setCancelModal] = useState<{
@@ -113,6 +115,28 @@ export default function ProfileTabs({ user }: Props) {
     if (!nameInput.trim()) return;
     const res = await fetch(ROUTES.API.USER_PROFILE, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nameInput.trim() }) });
     if (res.ok) setEditingName(false);
+  };
+
+  const handlePhoneUpdate = async (phone: string) => {
+    try {
+      const res = await fetch(ROUTES.API.USER_PROFILE, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      
+      if (res.ok) {
+        setEditingPhone(false);
+        toast.success('Phone number updated successfully!');
+        // Refresh the page to update user data
+        window.location.reload();
+      } else {
+        toast.error('Failed to update phone number');
+      }
+    } catch (error) {
+      console.error('Phone update error:', error);
+      toast.error('Failed to update phone number');
+    }
   };
 
   const saveAddress = async (form: HTMLFormElement, id: string) => {
@@ -445,6 +469,23 @@ export default function ProfileTabs({ user }: Props) {
                 <>
                   <span>{user.name ?? "-"}</span>
                   <Button variant="secondary" onClick={() => setEditingName(true)}>Edit</Button>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Phone:</span>
+              {editingPhone ? (
+                <PhoneUpdateForm
+                  currentPhone={user.phone}
+                  onUpdate={handlePhoneUpdate}
+                  onCancel={() => setEditingPhone(false)}
+                />
+              ) : (
+                <>
+                  <span>{user.phone ? `+91 ${user.phone}` : "-"}</span>
+                  <Button variant="secondary" onClick={() => setEditingPhone(true)}>
+                    {user.phone ? 'Update' : 'Add'}
+                  </Button>
                 </>
               )}
             </div>

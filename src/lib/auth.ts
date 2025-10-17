@@ -35,6 +35,72 @@ export const authConfig = {
         } as any;
       },
     }),
+    Credentials({
+      id: "phone-otp",
+      name: "phone-otp",
+      credentials: {
+        phone: { label: "Phone", type: "text" },
+        otp: { label: "OTP", type: "text" },
+      },
+      authorize: async (credentials) => {
+        if (!credentials?.phone || !credentials?.otp) return null;
+        
+        // Verify OTP
+        const now = new Date();
+        const otpRecord = await prisma.otpVerification.findFirst({
+          where: {
+            phone: credentials.phone,
+            otp: credentials.otp,
+            expiresAt: {
+              gt: now,
+            },
+            verifiedAt: null,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        });
+
+        if (!otpRecord) return null;
+
+        // Find user by phone
+        const user = await prisma.user.findUnique({
+          where: {
+            phone: credentials.phone,
+          },
+        });
+
+        if (!user) return null;
+
+        // Mark OTP as verified
+        await prisma.otpVerification.update({
+          where: {
+            id: otpRecord.id,
+          },
+          data: {
+            verifiedAt: now,
+          },
+        });
+
+        // Update phone verification timestamp
+        await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            phoneVerified: now,
+          },
+        });
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image ?? undefined,
+          role: user.role,
+        } as any;
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }: any) {

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createOrderSchema, validateRequestBody } from "@/lib/validations";
 import { emailService } from "@/lib/email";
+import { notificationService } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
@@ -77,30 +78,31 @@ export async function POST(req: Request) {
 
     // Send order confirmation email (non-blocking)
     try {
-      // Get user email if logged in, otherwise use phone as fallback
-      let customerEmail = null;
-      if (userId) {
-        const user = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { email: true },
-        });
-        customerEmail = user?.email;
+      const orderDetails = {
+        id: order.id,
+        customerName: order.customerName,
+        phone: order.phone,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        items: order.items.map(item => ({
+          productName: item.variant.product.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+      };
+
+      const notificationResult = await notificationService.sendNotification(
+        orderDetails,
+        userId,
+        'confirmation'
+      );
+
+      if (notificationResult.errors.length > 0) {
+        console.warn('Notification errors:', notificationResult.errors);
       }
-      
-      // For now, we'll skip email if no user email is available
-      // In a real app, you might want to collect email during checkout
-      if (customerEmail) {
-        await emailService.sendOrderConfirmationEmail(
-          customerEmail,
-          order.id,
-          order.customerName,
-          order.totalAmount,
-          order.items
-        );
-      }
-    } catch (emailError) {
-      // Log email error but don't fail the order
-      console.error('Failed to send order confirmation email:', emailError);
+    } catch (notificationError) {
+      // Log notification error but don't fail the order
+      console.error('Failed to send order confirmation notification:', notificationError);
     }
 
     return NextResponse.json(order);

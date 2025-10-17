@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import SignupFormDemo from "@/components/signup-form-demo";
+import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ export default function SignupPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         name: `${firstname} ${lastname}`.trim(), 
-        email, 
+        email: email.trim(), // Email is now required for email signup
         password 
       }),
     });
@@ -48,10 +49,19 @@ export default function SignupPage() {
     }
   }
 
+  const handleGoogleSignIn = () => {
+    toast.loading("Signing up with Google...");
+    signIn("google", { callbackUrl: "/post-login" });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        <SignupFormDemo onSubmit={onSubmit} />
+        <SignupFormDemo 
+          onSubmit={onSubmit} 
+          onGoogle={handleGoogleSignIn} 
+          loading={loading} 
+        />
         <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
           Already have an account? <Link className="underline hover:text-gray-900 dark:hover:text-white" href="/login">Log in</Link>
         </p>
