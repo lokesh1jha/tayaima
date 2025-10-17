@@ -25,7 +25,7 @@ interface ProductsResponse {
 }
 
 interface UseProductsOptions {
-  categoryId?: string | null;
+  categoryId?: string | string[] | null;
   limit?: number;
   page?: number;
   enabled?: boolean;
@@ -36,7 +36,7 @@ async function fetchProducts({
   limit = 20, 
   page = 1 
 }: {
-  categoryId?: string | null;
+  categoryId?: string | string[] | null;
   limit?: number;
   page?: number;
 }): Promise<Product[]> {
@@ -46,10 +46,23 @@ async function fetchProducts({
   params.set('includeVariants', 'true'); // Include variants for cart functionality
   
   if (categoryId) {
-    params.set('categoryId', categoryId);
+    if (Array.isArray(categoryId)) {
+      // Add multiple category IDs
+      categoryId.forEach(id => params.append('categoryId', id));
+    } else {
+      params.set('categoryId', categoryId);
+    }
   }
   
-  const response = await fetch(`/api/products?${params.toString()}`);
+  const url = `/api/products?${params.toString()}`;
+  
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('useProducts fetch URL:', url);
+    console.log('useProducts params:', Object.fromEntries(params.entries()));
+  }
+  
+  const response = await fetch(url);
   
   if (!response.ok) {
     const errorText = await response.text();

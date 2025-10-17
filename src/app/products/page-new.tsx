@@ -16,7 +16,7 @@ function ProductsPageContent() {
   const categoryIdFromUrl = searchParams.get('categoryId');
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(categoryIdFromUrl);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(categoryIdFromUrl ? [categoryIdFromUrl] : []);
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
@@ -29,42 +29,43 @@ function ProductsPageContent() {
 
   // Set first category as default if no category is selected and categories are loaded
   useEffect(() => {
-    if (!selectedCategoryId && categories.length > 0 && !categoryIdFromUrl) {
-      setSelectedCategoryId(categories[0].id);
+    if (selectedCategoryIds.length === 0 && categories.length > 0 && !categoryIdFromUrl) {
+      setSelectedCategoryIds([categories[0].id]);
     }
-  }, [categories, selectedCategoryId, categoryIdFromUrl]);
+  }, [categories, selectedCategoryIds, categoryIdFromUrl]);
 
-  // Auto-expand category that contains the selected category
+  // Auto-expand category that contains the selected categories
   useEffect(() => {
-    if (selectedCategoryId && categories.length > 0) {
-      // Find the parent category of the selected category
+    if (selectedCategoryIds.length > 0 && categories.length > 0) {
+      // Find the parent category of the first selected category
+      const firstSelectedId = selectedCategoryIds[0];
       const parentCategory = categories.find(category => 
-        category.children?.some(child => child.id === selectedCategoryId)
+        category.children?.some(child => child.id === firstSelectedId)
       );
       
       if (parentCategory) {
         setExpandedCategoryId(parentCategory.id);
       } else {
         // If selected category is a parent category itself, expand it
-        const isParentCategory = categories.find(category => category.id === selectedCategoryId);
+        const isParentCategory = categories.find(category => category.id === firstSelectedId);
         if (isParentCategory) {
-          setExpandedCategoryId(selectedCategoryId);
+          setExpandedCategoryId(firstSelectedId);
         }
       }
     }
-  }, [selectedCategoryId, categories]);
+  }, [selectedCategoryIds, categories]);
 
-  // Fetch products for selected category (cached per categoryId)
+  // Fetch products for selected categories (cached per categoryIds)
   const { 
     data: products = [], 
     isLoading: productsLoading, 
     error: productsError,
     isFetching: productsFetching
   } = useProducts({ 
-    categoryId: selectedCategoryId,
+    categoryId: selectedCategoryIds.length > 0 ? selectedCategoryIds : null,
     limit: 20,
     page: 1,
-    enabled: !!selectedCategoryId // Only fetch when we have a category
+    enabled: selectedCategoryIds.length > 0 // Only fetch when we have categories
   });
 
   // Filter products by search term
@@ -77,7 +78,7 @@ function ProductsPageContent() {
 
   // Handle category selection
   const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategoryId(categoryId);
+    setSelectedCategoryIds([categoryId]);
     setSearchTerm(""); // Clear search when switching categories
   };
 
@@ -93,7 +94,7 @@ function ProductsPageContent() {
   };
 
   const handleMobileCategorySelect = (categoryId: string) => {
-    setSelectedCategoryId(categoryId);
+    setSelectedCategoryIds([categoryId]);
     setIsMobileDrawerOpen(false); // Close drawer after selection
   };
 
@@ -170,7 +171,7 @@ function ProductsPageContent() {
                           <button
                             onClick={() => handleCategorySelect(category.id)}
                             className={`flex-1 text-left px-3 py-2 rounded-md text-sm font-medium transition ${
-                              selectedCategoryId === category.id 
+                              selectedCategoryIds.includes(category.id)
                                 ? "bg-white dark:bg-neutral-700 shadow" 
                                 : "hover:bg-white/60 dark:hover:bg-neutral-700/60"
                             }`}
@@ -210,7 +211,7 @@ function ProductsPageContent() {
                                 key={child.id}
                                 onClick={() => handleCategorySelect(child.id)}
                                 className={`text-left px-3 py-1.5 rounded-md text-xs transition w-full ${
-                                  selectedCategoryId === child.id 
+                                  selectedCategoryIds.includes(child.id)
                                     ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
                                     : "hover:bg-white/40 dark:hover:bg-neutral-700/40 text-gray-600 dark:text-gray-300"
                                 }`}
@@ -262,10 +263,10 @@ function ProductsPageContent() {
                 </div>
                 
                 {/* Show selected category emoji and name */}
-                {selectedCategoryId && (
+                {selectedCategoryIds.length > 0 && (
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     {(() => {
-                      const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+                      const selectedCategory = categories.find(c => c.id === selectedCategoryIds[0]);
                       return selectedCategory ? (
                         <>
                           <span className="text-lg">{selectedCategory.icon}</span>
@@ -280,17 +281,17 @@ function ProductsPageContent() {
             </div>
 
             {/* Breadcrumb Navigation */}
-            {selectedCategoryId && (
+            {selectedCategoryIds.length > 0 && (
               <div className="mb-3 md:mb-4">
                 <nav className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   <button
-                    onClick={() => handleCategorySelect('')}
+                    onClick={() => setSelectedCategoryIds([])}
                     className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     All Products
                   </button>
                   {(() => {
-                    const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+                    const selectedCategory = categories.find(c => c.id === selectedCategoryIds[0]);
                     if (selectedCategory) {
                       return (
                         <>
@@ -333,8 +334,8 @@ function ProductsPageContent() {
             <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs">
               <h4 className="font-semibold mb-2">Cache Status (Dev Only):</h4>
               <p>Categories: {categoriesLoading ? 'Loading' : 'Cached'} ({categories.length} total)</p>
-              <p>Products ({selectedCategoryId}): {productsLoading ? 'Loading' : productsFetching ? 'Fetching' : 'Cached'}</p>
-              <p>Selected Category: {categories.find(c => c.id === selectedCategoryId)?.name || 'None'}</p>
+              <p>Products ({selectedCategoryIds.length > 0 ? selectedCategoryIds.join(', ') : 'All'}): {productsLoading ? 'Loading' : productsFetching ? 'Fetching' : 'Cached'}</p>
+              <p>Selected Categories: {selectedCategoryIds.length > 0 ? selectedCategoryIds.map(id => categories.find(c => c.id === id)?.name || 'Unknown').join(', ') : 'All Products'}</p>
               <p>Products Count: {products.length}</p>
               <p>Filtered Count: {filteredProducts.length}</p>
               <div className="mt-2">
@@ -392,7 +393,7 @@ function ProductsPageContent() {
                           <button
                             onClick={() => handleMobileCategorySelect(category.id)}
                             className={`flex-1 text-left px-3 py-3 text-sm font-medium transition ${
-                              selectedCategoryId === category.id 
+                              selectedCategoryIds.includes(category.id)
                                 ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
                                 : "text-gray-700 dark:text-gray-300"
                             }`}
@@ -431,7 +432,7 @@ function ProductsPageContent() {
                                 key={child.id}
                                 onClick={() => handleMobileCategorySelect(child.id)}
                                 className={`w-full text-left px-6 py-3 text-sm transition ${
-                                  selectedCategoryId === child.id 
+                                  selectedCategoryIds.includes(child.id)
                                     ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" 
                                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 }`}

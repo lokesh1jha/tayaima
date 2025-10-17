@@ -27,13 +27,19 @@ interface Product {
   categoryId?: string | null;
 }
 
-interface Category { id: string; name: string; slug: string }
+interface Category { 
+  id: string; 
+  name: string; 
+  slug: string; 
+  children?: Category[];
+  parentId?: string | null;
+}
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categorySearch, setCategorySearch] = useState<string>("");
@@ -72,15 +78,15 @@ export default function AdminProductsPage() {
     fetchProducts();
   }, []);
 
-  // Fetch products when search term, category, or page changes
+  // Fetch products when search term, categories, or page changes
   useEffect(() => {
     fetchProducts();
-  }, [debouncedSearchTerm, selectedCategory, currentPage]);
+  }, [debouncedSearchTerm, selectedCategories, currentPage]);
 
-  // Reset to page 1 when search or category changes
+  // Reset to page 1 when search or categories change
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchTerm, selectedCategory]);
+  }, [debouncedSearchTerm, selectedCategories]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -109,8 +115,10 @@ export default function AdminProductsPage() {
         params.append('search', debouncedSearchTerm.trim());
       }
 
-      if (selectedCategory) {
-        params.append('categoryId', selectedCategory);
+      if (selectedCategories.length > 0) {
+        selectedCategories.forEach(categoryId => {
+          params.append('categoryId', categoryId);
+        });
       }
 
       const response = await fetch(`/api/admin/products/search?${params}`);
@@ -144,6 +152,37 @@ export default function AdminProductsPage() {
       setCategories([]);
       return [] as Category[];
     }
+  };
+
+  // Helper function to get all categories (parent + children) for filtering
+  const getAllCategories = (categories: Category[]): Category[] => {
+    const allCategories: Category[] = [];
+    categories.forEach(category => {
+      allCategories.push(category);
+      if (category.children) {
+        allCategories.push(...category.children);
+      }
+    });
+    return allCategories;
+  };
+
+  // Helper function to get category name by ID
+  const getCategoryName = (categoryId: string): string => {
+    const allCategories = getAllCategories(categories);
+    const category = allCategories.find(cat => cat.id === categoryId);
+    return category?.name || 'Unknown Category';
+  };
+
+  // Helper function to add category to selection
+  const addCategory = (categoryId: string) => {
+    if (!selectedCategories.includes(categoryId)) {
+      setSelectedCategories([...selectedCategories, categoryId]);
+    }
+  };
+
+  // Helper function to remove category from selection
+  const removeCategory = (categoryId: string) => {
+    setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
   };
 
   const formatPrice = (price: number) => {
@@ -262,8 +301,29 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Category Filter */}
-        <div className="flex-1 min-w-[250px] max-w-xs" ref={categoryDropdownRef}>
+        <div className="flex-1 min-w-[300px] max-w-md" ref={categoryDropdownRef}>
           <label className="block text-sm font-medium mb-1">Filter by Category</label>
+          
+          {/* Selected Category Tags */}
+          {selectedCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {selectedCategories.map(categoryId => (
+                <span
+                  key={categoryId}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full"
+                >
+                  {getCategoryName(categoryId)}
+                  <button
+                    onClick={() => removeCategory(categoryId)}
+                    className="hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          
           <div className="relative">
             <input
               type="text"
@@ -277,32 +337,84 @@ export default function AdminProductsPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700"
             />
             {showCategoryDropdown && (
-              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto">
                 <div
-                  className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium"
                   onClick={() => {
-                    setSelectedCategory("");
+                    setSelectedCategories([]);
                     setCategorySearch("");
                     setShowCategoryDropdown(false);
                     setCurrentPage(1);
                   }}
                 >
-                  All Categories
+                  Clear All Filters
                 </div>
+                <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+                
+                {/* Parent Categories */}
                 {categories
                   .filter(cat => cat.name.toLowerCase().includes(categorySearch.toLowerCase()))
-                  .map(category => (
-                    <div
-                      key={category.id}
-                      className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => {
-                        setSelectedCategory(category.id);
-                        setCategorySearch(category.name);
-                        setShowCategoryDropdown(false);
-                        setCurrentPage(1); // Reset to first page when filtering
-                      }}
-                    >
-                      {category.name}
+                  .map(parentCategory => (
+                    <div key={parentCategory.id}>
+                      <div
+                        className={`px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer ${
+                          selectedCategories.includes(parentCategory.id) 
+                            ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                            : ''
+                        }`}
+                        onClick={() => {
+                          if (selectedCategories.includes(parentCategory.id)) {
+                            removeCategory(parentCategory.id);
+                          } else {
+                            addCategory(parentCategory.id);
+                          }
+                          setCategorySearch("");
+                          setShowCategoryDropdown(false);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{parentCategory.name}</span>
+                          {selectedCategories.includes(parentCategory.id) && (
+                            <span className="text-xs">✓</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Child Categories */}
+                      {parentCategory.children && parentCategory.children.length > 0 && (
+                        <div className="ml-4">
+                          {parentCategory.children
+                            .filter(child => child.name.toLowerCase().includes(categorySearch.toLowerCase()))
+                            .map(childCategory => (
+                              <div
+                                key={childCategory.id}
+                                className={`px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm ${
+                                  selectedCategories.includes(childCategory.id) 
+                                    ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                                    : 'text-gray-600 dark:text-gray-400'
+                                }`}
+                                onClick={() => {
+                                  if (selectedCategories.includes(childCategory.id)) {
+                                    removeCategory(childCategory.id);
+                                  } else {
+                                    addCategory(childCategory.id);
+                                  }
+                                  setCategorySearch("");
+                                  setShowCategoryDropdown(false);
+                                  setCurrentPage(1);
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span>• {childCategory.name}</span>
+                                  {selectedCategories.includes(childCategory.id) && (
+                                    <span className="text-xs">✓</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
@@ -311,12 +423,12 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Clear Filters Button */}
-        {(selectedCategory || searchTerm) && (
+        {(selectedCategories.length > 0 || searchTerm) && (
           <div className="flex items-end">
             <Button
               variant="ghost"
               onClick={() => {
-                setSelectedCategory("");
+                setSelectedCategories([]);
                 setCategorySearch("");
                 setSearchTerm("");
                 setCurrentPage(1);
@@ -454,7 +566,7 @@ export default function AdminProductsPage() {
       {totalProducts > 0 && (
         <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
           Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} products
-          {selectedCategory && ` in ${categories.find(c => c.id === selectedCategory)?.name}`}
+          {selectedCategories.length > 0 && ` in ${selectedCategories.map(id => getCategoryName(id)).join(', ')}`}
           {searchTerm && ` matching "${searchTerm}"`}
         </div>
       )}

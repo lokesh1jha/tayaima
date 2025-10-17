@@ -7,9 +7,19 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const search = url.searchParams.get("search") || "";
     const categoryId = url.searchParams.get("categoryId") || "";
+    const categoryIds = url.searchParams.getAll("categoryId");
     const page = Number(url.searchParams.get("page") || 1);
     const limit = Number(url.searchParams.get("limit") || 20);
     const offset = (page - 1) * limit;
+
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Admin Products Search Debug:', {
+        categoryId,
+        categoryIds,
+        allParams: Object.fromEntries(url.searchParams.entries())
+      });
+    }
 
     // Build where clause
     const where: any = {};
@@ -33,8 +43,20 @@ export async function GET(req: Request) {
     }
 
     // Add category filter if provided
-    if (categoryId) {
-      where.categoryId = categoryId;
+    if (categoryIds.length > 0) {
+      // Handle multiple category IDs
+      where.categoryId = { in: categoryIds };
+    } else if (categoryId) {
+      // Handle single category ID (backward compatibility)
+      // Check if it contains commas (comma-separated format)
+      if (categoryId.includes(',')) {
+        const ids = categoryId.split(',').map(id => id.trim()).filter(id => id);
+        if (ids.length > 0) {
+          where.categoryId = { in: ids };
+        }
+      } else {
+        where.categoryId = categoryId;
+      }
     }
 
     // Get total count for pagination
@@ -86,7 +108,7 @@ export async function GET(req: Request) {
       },
       filters: {
         search,
-        categoryId
+        categoryId: categoryIds.length > 0 ? categoryIds : categoryId
       }
     });
 
