@@ -10,8 +10,10 @@ datasource db {
 model User {
   id               String    @id @default(cuid())
   name             String?
-  email            String    @unique
+  email            String?   @unique
   emailVerified    DateTime?
+  phone            String?   @unique
+  phoneVerified    DateTime?
   image            String?
   passwordHash     String?
   role             Role      @default(USER)
@@ -49,6 +51,19 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model OtpVerification {
+  id          String   @id @default(cuid())
+  phone       String
+  otp         String
+  attempts    Int      @default(0)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  verifiedAt  DateTime?
+  
+  @@index([phone])
+  @@index([expiresAt])
 }
 
 model Category {

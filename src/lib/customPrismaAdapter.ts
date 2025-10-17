@@ -25,6 +25,7 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         where: { id },
       });
       
+      // Return null if user doesn't have email (required by AdapterUser)
       if (!user || !user.email) {
         return null;
       }
@@ -37,6 +38,7 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         where: { email },
       });
       
+      // Return null if user doesn't have email (required by AdapterUser)
       if (!user || !user.email) {
         return null;
       }
@@ -55,11 +57,12 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         select: { user: true },
       });
       
-      if (!account?.user || !account.user.email) {
+      const user = account?.user;
+      if (!user || !user.email) {
         return null;
       }
       
-      return account.user as AdapterUser;
+      return user as AdapterUser;
     },
 
     async updateUser({ id, ...data }) {
@@ -68,8 +71,9 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         data,
       });
       
+      // Ensure email is not null for AdapterUser compatibility
       if (!user.email) {
-        throw new Error('User email cannot be null for NextAuth compatibility');
+        throw new Error('User must have an email address');
       }
       
       return user as AdapterUser;
