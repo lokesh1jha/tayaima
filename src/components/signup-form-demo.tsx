@@ -15,7 +15,7 @@ type Props = {
 export default function SignupFormDemo({ onSubmit, onGoogle, loading }: Props) {
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
 
-
+ 
   const handleTabChange = (mode: 'email' | 'phone') => {
     setAuthMode(mode);
   };
