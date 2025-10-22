@@ -33,9 +33,10 @@ interface Product {
 interface ProductCardProps {
   product: Product;
   compact?: boolean;
+  priority?: boolean; // For image loading priority
 }
 
-export default function ProductCard({ product, compact = false }: ProductCardProps) {
+export default function ProductCard({ product, compact = false, priority = false }: ProductCardProps) {
   const imageUrl = product.images[0] || '/placeholder-product.jpg';
 
   // Handle cases where variants might not be loaded
@@ -45,6 +46,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     variants[0]?.id || null
   );
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const selectedVariant = useMemo(() => {
     if (!hasVariants) return null;
@@ -75,22 +77,30 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
   return (
     <Card className={`${compact ? 'p-1.5 sm:p-2' : 'p-2 sm:p-3 md:p-4'} hover:shadow-lg transition-shadow`}>
       <Link href={`/products/${product.slug}`} className="block">
-        <div className={`${compact ? 'mb-2' : 'mb-2 sm:mb-3 md:mb-4'} aspect-square relative`}>
+        <div className={`${compact ? 'mb-2' : 'mb-2 sm:mb-3 md:mb-4'} aspect-square relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden`}>
+          {/* Skeleton/Loading state */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 animate-pulse" />
+          )}
+          
           {imageUrl.includes('.s3.') || imageUrl.includes('amazonaws.com') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageUrl}
               alt={`${product.name} - Fresh ${product.name.toLowerCase()} available for delivery from TaYaima grocery store`}
-              className="w-full h-full object-cover rounded-lg"
-              loading="lazy"
+              className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              loading={priority ? 'eager' : 'lazy'}
+              onLoad={() => setImageLoaded(true)}
             />
           ) : (
             <Image
               src={imageUrl}
               alt={`${product.name} - Fresh ${product.name.toLowerCase()} available for delivery from TaYaima grocery store`}
               fill
-              className="object-cover rounded-lg"
-              loading="lazy"
+              className={`object-cover rounded-lg transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              loading={priority ? 'eager' : 'lazy'}
+              priority={priority}
+              onLoad={() => setImageLoaded(true)}
             />
           )}
         </div>

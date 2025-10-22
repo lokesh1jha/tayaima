@@ -72,19 +72,29 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 export function SkeletonProductCard({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
     <div className={cn(
-      "rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow",
+      "rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow bg-white dark:bg-gray-800",
       compact ? 'p-2 sm:p-2' : 'p-2 sm:p-3 md:p-4',
       className
     )}>
-      {/* Image */}
-      <div className={cn("aspect-square relative mb-2 sm:mb-3 md:mb-4", compact && 'mb-2')}>
-        <Skeleton className="w-full h-full rounded-lg" />
+      {/* Image with gradient animation */}
+      <div className={cn("aspect-square relative mb-2 sm:mb-3 md:mb-4 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden", compact && 'mb-2')}>
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 animate-pulse" />
       </div>
       
       {/* Product Name */}
       <Skeleton className={cn(
         "h-4 w-full mb-2",
         compact ? 'h-3 sm:h-4' : 'h-3 sm:h-4 md:h-5'
+      )} />
+      <Skeleton className={cn(
+        "h-4 w-3/4 mb-2",
+        compact ? 'h-3 sm:h-4' : 'h-3 sm:h-4 md:h-5'
+      )} />
+      
+      {/* Category */}
+      <Skeleton className={cn(
+        "h-3 w-1/2 mb-2",
+        compact ? 'h-2 sm:h-3' : 'h-2 sm:h-3 md:h-4'
       )} />
       
       {/* Price and Variant Row */}

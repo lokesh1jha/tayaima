@@ -21,10 +21,10 @@ export function CategoriesSidebarSkeleton() {
   );
 }
 
-export function ProductsGridSkeleton() {
+export function ProductsGridSkeleton({ count = 10 }: { count?: number }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-      {Array.from({ length: 10 }).map((_, i) => (
+      {Array.from({ length: count }).map((_, i) => (
         <SkeletonProductCard key={i} />
       ))}
     </div>
@@ -70,41 +70,8 @@ export function ProductsPageSkeleton() {
   );
 }
 
-export function ProductsLoadingSkeleton() {
+export function ProductsLoadingSkeleton({ count = 10 }: { count?: number }) {
   return (
-    <div className="container max-w-screen-2xl py-8">
-      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-0">
-        {/* Categories Sidebar */}
-        <CategoriesSidebarSkeleton />
-
-        {/* Products Section */}
-        <div className="md:pl-0">
-          <div className="mb-4 md:mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
-              <Skeleton className="h-8 w-48" />
-            </div>
-            
-            {/* Mobile Category Drawer Toggle */}
-            <div className="md:hidden mb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-10 w-10 rounded-lg" />
-                  <Skeleton className="h-5 w-20" />
-                </div>
-                <Skeleton className="h-5 w-24" />
-              </div>
-            </div>
-          </div>
-
-          {/* Breadcrumb Navigation */}
-          <div className="mb-3 md:mb-4">
-            <Skeleton className="h-4 w-32" />
-          </div>
-
-          {/* Products Grid */}
-          <ProductsGridSkeleton />
-        </div>
-      </div>
-    </div>
+    <ProductsGridSkeleton count={count} />
   );
 }
