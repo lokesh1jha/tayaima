@@ -28,7 +28,7 @@ interface Category {
   description?: string | null;
   icon?: string | null;
   parentId?: string | null;
-  sortOrder?: number | null;
+  sortOrder?: number;
   parent?: any;
   children?: any[];
   _count?: { products: number };
