@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { logger } from './logger';
+import { STORE_CONFIG, getStoreHoursDisplay } from './storeConfig';
 
 // Email configuration interface
 interface EmailConfig {
@@ -73,6 +74,10 @@ class EmailService {
 
   public isConfigured(): boolean {
     return this.transporter !== null && this.config !== null;
+  }
+
+  public getAdminEmail(): string | null {
+    return process.env.ADMIN_EMAIL || null;
   }
 
   public async sendEmail(
@@ -284,9 +289,22 @@ This is an automated email. Please do not reply to this message.
     orderId: string,
     customerName: string,
     totalAmount: number,
-    items: any[]
+    items: any[],
+    deliveryMethod?: string,
+    address?: string,
+    city?: string,
+    pincode?: string
   ): Promise<boolean> {
-    const template = this.getOrderConfirmationTemplate(orderId, customerName, totalAmount, items);
+    const template = this.getOrderConfirmationTemplate(
+      orderId, 
+      customerName, 
+      totalAmount, 
+      items,
+      deliveryMethod,
+      address,
+      city,
+      pincode
+    );
     return await this.sendEmail(to, template.subject, template.html, template.text);
   }
 
@@ -305,8 +323,14 @@ This is an automated email. Please do not reply to this message.
     orderId: string,
     customerName: string,
     totalAmount: number,
-    items: any[]
+    items: any[],
+    deliveryMethod?: string,
+    address?: string,
+    city?: string,
+    pincode?: string
   ): EmailTemplate {
+    const isPickup = deliveryMethod === 'PICKUP';
+    
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -325,20 +349,49 @@ This is an automated email. Please do not reply to this message.
             <h3 style="margin-top: 0;">Order Details:</h3>
             <p><strong>Order ID:</strong> ${orderId}</p>
             <p><strong>Total Amount:</strong> ₹${(totalAmount / 100).toFixed(2)}</p>
+            <p><strong>Order Type:</strong> ${isPickup ? '🏪 Store Pickup' : '🚚 Home Delivery'}</p>
           </div>
+          
+          ${isPickup ? `
+          <div style="background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;">
+            <h3 style="margin-top: 0; color: #1976d2;">📍 Pickup Location:</h3>
+            <p style="margin: 5px 0;"><strong>${STORE_CONFIG.name}</strong></p>
+            <p style="margin: 5px 0;">${STORE_CONFIG.address.line1}</p>
+            <p style="margin: 5px 0;">${STORE_CONFIG.address.line2}</p>
+            <p style="margin: 5px 0;">${STORE_CONFIG.address.city}, ${STORE_CONFIG.address.state} - ${STORE_CONFIG.address.pincode}</p>
+            <p style="margin: 5px 0;"><strong>📞 Phone:</strong> ${STORE_CONFIG.contact.phone}</p>
+            
+            <h3 style="margin-top: 15px; color: #1976d2;">🕒 Store Hours:</h3>
+            ${getStoreHoursDisplay().map(hours => `<p style="margin: 5px 0;">${hours}</p>`).join('')}
+          </div>
+          
+          <div style="background-color: #fff9e6; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ff9800;">
+            <h3 style="margin-top: 0; color: #f57c00;">ℹ️ Important Pickup Instructions:</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li><strong>Please bring your Order ID: ${orderId}</strong></li>
+              <li>For any queries, call us at ${STORE_CONFIG.contact.phone}</li>
+            </ul>
+          </div>
+          ` : `
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">📦 Delivery Address:</h3>
+            <p style="margin: 5px 0;">${address || ''}</p>
+            ${city ? `<p style="margin: 5px 0;">${city}${pincode ? ` - ${pincode}` : ''}</p>` : ''}
+          </div>
+          `}
           
           <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <h3 style="margin-top: 0;">Items Ordered:</h3>
             <ul style="list-style: none; padding: 0;">
               ${items.map(item => `
                 <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
-                  ${item.variant.product.name} - ${item.variant.amount} ${item.variant.unit} × ${item.quantity} = ₹${(item.total / 100).toFixed(2)}
+                  ${item.productName} × ${item.quantity} = ₹${(item.unitPrice * item.quantity / 100).toFixed(2)}
                 </li>
               `).join('')}
             </ul>
           </div>
           
-          <p>We'll notify you when your order is shipped.</p>
+          <p>${isPickup ? "We'll notify you when your order is ready for pickup." : "We'll notify you when your order is shipped."}</p>
           <p>Best regards,<br><strong>TaYaima Team</strong></p>
         </div>
       </body>
@@ -355,11 +408,30 @@ This is an automated email. Please do not reply to this message.
       Order Details:
       Order ID: ${orderId}
       Total Amount: ₹${(totalAmount / 100).toFixed(2)}
+      Order Type: ${isPickup ? 'Store Pickup' : 'Home Delivery'}
+      
+      ${isPickup ? `
+      Pickup Location:
+      ${STORE_CONFIG.name}
+      ${STORE_CONFIG.address.line1}
+      ${STORE_CONFIG.address.line2}
+      ${STORE_CONFIG.address.city}, ${STORE_CONFIG.address.state} - ${STORE_CONFIG.address.pincode}
+      Phone: ${STORE_CONFIG.contact.phone}
+      
+      Store Hours:
+      ${getStoreHoursDisplay().join('\n      ')}
+      
+      Important: ${STORE_CONFIG.pickupInstructions[0]}
+      ` : `
+      Delivery Address:
+      ${address || ''}
+      ${city ? `${city}${pincode ? ` - ${pincode}` : ''}` : ''}
+      `}
       
       Items Ordered:
-      ${items.map(item => `- ${item.variant.product.name} - ${item.variant.amount} ${item.variant.unit} × ${item.quantity} = ₹${(item.total / 100).toFixed(2)}`).join('\n')}
+      ${items.map(item => `- ${item.productName} × ${item.quantity} = ₹${(item.unitPrice * item.quantity / 100).toFixed(2)}`).join('\n      ')}
       
-      We'll notify you when your order is shipped.
+      ${isPickup ? "We'll notify you when your order is ready for pickup." : "We'll notify you when your order is shipped."}
       
       Best regards,
       TaYaima Team
@@ -449,6 +521,278 @@ This is an automated email. Please do not reply to this message.
       subject: `Order Update #${orderId} - ${status} - TaYaima`,
       html,
       text
+    };
+  }
+
+  // Admin notification methods
+  public async sendAdminNewOrderNotification(
+    orderId: string,
+    customerName: string,
+    customerEmail: string,
+    customerPhone: string,
+    totalAmount: number,
+    deliveryMethod: string,
+    address?: string,
+    city?: string,
+    pincode?: string,
+    items?: any[]
+  ): Promise<boolean> {
+    const adminEmail = this.getAdminEmail();
+    if (!adminEmail) {
+      logger.warn('Admin email not configured - skipping admin notification');
+      return false;
+    }
+
+    const template = this.getAdminNewOrderTemplate(
+      orderId,
+      customerName,
+      customerEmail,
+      customerPhone,
+      totalAmount,
+      deliveryMethod,
+      address,
+      city,
+      pincode,
+      items
+    );
+    return await this.sendEmail(adminEmail, template.subject, template.html, template.text);
+  }
+
+  public async sendAdminOrderCancellationNotification(
+    orderId: string,
+    customerName: string,
+    totalAmount: number,
+    cancellationReason?: string
+  ): Promise<boolean> {
+    const adminEmail = this.getAdminEmail();
+    if (!adminEmail) {
+      logger.warn('Admin email not configured - skipping admin notification');
+      return false;
+    }
+
+    const template = this.getAdminOrderCancellationTemplate(
+      orderId,
+      customerName,
+      totalAmount,
+      cancellationReason
+    );
+    return await this.sendEmail(adminEmail, template.subject, template.html, template.text);
+  }
+
+  public async sendAdminOrderDeliveredNotification(
+    orderId: string,
+    customerName: string,
+    totalAmount: number
+  ): Promise<boolean> {
+    const adminEmail = this.getAdminEmail();
+    if (!adminEmail) {
+      logger.warn('Admin email not configured - skipping admin notification');
+      return false;
+    }
+
+    const template = this.getAdminOrderDeliveredTemplate(orderId, customerName, totalAmount);
+    return await this.sendEmail(adminEmail, template.subject, template.html, template.text);
+  }
+
+  private getAdminNewOrderTemplate(
+    orderId: string,
+    customerName: string,
+    customerEmail: string,
+    customerPhone: string,
+    totalAmount: number,
+    deliveryMethod: string,
+    address?: string,
+    city?: string,
+    pincode?: string,
+    items?: any[]
+  ): EmailTemplate {
+    const isPickup = deliveryMethod === 'PICKUP';
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Order - Admin Notification</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #007bff; margin-bottom: 20px;">🛒 New Order Received</h2>
+          <p>A new order has been placed on your store.</p>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Order Details:</h3>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Total Amount:</strong> ₹${(totalAmount / 100).toFixed(2)}</p>
+            <p><strong>Order Type:</strong> ${isPickup ? '🏪 Store Pickup' : '🚚 Home Delivery'}</p>
+          </div>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Customer Information:</h3>
+            <p><strong>Name:</strong> ${customerName}</p>
+            <p><strong>Email:</strong> ${customerEmail}</p>
+            <p><strong>Phone:</strong> ${customerPhone}</p>
+            ${!isPickup && address ? `
+            <p><strong>Delivery Address:</strong><br>
+            ${address}<br>
+            ${city ? `${city}${pincode ? ` - ${pincode}` : ''}` : ''}</p>
+            ` : ''}
+          </div>
+          
+          ${items && items.length > 0 ? `
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Items Ordered:</h3>
+            <ul style="list-style: none; padding: 0;">
+              ${items.map(item => `
+                <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                  ${item.productName} × ${item.quantity} = ₹${(item.unitPrice * item.quantity / 100).toFixed(2)}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          ` : ''}
+          
+          <p style="margin-top: 20px;">Please process this order promptly.</p>
+          <p><strong>TaYaima Store Admin</strong></p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+New Order Received - TaYaima
+
+A new order has been placed on your store.
+
+Order Details:
+Order ID: ${orderId}
+Total Amount: ₹${(totalAmount / 100).toFixed(2)}
+Order Type: ${isPickup ? 'Store Pickup' : 'Home Delivery'}
+
+Customer Information:
+Name: ${customerName}
+Email: ${customerEmail}
+Phone: ${customerPhone}
+${!isPickup && address ? `Delivery Address: ${address}${city ? `, ${city}${pincode ? ` - ${pincode}` : ''}` : ''}` : ''}
+
+${items && items.length > 0 ? `Items Ordered:\n${items.map(item => `- ${item.productName} × ${item.quantity} = ₹${(item.unitPrice * item.quantity / 100).toFixed(2)}`).join('\n')}` : ''}
+
+Please process this order promptly.
+    `;
+
+    return {
+      subject: `🛒 New Order #${orderId} - TaYaima`,
+      html,
+      text: text.trim()
+    };
+  }
+
+  private getAdminOrderCancellationTemplate(
+    orderId: string,
+    customerName: string,
+    totalAmount: number,
+    cancellationReason?: string
+  ): EmailTemplate {
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Cancelled - Admin Notification</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #dc3545; margin-bottom: 20px;">❌ Order Cancelled</h2>
+          <p>An order has been cancelled by the customer.</p>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Order Details:</h3>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Customer:</strong> ${customerName}</p>
+            <p><strong>Total Amount:</strong> ₹${(totalAmount / 100).toFixed(2)}</p>
+            ${cancellationReason ? `<p><strong>Cancellation Reason:</strong> ${cancellationReason}</p>` : ''}
+          </div>
+          
+          <p style="margin-top: 20px;">Please update your inventory and records accordingly.</p>
+          <p><strong>TaYaima Store Admin</strong></p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+Order Cancelled - TaYaima
+
+An order has been cancelled by the customer.
+
+Order Details:
+Order ID: ${orderId}
+Customer: ${customerName}
+Total Amount: ₹${(totalAmount / 100).toFixed(2)}
+${cancellationReason ? `Cancellation Reason: ${cancellationReason}` : ''}
+
+Please update your inventory and records accordingly.
+    `;
+
+    return {
+      subject: `❌ Order Cancelled #${orderId} - TaYaima`,
+      html,
+      text: text.trim()
+    };
+  }
+
+  private getAdminOrderDeliveredTemplate(
+    orderId: string,
+    customerName: string,
+    totalAmount: number
+  ): EmailTemplate {
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Delivered - Admin Notification</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #28a745; margin-bottom: 20px;">✅ Order Delivered</h2>
+          <p>An order has been successfully delivered.</p>
+          
+          <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Order Details:</h3>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Customer:</strong> ${customerName}</p>
+            <p><strong>Total Amount:</strong> ₹${(totalAmount / 100).toFixed(2)}</p>
+            <p><strong>Status:</strong> <span style="color: #28a745; font-weight: bold;">DELIVERED</span></p>
+          </div>
+          
+          <p style="margin-top: 20px;">Transaction completed successfully!</p>
+          <p><strong>TaYaima Store Admin</strong></p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+Order Delivered - TaYaima
+
+An order has been successfully delivered.
+
+Order Details:
+Order ID: ${orderId}
+Customer: ${customerName}
+Total Amount: ₹${(totalAmount / 100).toFixed(2)}
+Status: DELIVERED
+
+Transaction completed successfully!
+    `;
+
+    return {
+      subject: `✅ Order Delivered #${orderId} - TaYaima`,
+      html,
+      text: text.trim()
     };
   }
 }

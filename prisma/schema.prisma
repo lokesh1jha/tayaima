@@ -146,7 +146,7 @@ model CartItem {
 }
 
 model Order {
-  id                 String      @id @default(cuid())
+  id                 String         @id @default(cuid())
   userId             String?
   customerName       String
   phone              String
@@ -154,13 +154,15 @@ model Order {
   city               String?
   pincode            String?
   totalAmount        Int
-  status             OrderStatus @default(PLACED)
+  status             OrderStatus    @default(PLACED)
   paymentMode        String
   paymentMeta        Json?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  deliveryMethod     DeliveryMethod @default(DELIVERY)
+  pickupNotes        String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   cancellationReason String?
-  user               User?       @relation(fields: [userId], references: [id])
+  user               User?          @relation(fields: [userId], references: [id])
   items              OrderItem[]
 }
 
@@ -215,6 +217,11 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum DeliveryMethod {
+  DELIVERY
+  PICKUP
 }
 
 model Banner {

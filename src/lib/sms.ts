@@ -1,3 +1,12 @@
+/**
+ * TODO: SMS SERVICE - CURRENTLY DISABLED
+ * 
+ * This entire SMS service is commented out and not in use.
+ * It handles sending OTPs and order notifications via SMS using Fast2SMS API.
+ * 
+ * Will be enabled later when SMS functionality is needed.
+ */
+
 import { z } from 'zod';
 
 // Fast2SMS Configuration
@@ -89,6 +98,7 @@ class SmsService {
     orderId: string;
     totalAmount: number;
     items: string[];
+    deliveryMethod?: string;
   }): Promise<SmsResponse> {
     if (!this.apiKey) {
       throw new Error('SMS service not configured. Please set FAST2SMS_API_KEY.');
@@ -97,8 +107,9 @@ class SmsService {
     const validatedPhone = phoneSchema.parse(phone);
     const formattedPhone = `91${validatedPhone}`;
 
-    // Create order confirmation message
-    const message = `Order Confirmed! Order ID: ${orderDetails.orderId}, Total: ₹${(orderDetails.totalAmount / 100).toFixed(2)}. Items: ${orderDetails.items.join(', ')}. Thank you for shopping with TaYaima Store!`;
+    // Create order confirmation message with delivery method
+    const deliveryInfo = orderDetails.deliveryMethod ? ` (${orderDetails.deliveryMethod})` : '';
+    const message = `Order Confirmed! Order ID: ${orderDetails.orderId}${deliveryInfo}, Total: ₹${(orderDetails.totalAmount / 100).toFixed(2)}. Items: ${orderDetails.items.join(', ')}. Thank you for shopping with TaYaima Store!`;
 
     const url = new URL('https://www.fast2sms.com/dev/bulkV2');
     url.searchParams.set('authorization', this.apiKey);

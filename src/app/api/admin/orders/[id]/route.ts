@@ -60,11 +60,17 @@ export async function PATCH(
       },
     });
 
-    // Send order status update email (non-blocking)
+    // Send user email notification for status updates (non-blocking)
     try {
-      if (order.user?.email) {
+      // Get user email from order (for pickup orders, email is in phone field)
+      let userEmail = order.user?.email;
+      if (!userEmail && order.deliveryMethod === 'PICKUP' && order.phone?.includes('@')) {
+        userEmail = order.phone;
+      }
+
+      if (userEmail) {
         await emailService.sendOrderStatusUpdateEmail(
-          order.user.email,
+          userEmail,
           order.id,
           order.customerName,
           status,

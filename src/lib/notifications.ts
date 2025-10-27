@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
-import { smsService } from './sms';
+// TODO: SMS service - Commented out for now, will be enabled later
+// import { smsService } from './sms';
 import { emailService } from './email';
 import { logger } from './logger';
 
@@ -9,6 +10,10 @@ interface OrderDetails {
   phone: string;
   totalAmount: number;
   status: string;
+  deliveryMethod?: string;
+  address?: string;
+  city?: string;
+  pincode?: string;
   items: Array<{
     productName: string;
     quantity: number;
@@ -45,7 +50,11 @@ class NotificationService {
           orderDetails.id,
           orderDetails.customerName,
           orderDetails.totalAmount,
-          orderDetails.items
+          orderDetails.items,
+          orderDetails.deliveryMethod,
+          orderDetails.address,
+          orderDetails.city,
+          orderDetails.pincode
         );
         result.emailSent = true;
         logger.info(`Order confirmation email sent to ${userEmail} for order ${orderDetails.id}`);
@@ -56,16 +65,24 @@ class NotificationService {
       }
     }
 
+    // TODO: SMS notifications - Commented out for now, will be enabled later
+    /*
     // Always try to send SMS as backup or primary notification
     try {
       const itemsText = orderDetails.items
         .map(item => `${item.productName} (${item.quantity})`)
         .join(', ');
       
+      // Add pickup/delivery info to SMS
+      const deliveryInfo = orderDetails.deliveryMethod === 'PICKUP' 
+        ? 'PICKUP from store' 
+        : 'HOME DELIVERY';
+      
       await smsService.sendOrderConfirmation(orderDetails.phone, {
         orderId: orderDetails.id,
         totalAmount: orderDetails.totalAmount,
         items: [itemsText], // Simplified for SMS
+        deliveryMethod: deliveryInfo,
       });
       
       result.smsSent = true;
@@ -75,6 +92,7 @@ class NotificationService {
       result.errors.push(errorMsg);
       logger.error(errorMsg);
     }
+    */
 
     return result;
   }
@@ -108,6 +126,8 @@ class NotificationService {
       }
     }
 
+    // TODO: SMS notifications - Commented out for now, will be enabled later
+    /*
     // Always try to send SMS as backup or primary notification
     try {
       await smsService.sendDeliveryUpdate(orderDetails.phone, orderDetails.id, orderDetails.status);
@@ -118,6 +138,7 @@ class NotificationService {
       result.errors.push(errorMsg);
       logger.error(errorMsg);
     }
+    */
 
     return result;
   }
@@ -132,8 +153,16 @@ class NotificationService {
   ): Promise<NotificationResult> {
     let userEmail: string | null = null;
 
-    // Get user email if userId is provided
-    if (userId) {
+    // For pickup orders, the email is stored in the phone field
+    if (orderDetails.deliveryMethod === 'PICKUP' && orderDetails.phone) {
+      // Check if phone field contains an email (contains @)
+      if (orderDetails.phone.includes('@')) {
+        userEmail = orderDetails.phone;
+      }
+    }
+
+    // If not a pickup order or email not found in phone field, get user email from database
+    if (!userEmail && userId) {
       try {
         const user = await prisma.user.findUnique({
           where: { id: userId },
@@ -167,6 +196,8 @@ class NotificationService {
       errors: [],
     };
 
+    // TODO: SMS notifications - Commented out for now, will be enabled later
+    /*
     // Send SMS to all phone numbers
     for (const phone of phoneNumbers) {
       try {
@@ -180,6 +211,7 @@ class NotificationService {
         result.errors.push(`Failed to send SMS to ${phone}: ${error}`);
       }
     }
+    */
 
     // Send email to all email addresses
     if (emails && emails.length > 0) {

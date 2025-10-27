@@ -1,3 +1,12 @@
+/**
+ * TODO: PHONE AUTHENTICATION - CURRENTLY DISABLED
+ * 
+ * This component provides phone-based authentication using OTP.
+ * It is currently disabled and will be enabled in the future.
+ * 
+ * DO NOT USE THIS COMPONENT until SMS service is enabled.
+ */
+
 'use client';
 
 import { useState } from 'react';

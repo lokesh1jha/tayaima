@@ -1,3 +1,10 @@
+-- AlterTable - Add phone columns to User table first
+ALTER TABLE "User" ADD COLUMN "phone" TEXT,
+ADD COLUMN "phoneVerified" TIMESTAMP(3);
+
+-- AlterTable - Make email optional
+ALTER TABLE "User" ALTER COLUMN "email" DROP NOT NULL;
+
 -- CreateTable
 CREATE TABLE "OtpVerification" (
     "id" TEXT NOT NULL,
@@ -10,9 +17,6 @@ CREATE TABLE "OtpVerification" (
 
     CONSTRAINT "OtpVerification_pkey" PRIMARY KEY ("id")
 );
-
--- AlterTable
-ALTER TABLE "User" ALTER COLUMN "email" DROP NOT NULL;
 
 -- CreateIndex
 CREATE INDEX "OtpVerification_phone_idx" ON "OtpVerification"("phone");

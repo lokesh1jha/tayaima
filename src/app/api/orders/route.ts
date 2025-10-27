@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const validatedData = validateRequestBody(createOrderSchema, body);
-    const { sessionId, name, phone, address, city, pincode, items, paymentMode } = validatedData;
+    const { sessionId, name, phone, address, city, pincode, items, paymentMode, deliveryMethod } = validatedData;
 
     // Check if user is logged in
     const session = await getServerSession(authOptions) as any;
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         pincode,
         totalAmount: total,
         paymentMode: paymentMode || "COD",
+        deliveryMethod: deliveryMethod || "DELIVERY", // Default to DELIVERY if not specified
         items: {
           create: items.map((it) => ({
             variantId: it.variantId,
@@ -84,6 +85,10 @@ export async function POST(req: Request) {
         phone: order.phone,
         totalAmount: order.totalAmount,
         status: order.status,
+        deliveryMethod: order.deliveryMethod,
+        address: order.address,
+        city: order.city || undefined,
+        pincode: order.pincode || undefined,
         items: order.items.map(item => ({
           productName: item.variant.product.name,
           quantity: item.quantity,
@@ -99,6 +104,28 @@ export async function POST(req: Request) {
 
       if (notificationResult.errors.length > 0) {
         console.warn('Notification errors:', notificationResult.errors);
+      }
+
+      // Send admin notification for new order
+      try {
+        const customerEmail = order.deliveryMethod === 'PICKUP' && order.phone.includes('@') 
+          ? order.phone 
+          : session?.user?.email || 'N/A';
+        
+        await emailService.sendAdminNewOrderNotification(
+          order.id,
+          order.customerName,
+          customerEmail,
+          order.phone,
+          order.totalAmount,
+          order.deliveryMethod,
+          order.address,
+          order.city || undefined,
+          order.pincode || undefined,
+          orderDetails.items
+        );
+      } catch (adminNotifError) {
+        console.error('Failed to send admin notification:', adminNotifError);
       }
     } catch (notificationError) {
       // Log notification error but don't fail the order

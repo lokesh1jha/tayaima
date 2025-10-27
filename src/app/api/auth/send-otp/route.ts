@@ -1,3 +1,12 @@
+/**
+ * TODO: OTP/PHONE AUTHENTICATION API - CURRENTLY DISABLED
+ * 
+ * This API endpoint handles sending OTP to phone numbers for authentication.
+ * It is currently disabled and will be enabled when SMS service is activated.
+ * 
+ * DO NOT USE THIS ENDPOINT until SMS service is enabled.
+ */
+
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";

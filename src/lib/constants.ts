@@ -15,7 +15,7 @@ export const ROUTES = {
   // User dashboard routes
   DASHBOARD: '/dashboard',
   PROFILE: '/dashboard/profile',
-  PROFILE_ORDERS: '/dashboard/orders',
+  PROFILE_ORDERS: '/dashboard/profile#orders',
   PROFILE_ADDRESS: '/dashboard/profile#address',
   PROFILE_PERSONAL: '/dashboard/profile#personal',
   PROFILE_SETTINGS: '/dashboard/profile#settings',

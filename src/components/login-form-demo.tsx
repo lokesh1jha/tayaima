@@ -44,7 +44,8 @@ export default function LoginFormDemo({ onSubmit, onGoogle, loading }: Props) {
         Sign in to your account to continue shopping
       </p>
 
-       {/* Auth Mode Tabs - Phone tab disabled */}
+       {/* TODO: Auth Mode Tabs - Hidden for now, will be enabled later when phone auth is implemented */}
+       {/*
        <div className="flex mt-6 mb-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
          <button
            onClick={() => handleTabChange('email')}
@@ -65,6 +66,7 @@ export default function LoginFormDemo({ onSubmit, onGoogle, loading }: Props) {
            Phone (Coming Soon)
          </button>
        </div>
+       */}
 
       <form className="my-8" onSubmit={onSubmit}>
         <LabelInputContainer className="mb-4">

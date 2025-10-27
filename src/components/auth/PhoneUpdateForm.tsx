@@ -1,3 +1,12 @@
+/**
+ * TODO: PHONE UPDATE FEATURE - CURRENTLY DISABLED
+ * 
+ * This component allows users to update their phone number.
+ * It is currently disabled and will be enabled in the future.
+ * 
+ * DO NOT USE THIS COMPONENT until SMS service is enabled.
+ */
+
 'use client';
 
 import { useState } from 'react';

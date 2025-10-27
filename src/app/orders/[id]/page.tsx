@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { STORE_CONFIG, getStoreHoursDisplay } from "@/lib/storeConfig";
 
 interface OrderItem {
   id: string;
@@ -35,6 +36,7 @@ interface Order {
   totalAmount: number;
   status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   paymentMode: string;
+  deliveryMethod?: "DELIVERY" | "PICKUP";
   createdAt: string;
   items: OrderItem[];
 }
@@ -169,16 +171,98 @@ export default function OrderDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Order Details */}
           <div className="space-y-6">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
-              <div className="space-y-2">
-                <p><span className="font-medium">Name:</span> {order.customerName}</p>
-                <p><span className="font-medium">Phone:</span> {order.phone}</p>
-                <p><span className="font-medium">Address:</span> {order.address}</p>
-                {order.city && <p><span className="font-medium">City:</span> {order.city}</p>}
-                {order.pincode && <p><span className="font-medium">Pincode:</span> {order.pincode}</p>}
+            {/* Delivery Method Badge */}
+            {order.deliveryMethod && (
+              <div className={`p-4 rounded-lg border-2 ${
+                order.deliveryMethod === 'PICKUP' 
+                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
+                  : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{order.deliveryMethod === 'PICKUP' ? '🏪' : '🚚'}</span>
+                  <div>
+                    <p className={`font-semibold ${
+                      order.deliveryMethod === 'PICKUP' 
+                        ? 'text-blue-900 dark:text-blue-100' 
+                        : 'text-green-900 dark:text-green-100'
+                    }`}>
+                      {order.deliveryMethod === 'PICKUP' ? 'Store Pickup Order' : 'Home Delivery Order'}
+                    </p>
+                    <p className={`text-sm ${
+                      order.deliveryMethod === 'PICKUP' 
+                        ? 'text-blue-700 dark:text-blue-300' 
+                        : 'text-green-700 dark:text-green-300'
+                    }`}>
+                      {order.deliveryMethod === 'PICKUP' 
+                        ? 'Pick up your order from our store' 
+                        : 'Your order will be delivered to your address'
+                      }
+                    </p>
+                  </div>
+                </div>
               </div>
-            </Card>
+            )}
+
+            {order.deliveryMethod === 'PICKUP' ? (
+              /* Pickup Information */
+              <>
+                <Card className="p-6 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800">
+                  <h2 className="text-xl font-semibold mb-4 text-blue-900 dark:text-blue-100">
+                    📍 Pickup Location
+                  </h2>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-semibold text-blue-900 dark:text-blue-100">{STORE_CONFIG.name}</p>
+                      <p className="text-blue-800 dark:text-blue-200">{STORE_CONFIG.address.fullAddress}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">Phone:</p>
+                      <p className="text-blue-800 dark:text-blue-200">{STORE_CONFIG.contact.phone}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">Store Hours:</p>
+                      <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                        {getStoreHoursDisplay().map((hours, idx) => (
+                          <p key={idx}>{hours}</p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800">
+                  <h2 className="text-xl font-semibold mb-3 text-yellow-900 dark:text-yellow-100">
+                    ⚠️ Pickup Instructions
+                  </h2>
+                  <ul className="space-y-2 text-sm text-yellow-800 dark:text-yellow-200">
+                    <li>• Your order will be ready within 2-4 hours</li>
+                    <li>• Please bring your Order ID: <strong>#{order.id.slice(-8)}</strong></li>
+                    <li>• Bring a valid ID for verification</li>
+                    <li>• Payment due at pickup (COD)</li>
+                  </ul>
+                </Card>
+
+                <Card className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                  <div className="space-y-2">
+                    <p><span className="font-medium">Name:</span> {order.customerName}</p>
+                    <p><span className="font-medium">Phone:</span> {order.phone}</p>
+                  </div>
+                </Card>
+              </>
+            ) : (
+              /* Delivery Information */
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
+                <div className="space-y-2">
+                  <p><span className="font-medium">Name:</span> {order.customerName}</p>
+                  <p><span className="font-medium">Phone:</span> {order.phone}</p>
+                  <p><span className="font-medium">Address:</span> {order.address}</p>
+                  {order.city && <p><span className="font-medium">City:</span> {order.city}</p>}
+                  {order.pincode && <p><span className="font-medium">Pincode:</span> {order.pincode}</p>}
+                </div>
+              </Card>
+            )}
 
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">Payment Information</h2>

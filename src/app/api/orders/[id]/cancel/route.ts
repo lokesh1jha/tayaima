@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { emailService } from "@/lib/email";
 
 export async function PATCH(
   req: Request,
@@ -62,6 +63,27 @@ export async function PATCH(
         where: { id: item.variantId },
         data: { stock: { increment: item.quantity } },
       });
+    }
+
+    // Send user email notification for cancellation (non-blocking)
+    try {
+      // Get user email (for pickup orders, email is in phone field)
+      let userEmail = session?.user?.email;
+      if (!userEmail && updatedOrder.deliveryMethod === 'PICKUP' && updatedOrder.phone?.includes('@')) {
+        userEmail = updatedOrder.phone;
+      }
+
+      if (userEmail) {
+        await emailService.sendOrderStatusUpdateEmail(
+          userEmail,
+          updatedOrder.id,
+          updatedOrder.customerName,
+          'CANCELLED',
+          updatedOrder.items
+        );
+      }
+    } catch (notifError) {
+      console.error('Failed to send user cancellation notification:', notifError);
     }
 
     return NextResponse.json({ order: updatedOrder });

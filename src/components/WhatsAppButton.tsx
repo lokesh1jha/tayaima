@@ -1,6 +1,21 @@
 "use client";
 
+import { usePathname } from 'next/navigation';
+
 export default function WhatsAppButton() {
+  const pathname = usePathname();
+  
+  // Only show WhatsApp button on landing page and product pages
+  // Hide on dashboard pages
+  const shouldShow = !pathname?.startsWith('/dashboard') && 
+                     !pathname?.startsWith('/admin') &&
+                     !pathname?.startsWith('/login') &&
+                     !pathname?.startsWith('/signup');
+  
+  if (!shouldShow) {
+    return null;
+  }
+  
   const phoneNumber = "918837284911";
   const message = "Hi, I need some help";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;

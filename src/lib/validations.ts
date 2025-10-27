@@ -29,12 +29,13 @@ export const orderItemSchema = z.object({
 export const createOrderSchema = z.object({
   sessionId: z.string().optional(),
   name: z.string().min(1, "Name is required").max(255),
-  phone: z.string().min(10, "Phone number must be at least 10 digits").max(15),
+  phone: z.string().min(1, "Phone or email is required").max(255), // Can be phone or email for pickup orders
   address: z.string().min(1, "Address is required").max(500),
   city: z.string().max(100).optional(),
   pincode: z.string().max(10).optional(),
   items: z.array(orderItemSchema).min(1, "At least one item is required"),
   paymentMode: z.enum(["COD", "PHONEPE"]).default("COD"),
+  deliveryMethod: z.enum(["DELIVERY", "PICKUP"]).default("DELIVERY"),
 });
 
 // Cart validation schemas
