@@ -108,15 +108,20 @@ export async function POST(req: Request) {
 
       // Send admin notification for new order
       try {
-        const customerEmail = order.deliveryMethod === 'PICKUP' && order.phone.includes('@') 
-          ? order.phone 
-          : session?.user?.email || 'N/A';
+        // For pickup orders, email is stored in phone field
+        let customerEmail = session?.user?.email || 'N/A';
+        let customerPhone = order.phone;
+        
+        if (order.deliveryMethod === 'PICKUP' && order.phone.includes('@')) {
+          customerEmail = order.phone; // Email is in phone field for pickup
+          customerPhone = session?.user?.phone || 'Not provided'; // Get actual phone from session if available
+        }
         
         await emailService.sendAdminNewOrderNotification(
           order.id,
           order.customerName,
           customerEmail,
-          order.phone,
+          customerPhone,
           order.totalAmount,
           order.deliveryMethod,
           order.address,
